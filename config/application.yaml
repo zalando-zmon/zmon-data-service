@@ -1,0 +1,4 @@
+endpoints:
+  enabled: false
+  metrics:
+    enabled: true
