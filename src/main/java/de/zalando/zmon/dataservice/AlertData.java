@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class AlertData {
     public int alert_id;
     public JsonNode captures;
+    public boolean exception;
     public String start_time;
     public boolean changed;
     public boolean active;

@@ -2,3 +2,10 @@ endpoints:
   enabled: false
   metrics:
     enabled: true
+
+server:
+  port: 8086
+
+redis:
+  host: localhost
+  port: 6379
