@@ -11,4 +11,5 @@ public class AlertData {
     public String start_time;
     public boolean changed;
     public boolean active;
+    public JsonNode downtimes;
 }

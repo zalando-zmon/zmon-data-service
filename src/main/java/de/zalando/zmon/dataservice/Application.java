@@ -32,13 +32,24 @@ public class Application {
     @Autowired
     ObjectMapper mapper;
 
+    @Autowired
+    RedisDataStore storage;
+
     @RequestMapping(value="/api/v1/data/{checkid}/{accountid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="accountid") String accountId, @RequestBody String data) {
-        LOG.info("data: {}", data);
-
         metrics.markRate();
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
+
+        try {
+            WorkerResult wr = mapper.readValue(data, WorkerResult.class);
+            storage.store(wr);
+
+            // TODO KairosDB write
+        }
+        catch(Exception e) {
+            LOG.error("",e);
+        }
     }
 
     public static void main(String[] args) throws Exception {
