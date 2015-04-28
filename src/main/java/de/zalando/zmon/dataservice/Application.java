@@ -1,6 +1,10 @@
 package de.zalando.zmon.dataservice;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,14 +47,18 @@ public class Application {
         return new JedisPool(host, port);
     }
 
-    @RequestMapping(value="/api/v1/data/{accountid}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
-    void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="accountid") String accountId, @RequestBody String data) {
+    @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
+    void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
         metrics.markRate();
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
 
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+
         try {
-            WorkerResult wr = mapper.readValue(data, WorkerResult.class);
+            WorkerResult wr = mapper.readValue(data, new TypeReference<WorkerResult>(){});
             storage.store(wr);
 
             // TODO KairosDB write

@@ -13,4 +13,5 @@ public class AlertData {
     public boolean changed;
     public boolean active;
     public JsonNode downtimes;
+    public boolean in_period;
 }

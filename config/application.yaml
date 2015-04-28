@@ -7,5 +7,5 @@ server:
   port: 8086
 
 redis:
-  host: localhost
+  host: z-devredis02
   port: 6379
