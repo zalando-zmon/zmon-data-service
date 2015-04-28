@@ -61,11 +61,11 @@ public class DataServiceMetrics {
 
     public void markAccount(String account, int size) {
         getOrCreateMeter(accountMeters, "ds.acc."+account+".rate").mark(size);
-        getOrCreateCounter(accountCounter, "ds.acc."+account+".counter").inc(size);
+        getOrCreateCounter(accountCounter, "ds.acc."+account+".counter").inc();
     }
 
     public void markCheck(int checkId, int size) {
         getOrCreateMeter(checkMeters, "ds.check."+checkId+".rate").mark(size);
-        getOrCreateCounter(checkCounter, "ds.check."+checkId+".counter").inc(size);
+        getOrCreateCounter(checkCounter, "ds.check."+checkId+".counter").inc();
     }
 }
