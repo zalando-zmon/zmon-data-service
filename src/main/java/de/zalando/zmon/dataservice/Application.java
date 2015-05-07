@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.http.client.fluent.Executor;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.JedisPool;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Created by jmussler on 4/21/15.
@@ -47,18 +57,21 @@ public class Application {
         return new JedisPool(host, port);
     }
 
+    private static ObjectMapper valueMapper;
+    static {
+        valueMapper = new ObjectMapper();
+        valueMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        valueMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    }
+
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
         metrics.markRate();
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-
         try {
-            WorkerResult wr = mapper.readValue(data, new TypeReference<WorkerResult>(){});
+            WorkerResult wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
             storage.store(wr);
 
             // TODO KairosDB write
@@ -66,6 +79,67 @@ public class Application {
         catch(Exception e) {
             LOG.error("",e);
         }
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/entities/", method = RequestMethod.PUT, produces = "application/json")
+    public void getEntities(final Writer writer, final HttpServletResponse response, @RequestBody(required=true) final JsonNode node) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/entities/").build();
+
+        final Executor executor = Executor.newInstance();
+
+        String r = executor.execute(Request.Put(uri).useExpectContinue().bodyString(valueMapper.writeValueAsString(node),
+                                    ContentType.APPLICATION_JSON)).returnContent().asString();
+
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/entities/", method = RequestMethod.GET, produces = "application/json")
+    public void getEntities(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/entities/").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/alerts/", method = RequestMethod.GET, produces = "application/json")
+    public void getChecks(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/checks/all-active-check-definitions").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/checks/", method = RequestMethod.GET, produces = "application/json")
+    public void getAlerts(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/checks/all-active-alert-definitions").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
     }
 
     public static void main(String[] args) throws Exception {

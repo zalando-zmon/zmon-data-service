@@ -15,4 +15,7 @@ class DataServiceConfig {
 
   @BeanProperty var kairosdb_host = "localhost"
   @BeanProperty var kairosdb_port = 8083
+
+  @BeanProperty var proxy_controller = false
+  @BeanProperty var proxy_controller_url = "http://localhost:8080/api/v1/"
 }

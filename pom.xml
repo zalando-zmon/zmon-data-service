@@ -61,6 +61,11 @@
             <version>2.2.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
+            <version>4.2.5</version>
+        </dependency>
     </dependencies>
 
     <build>
