@@ -52,9 +52,13 @@ public class Application {
     @Autowired
     RedisDataStore storage;
 
+    @Autowired
+    KairosDBStore kairosStore;
+
     @Bean
-    JedisPool getPool(@Value("${redis.host:localhost}") String host, @Value("${redis.port:6379}") int port) {
-        return new JedisPool(host, port);
+    @Autowired
+    JedisPool getPool(DataServiceConfig config) {
+        return new JedisPool(config.redis_host(), config.redis_port());
     }
 
     private static ObjectMapper valueMapper;
@@ -73,11 +77,10 @@ public class Application {
         try {
             WorkerResult wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
             storage.store(wr);
-
-            // TODO KairosDB write
+            kairosStore.store(wr);
         }
         catch(Exception e) {
-            LOG.error("",e);
+            metrics.markError();
         }
     }
 

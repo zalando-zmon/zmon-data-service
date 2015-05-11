@@ -1,24 +1,22 @@
 package de.zalando.zmon.dataservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 
-import java.util.Set;
 
 /**
  * Created by jmussler on 4/22/15.
  */
-@Component
-public class RedisDataStore {
+@Service
+public class RedisDataStore  {
 
     private final JedisPool pool;
 
@@ -76,7 +74,7 @@ public class RedisDataStore {
                             try {
                                 value = mapper.writeValueAsString(vNode);
                             } catch (JsonProcessingException ex) {
-                                LOG.error("", ex);
+
                             }
                             p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
 
@@ -95,14 +93,12 @@ public class RedisDataStore {
                 if(null!=jedis) pool.returnResource(jedis);
             }
             catch(Exception ex) {
-
             }
 
             try {
                 if(null!=alertStateJedis) pool.returnResource(alertStateJedis);
             }
             catch(Exception ex) {
-
             }
         }
     }

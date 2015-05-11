@@ -24,11 +24,15 @@ public class DataServiceMetrics {
     private final Map<String, Counter> checkCounter = new HashMap<>();
 
     private final Meter totalRate;
+    private final Meter kairosErrorMeter;
+    private final Meter totalError;
 
     @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
         this.totalRate = metrics.meter("data-service.total-rate");
+        this.totalError = metrics.meter("data-service.total-error");
+        this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
     }
 
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
@@ -57,6 +61,14 @@ public class DataServiceMetrics {
 
     public void markRate() {
         totalRate.mark();
+    }
+
+    public void markError() {
+        totalError.mark();
+    }
+
+    public void markKairosError() {
+        kairosErrorMeter.mark();
     }
 
     public void markAccount(String account, int size) {

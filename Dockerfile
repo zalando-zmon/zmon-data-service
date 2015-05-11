@@ -1,6 +1,5 @@
 FROM zalando/openjdk:8u40-b09-4
 
-
 RUN mkdir /app
 RUN mkdir /app/config
 
