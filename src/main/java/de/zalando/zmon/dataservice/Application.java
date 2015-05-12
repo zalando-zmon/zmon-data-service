@@ -132,8 +132,36 @@ public class Application {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/api/v1/checks/", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/rest/api/v1/checks/all-active-check-definitions", method = RequestMethod.GET, produces = "application/json")
+    public void getChecksControllerEP(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/checks/all-active-check-definitions").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/alerts/", method = RequestMethod.GET, produces = "application/json")
     public void getAlerts(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/checks/all-active-alert-definitions").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/rest/api/v1/checks/all-active-alert-definitions", method = RequestMethod.GET, produces = "application/json")
+    public void getAlertsControllerEP(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
         if(!config.proxy_controller()) {
             writer.write("");
             return;
