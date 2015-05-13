@@ -118,7 +118,7 @@ public class Application {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/api/v1/alerts/", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/v1/checks/", method = RequestMethod.GET, produces = "application/json")
     public void getChecks(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
         if(!config.proxy_controller()) {
             writer.write("");
