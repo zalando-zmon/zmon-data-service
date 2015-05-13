@@ -118,6 +118,20 @@ public class Application {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/rest/api/v1/entities/", method = RequestMethod.GET, produces = "application/json")
+    public void getEntitiesControllerEP(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/entities/").setParameter("query",query).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/api/v1/checks/", method = RequestMethod.GET, produces = "application/json")
     public void getChecks(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
         if(!config.proxy_controller()) {
