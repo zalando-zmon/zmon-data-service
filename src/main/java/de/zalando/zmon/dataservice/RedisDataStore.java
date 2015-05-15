@@ -48,8 +48,9 @@ public class RedisDataStore  {
                     checkValue = mapper.writeValueAsString(cd.check_result);
                 }
                 catch(JsonProcessingException ex) {
-
+                    LOG.error("", ex);
                 }
+
                 p.lpush(checkTs, checkValue);
                 p.ltrim(checkTs, 0, 20);
 
@@ -57,14 +58,6 @@ public class RedisDataStore  {
                     for (AlertData alert : cd.alerts.values()) {
                         if (alert.active) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
-
-                            String captures = "{\"msg\":\"ERROR: Captures not serialized\"}";
-                            try {
-                                captures = mapper.writeValueAsString(alert.captures);
-                            } catch (JsonProcessingException ex) {
-                                LOG.error("", ex);
-                            }
-                            p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
 
                             String value = "{}";
                             ObjectNode vNode = mapper.createObjectNode();
@@ -82,6 +75,16 @@ public class RedisDataStore  {
                             p.srem("zmon:alerts:" + alert.alert_id, cd.entity_id);
                             p.del("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id);
                         }
+
+                        String captures = "{\"msg\":\"ERROR: Captures not serialized\"}";
+                        try {
+                            captures = mapper.writeValueAsString(alert.captures);
+                        } catch (JsonProcessingException ex) {
+                            LOG.error("", ex);
+                        }
+
+                        p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
+
                         p.eval("if table.getn(redis.call('smembers','zmon:alerts:" + alert.alert_id + "')) == 0 then return redis.call('srem','zmon:alerts'," + alert.alert_id + ") else return redis.call('sadd','zmon:alerts',\"+alert.alert_id+\") end");
                     }
                 }
