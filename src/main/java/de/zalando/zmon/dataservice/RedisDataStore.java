@@ -65,6 +65,9 @@ public class RedisDataStore  {
                             vNode.put("downtimes", alert.downtimes);
                             vNode.put("start_time", alert.start_time);
 
+                            vNode.put("ts", cd.check_result.get("ts"));
+                            vNode.put("td", cd.check_result.get("td"));
+
                             if(cd.exception) {
                                 vNode.put("exc", 1);
                             }
