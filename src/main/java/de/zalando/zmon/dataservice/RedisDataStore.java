@@ -64,6 +64,13 @@ public class RedisDataStore  {
                             vNode.put("captures", alert.captures);
                             vNode.put("downtimes", alert.downtimes);
                             vNode.put("start_time", alert.start_time);
+
+                            if(cd.exception) {
+                                vNode.put("exc", 1);
+                            }
+
+                            vNode.put(value, checkValue);
+
                             try {
                                 value = mapper.writeValueAsString(vNode);
                             } catch (JsonProcessingException ex) {
