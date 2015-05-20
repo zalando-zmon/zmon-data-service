@@ -67,12 +67,13 @@ public class RedisDataStore  {
 
                             vNode.put("ts", cd.check_result.get("ts"));
                             vNode.put("td", cd.check_result.get("td"));
+                            vNode.put("worker", cd.worker);
 
                             if(cd.exception) {
                                 vNode.put("exc", 1);
                             }
 
-                            vNode.putPOJO("value", cd.check_result);
+                            vNode.putPOJO("value", cd.check_result.get("value"));
 
                             try {
                                 value = mapper.writeValueAsString(vNode);

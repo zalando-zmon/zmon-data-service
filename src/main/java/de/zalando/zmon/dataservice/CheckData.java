@@ -10,6 +10,7 @@ import java.util.Map;
  */
 public class CheckData {
     public String time;
+    public String worker;
     public int check_id;
     public String entity_id;
     public double run_time;
