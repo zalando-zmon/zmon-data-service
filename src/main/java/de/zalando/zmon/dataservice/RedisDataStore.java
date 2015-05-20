@@ -59,7 +59,7 @@ public class RedisDataStore  {
                         if (alert.active) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
 
-                            String value = "{}";
+                            String value = "{\"value\": \"Serialize failed\"}";
                             ObjectNode vNode = mapper.createObjectNode();
                             vNode.put("captures", alert.captures);
                             vNode.put("downtimes", alert.downtimes);
@@ -69,13 +69,14 @@ public class RedisDataStore  {
                                 vNode.put("exc", 1);
                             }
 
-                            vNode.put(value, checkValue);
+                            vNode.putPOJO("value", cd.check_result);
 
                             try {
                                 value = mapper.writeValueAsString(vNode);
                             } catch (JsonProcessingException ex) {
 
                             }
+
                             p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
 
                         } else {
