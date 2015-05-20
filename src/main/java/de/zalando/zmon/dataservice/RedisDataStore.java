@@ -67,7 +67,7 @@ public class RedisDataStore  {
 
                             vNode.put("ts", cd.check_result.get("ts"));
                             vNode.put("td", cd.check_result.get("td"));
-                            vNode.put("worker", cd.worker);
+                            vNode.put("worker", cd.check_result.get("worker"));
 
                             if(cd.exception) {
                                 vNode.put("exc", 1);
