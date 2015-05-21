@@ -107,6 +107,24 @@ public class Application {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/api/v1/entities/{id}/", method = RequestMethod.DELETE, produces = "application/json")
+    public void deleteEntity(final Writer writer, final HttpServletResponse response, @PathVariable(value="id") String id) throws IOException, URISyntaxException {
+        if(!config.proxy_controller()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/entities/"+id+'/').build();
+
+        final Executor executor = Executor.newInstance();
+
+        String r = executor.execute(Request.Delete(uri).useExpectContinue()).returnContent().asString();
+
+        writer.write(r);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/api/v1/entities/", method = RequestMethod.GET, produces = "application/json")
     public void getEntities(final Writer writer, final HttpServletResponse response, @RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
         if(!config.proxy_controller()) {
