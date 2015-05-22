@@ -18,4 +18,7 @@ class DataServiceConfig {
 
   @BeanProperty var proxy_controller = false
   @BeanProperty var proxy_controller_url = "http://localhost:8080/api/v1/"
+
+  @BeanProperty var proxy_scheduler = false
+  @BeanProperty var proxy_scheduler_url = "http://localhost:8085/api/v1/"
 }

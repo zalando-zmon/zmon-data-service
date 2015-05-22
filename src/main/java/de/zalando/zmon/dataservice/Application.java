@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 
 /**
  * Created by jmussler on 4/21/15.
@@ -68,6 +69,35 @@ public class Application {
         valueMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/trial-runs/{dc}/", method = RequestMethod.GET, produces = "application/json")
+    public void getTrialRuns(final Writer writer, final HttpServletResponse response, @PathVariable(value = "dc") final String dcId) throws IOException, URISyntaxException {
+        if(!config.proxy_scheduler()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/trial-runs/"+dcId+"/").build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/v1/instant-evaluations/{dc}/", method = RequestMethod.GET, produces = "application/json")
+    public void getInstantEvals(final Writer writer, final HttpServletResponse response, @PathVariable(value = "dc") final String dcId) throws IOException, URISyntaxException {
+        if(!config.proxy_scheduler()) {
+            writer.write("");
+            return;
+        }
+
+        response.setContentType("application/json");
+        URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/instant-evaluations/"+dcId+"/").build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        writer.write(r);
+    }
+
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
 
@@ -101,7 +131,7 @@ public class Application {
         final Executor executor = Executor.newInstance();
 
         String r = executor.execute(Request.Put(uri).useExpectContinue().bodyString(valueMapper.writeValueAsString(node),
-                                    ContentType.APPLICATION_JSON)).returnContent().asString();
+                ContentType.APPLICATION_JSON)).returnContent().asString();
 
         writer.write(r);
     }
