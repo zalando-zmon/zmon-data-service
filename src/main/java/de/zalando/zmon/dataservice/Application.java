@@ -78,6 +78,8 @@ public class Application {
             return;
         }
 
+        LOG.info("Received trial run poll: {}", dcId);
+
         response.setContentType("application/json");
         URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/trial-runs/"+dcId+"/").build();
         final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
@@ -92,6 +94,8 @@ public class Application {
             return;
         }
 
+        LOG.info("Received instant eval poll: {}", dcId);
+
         response.setContentType("application/json");
         URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/instant-evaluations/"+dcId+"/").build();
         final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
@@ -100,8 +104,6 @@ public class Application {
 
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
-
-        LOG.info("{} {} {}", accountId, checkId, data);
 
         metrics.markRate();
         metrics.markAccount(accountId, data.length());
