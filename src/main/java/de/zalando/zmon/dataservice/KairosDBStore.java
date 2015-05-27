@@ -94,8 +94,10 @@ public class KairosDBStore {
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
-                    p.tags.put("entity", cd.entity_id);
-                    p.tags.put("key", e.getKey());
+                    p.tags.put("entity", cd.entity_id.replace("[","_").replace("]","_").replace(":","_").replace("@","_"));
+                    if(null!=e.getKey() && !"".equals(e.getKey())) {
+                        p.tags.put("key", e.getKey());
+                    }
 
                     if(null!=worker && !"".equals(worker)) {
                         p.tags.put("worker", worker);
@@ -112,12 +114,10 @@ public class KairosDBStore {
 
             final Executor executor = Executor.newInstance();
 
-            LOG.info(mapper.writeValueAsString(points));
             executor.execute(Request.Post(this.url).useExpectContinue().bodyString(mapper.writeValueAsString(points),
                     ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
-            LOG.error("", ex);
             metrics.markKairosError();
         }
     }
