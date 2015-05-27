@@ -116,6 +116,7 @@ public class KairosDBStore {
                     ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
+            LOG.error("", ex);
             metrics.markKairosError();
         }
     }
