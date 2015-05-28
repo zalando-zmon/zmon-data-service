@@ -36,8 +36,8 @@ public class DataServiceMetrics {
         this.totalError = metrics.meter("data-service.total-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
 
-        this.trialRunDataCount = metrics.meter("data-service.trialrun.data.count");
-        this.trialRunDataError = metrics.meter("data-service.trialrun.data.error");
+        this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
+        this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
     }
 
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
@@ -69,7 +69,7 @@ public class DataServiceMetrics {
     }
 
     public void markTrialRunData() {
-        trialRunDataError.mark();
+        trialRunDataCount.mark();
     }
 
     public void markRate() {
