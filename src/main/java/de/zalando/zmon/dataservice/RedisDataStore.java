@@ -43,6 +43,7 @@ public class RedisDataStore  {
                 if(null!=jedis) pool.returnResource(jedis);
             }
             catch(Exception ex) {
+                LOG.error("Failed to return Redis to pool in trial run");
             }
         }
     }
@@ -94,7 +95,7 @@ public class RedisDataStore  {
                             try {
                                 value = mapper.writeValueAsString(vNode);
                             } catch (JsonProcessingException ex) {
-
+                                LOG.error("", ex);
                             }
 
                             p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
@@ -124,6 +125,7 @@ public class RedisDataStore  {
                 if(null!=jedis) pool.returnResource(jedis);
             }
             catch(Exception ex) {
+                LOG.error("Redis return to pool failed");
             }
         }
     }
