@@ -107,9 +107,10 @@ public class Application {
         try {
             metrics.markTrialRunData();
             JsonNode node = mapper.readTree(data);
-            storage.storeTrialRun(node.get("id").textValue(), node.get("result").get("entity").get("id").textValue(), node.get("result").textValue());
+            storage.storeTrialRun(node.get("id").textValue(), node.get("result").get("entity").get("id").textValue(), mapper.writeValueAsString(node.get("result")));
         }
         catch (Exception ex) {
+            LOG.error("", ex);
             metrics.markTrialRunError();
         }
     }
