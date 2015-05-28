@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
@@ -29,13 +30,28 @@ public class RedisDataStore  {
         this.pool = pool;
     }
 
+    public void storeTrialRun(String requestId, String id, String result) {
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            String key = "zmon:trial_run:"+requestId+":results";
+            jedis.hset(key, id, result);
+            jedis.expire(key, 300);
+        }
+        finally {
+            try {
+                if(null!=jedis) pool.returnResource(jedis);
+            }
+            catch(Exception ex) {
+            }
+        }
+    }
+
     public void store(WorkerResult wr) {
         Jedis jedis = null;
-        Jedis alertStateJedis = null;
 
         try {
             jedis = pool.getResource();
-            alertStateJedis = pool.getResource();
 
             Pipeline p = jedis.pipelined();
 
@@ -106,12 +122,6 @@ public class RedisDataStore  {
         finally {
             try {
                 if(null!=jedis) pool.returnResource(jedis);
-            }
-            catch(Exception ex) {
-            }
-
-            try {
-                if(null!=alertStateJedis) pool.returnResource(alertStateJedis);
             }
             catch(Exception ex) {
             }

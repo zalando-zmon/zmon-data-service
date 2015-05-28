@@ -26,6 +26,8 @@ public class DataServiceMetrics {
     private final Meter totalRate;
     private final Meter kairosErrorMeter;
     private final Meter totalError;
+    private final Meter trialRunDataCount;
+    private final Meter trialRunDataError;
 
     @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
@@ -33,6 +35,9 @@ public class DataServiceMetrics {
         this.totalRate = metrics.meter("data-service.total-rate");
         this.totalError = metrics.meter("data-service.total-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
+
+        this.trialRunDataCount = metrics.meter("data-service.trialrun.data.count");
+        this.trialRunDataError = metrics.meter("data-service.trialrun.data.error");
     }
 
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
@@ -57,6 +62,14 @@ public class DataServiceMetrics {
             counters.put(name, m);
             return m;
         }
+    }
+
+    public void markTrialRunError() {
+        trialRunDataError.mark();
+    }
+
+    public void markTrialRunData() {
+        trialRunDataError.mark();
     }
 
     public void markRate() {

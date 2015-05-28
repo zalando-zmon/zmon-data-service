@@ -105,6 +105,14 @@ public class Application {
     @RequestMapping(value="/api/v1/data/trial-run/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putTrialRunData(@RequestBody String data) {
         LOG.info("trial run data: {}", data);
+        try {
+            metrics.markTrialRunData();
+            JsonNode node = mapper.readTree(data);
+            storage.storeTrialRun(node.get("id").textValue(), node.get("result").get("entity").get("id").textValue(), node.get("result").textValue());
+        }
+        catch (Exception ex) {
+            metrics.markTrialRunError();
+        }
     }
 
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
