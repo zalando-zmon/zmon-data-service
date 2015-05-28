@@ -104,7 +104,6 @@ public class Application {
 
     @RequestMapping(value="/api/v1/data/trial-run/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putTrialRunData(@RequestBody String data) {
-        LOG.info("trial run data: {}", data);
         try {
             metrics.markTrialRunData();
             JsonNode node = mapper.readTree(data);
