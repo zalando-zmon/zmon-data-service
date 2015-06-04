@@ -51,12 +51,12 @@ public class RedisDataStore  {
         }
     }
 
-    public void createEvents(String entity, int checkId, AlertData ad) {
+    public void createEvents(String entity, int checkId, String checkValue, AlertData ad) {
         if(ad.active && ad.changed) {
-            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, "", entity);
+            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity);
         }
         else if(!ad.active && ad.changed) {
-            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, "", entity);
+            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity);
         }
     }
 
@@ -86,7 +86,7 @@ public class RedisDataStore  {
                 if(null!=cd.alerts) {
                     for (AlertData alert : cd.alerts.values()) {
 
-                        createEvents(cd.entity_id, cd.check_id, alert);
+                        createEvents(cd.entity_id, cd.check_id, checkValue, alert);
 
                         if (alert.active) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
