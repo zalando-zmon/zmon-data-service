@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.zalando.eventlog.EventLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class RedisDataStore  {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisDataStore.class);
 
+    private static final EventLogger EVENT_LOG = EventLogger.getLogger(RedisDataStore.class);
+
     @Autowired
     public RedisDataStore(JedisPool pool) {
         this.pool = pool;
@@ -45,6 +48,15 @@ public class RedisDataStore  {
             catch(Exception ex) {
                 LOG.error("Failed to return Redis to pool in trial run");
             }
+        }
+    }
+
+    public void createEvents(String entity, int checkId, AlertData ad) {
+        if(ad.active && ad.changed) {
+            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, "", entity);
+        }
+        else if(!ad.active && ad.changed) {
+            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, "", entity);
         }
     }
 
@@ -73,6 +85,9 @@ public class RedisDataStore  {
 
                 if(null!=cd.alerts) {
                     for (AlertData alert : cd.alerts.values()) {
+
+                        createEvents(cd.entity_id, cd.check_id, alert);
+
                         if (alert.active) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
 
