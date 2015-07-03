@@ -46,6 +46,11 @@
             <version>3.1.0</version>
         </dependency>
         <dependency>
+            <groupId>org.zalando.zmon</groupId>
+            <artifactId>zmon-actuator</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.11.6</version>
