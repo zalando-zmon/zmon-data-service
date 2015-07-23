@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Created by jmussler on 4/21/15.
@@ -124,6 +125,10 @@ public class Application {
 
         try {
             WorkerResult wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
+
+            // make sure that the unique account it is actually in th aws:<accountid> string
+            // this should protect us from wrongly configured schedulers that execute the wrong checks
+            wr.results = wr.results.stream().filter(x->x.entity_id.contains(accountId)).collect(Collectors.toList());
             storage.store(wr);
             kairosStore.store(wr);
         }
