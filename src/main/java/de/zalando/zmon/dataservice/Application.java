@@ -115,6 +115,8 @@ public class Application {
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
 
+        LOG.info(data);
+
         metrics.markRate();
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
