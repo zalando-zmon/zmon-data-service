@@ -13,6 +13,7 @@ public class CheckData {
     public String worker;
     public int check_id;
     public String entity_id;
+    public Map<String,String> entity;
     public double run_time;
     public JsonNode check_result;
     public boolean exception;

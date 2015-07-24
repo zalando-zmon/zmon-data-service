@@ -79,8 +79,6 @@ public class Application {
             return;
         }
 
-        LOG.info("Received trial run poll: {}", dcId);
-
         response.setContentType("application/json");
         URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/trial-runs/"+dcId+"/").build();
         final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
@@ -94,8 +92,6 @@ public class Application {
             writer.write("");
             return;
         }
-
-        LOG.info("Received instant eval poll: {}", dcId);
 
         response.setContentType("application/json");
         URI uri = new URIBuilder().setPath(config.proxy_scheduler_url() + "/instant-evaluations/"+dcId+"/").build();

@@ -95,6 +95,15 @@ public class KairosDBStore {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
                     p.tags.put("entity", cd.entity_id.replace("[","_").replace("]","_").replace(":","_").replace("@","_"));
+
+                    if(cd.entity.containsKey("application_id")) {
+                        p.tags.put("application_id", cd.entity.get("application_id"));
+                    }
+
+                    if(cd.entity.containsKey("application_version")) {
+                        p.tags.put("application_version", cd.entity.get("application_version"));
+                    }
+
                     if(null!=e.getKey() && !"".equals(e.getKey())) {
                         p.tags.put("key", e.getKey());
                     }
