@@ -73,6 +73,16 @@ public class KairosDBStore {
 
     private static final Set<String> SKIP_FIELDS = new HashSet<>(Arrays.asList("ts","td","worker"));
 
+    public static String extractMetricName(String key) {
+        if(null==key || "".equals(key)) return null;
+        String[] keyParts = key.split("\\.");
+        String metricName = keyParts[keyParts.length-1];
+        if("".equals(metricName)) {
+            metricName = keyParts[keyParts.length-2];
+        }
+        return metricName;
+    }
+
     public void store(WorkerResult wr) {
         try {
             List<DataPoint> points = new ArrayList<>();
@@ -106,6 +116,11 @@ public class KairosDBStore {
 
                     if(null!=e.getKey() && !"".equals(e.getKey())) {
                         p.tags.put("key", e.getKey());
+                    }
+
+                    String metricName = extractMetricName(e.getKey());
+                    if(null!=metricName) {
+                        p.tags.put("metric", metricName);
                     }
 
                     if(null!=worker && !"".equals(worker)) {
