@@ -126,11 +126,13 @@ public class KairosDBStore {
                     }
 
                     // handle zmon actuator metrics and extract the http status code into its own field
+                    // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
                     if(config.actuator_metric_checks().contains(cd.check_id)) {
                         final String[] keyParts = e.getKey().split("\\.");
                         if(keyParts.length>=3) {
                             final String statusCode = keyParts[keyParts.length - 2];
                             p.tags.put("sc",statusCode);
+                            p.tags.put("sg",statusCode.substring(0,1));
                         }
                     }
 
