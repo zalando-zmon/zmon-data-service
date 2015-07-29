@@ -23,6 +23,7 @@ public class KairosDBStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
+    private final DataServiceConfig config;
 
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
@@ -68,6 +69,7 @@ public class KairosDBStore {
     @Autowired
     public KairosDBStore(DataServiceConfig config, DataServiceMetrics metrics) {
         this.metrics = metrics;
+        this.config = config;
         this.url = "http://"+config.kairosdb_host()+":"+config.kairosdb_port()+"/api/v1/datapoints";
     }
 
@@ -121,6 +123,15 @@ public class KairosDBStore {
                     String metricName = extractMetricName(e.getKey());
                     if(null!=metricName) {
                         p.tags.put("metric", metricName);
+                    }
+
+                    // handle zmon actuator metrics and extract the http status code into its own field
+                    if(config.actuator_metric_checks().contains(cd.check_id)) {
+                        final String[] keyParts = e.getKey().split("\\.");
+                        if(keyParts.length>=3) {
+                            final String statusCode = keyParts[keyParts.length - 2];
+                            p.tags.put("sc",statusCode);
+                        }
                     }
 
                     if(null!=worker && !"".equals(worker)) {
