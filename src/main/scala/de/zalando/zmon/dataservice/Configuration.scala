@@ -22,5 +22,5 @@ class DataServiceConfig {
   @BeanProperty var proxy_scheduler = false
   @BeanProperty var proxy_scheduler_url = "http://localhost:8085/api/v1/"
 
-  @BeanProperty var actuator_metric_checks : List[Integer] = List()
+  @BeanProperty var actuator_metric_checks : java.util.List[Integer] = new java.util.ArrayList[Integer]()
 }
