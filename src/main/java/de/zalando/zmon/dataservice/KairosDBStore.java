@@ -129,6 +129,12 @@ public class KairosDBStore {
                     // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
                     if(config.actuator_metric_checks().contains(cd.check_id)) {
                         final String[] keyParts = e.getKey().split("\\.");
+
+                        if(keyParts.length>=3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
+                            // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
+                            continue;
+                        }
+
                         if(keyParts.length>=3) {
                             final String statusCode = keyParts[keyParts.length - 2];
                             p.tags.put("sc",statusCode);
