@@ -10,6 +10,7 @@ public class AlertData {
     public JsonNode captures;
     public boolean exception;
     public String start_time;
+    public Double start_time_ts;
     public boolean changed;
     public boolean active;
     public JsonNode downtimes;

@@ -12,6 +12,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 
+import java.text.ParseException;
+import java.util.Date;
+
 
 /**
  * Created by jmussler on 4/22/15.
@@ -59,6 +62,24 @@ public class RedisDataStore  {
         }
     }
 
+    public static Date extractFromPyString(String s) {
+        // cut microseconds from string
+        // "start_time":"2015-08-10 15:59:02.973108+02:00"
+
+        String startTime = s.substring(0, s.indexOf(".") + 1 + 3)
+            + s.substring(s.lastIndexOf("+"));
+        LOG.info("{}", startTime);
+        Date date;
+        try {
+            date = LocalDateFormatter.get().parse(startTime);
+        } catch (ParseException e) {
+            LOG.error("Could not parse {}", startTime);
+            date = new Date();
+        }
+
+        return date;
+    }
+
     public void store(WorkerResult wr) {
         Jedis jedis = null;
 
@@ -94,7 +115,16 @@ public class RedisDataStore  {
                             ObjectNode vNode = mapper.createObjectNode();
                             vNode.put("captures", alert.captures);
                             vNode.put("downtimes", alert.downtimes);
-                            vNode.put("start_time", alert.start_time);
+
+                            Double alertStart;
+                            if(alert.start_time_ts != null) {
+                                alertStart = alert.start_time_ts;
+                            }
+                            else {
+                                alertStart = extractFromPyString(alert.start_time).getTime() / 1000.;
+                            }
+
+                            vNode.put("start_time", alertStart );
 
                             vNode.put("ts", cd.check_result.get("ts"));
                             vNode.put("td", cd.check_result.get("td"));
