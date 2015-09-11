@@ -119,6 +119,10 @@ public class Application {
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
 
+        if(config.log_check_data()) {
+            LOG.info("{}", data);
+        }
+
         try {
             WorkerResult wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
 

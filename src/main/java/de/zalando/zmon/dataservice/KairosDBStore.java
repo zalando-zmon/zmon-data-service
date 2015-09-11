@@ -135,8 +135,8 @@ public class KairosDBStore {
 
                         if(keyParts.length>=3) {
                             final String statusCode = keyParts[keyParts.length - 2];
-                            p.tags.put("sc",statusCode);
-                            p.tags.put("sg",statusCode.substring(0,1));
+                            p.tags.put("sc", statusCode);
+                            p.tags.put("sg", statusCode.substring(0,1));
                         }
                     }
 
@@ -159,6 +159,9 @@ public class KairosDBStore {
                     ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
+            if(config.log_kairosdb_errors()) {
+                LOG.error("KairosDB write failed", ex);
+            }
             metrics.markKairosError();
         }
     }
