@@ -25,6 +25,8 @@ public class KairosDBStore {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfig config;
 
+    private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id","application_version","stack_name","stack_version"));
+    private static final Set<String> SKIP_FIELDS = new HashSet<>(Arrays.asList("ts","td","worker"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if(base instanceof NumericNode) {
@@ -73,8 +75,6 @@ public class KairosDBStore {
         this.url = "http://"+config.kairosdb_host()+":"+config.kairosdb_port()+"/api/v1/datapoints";
     }
 
-    private static final Set<String> SKIP_FIELDS = new HashSet<>(Arrays.asList("ts","td","worker"));
-
     public static String extractMetricName(String key) {
         if(null==key || "".equals(key)) return null;
         String[] keyParts = key.split("\\.");
@@ -108,20 +108,10 @@ public class KairosDBStore {
                     p.name = timeSeries;
                     p.tags.put("entity", cd.entity_id.replace("[","_").replace("]","_").replace(":","_").replace("@","_"));
 
-                    if(cd.entity.containsKey("stack_name")) {
-                        p.tags.put("stack_name", cd.entity.get("stack_name"));
-                    }
-
-                    if(cd.entity.containsKey("stack_version")) {
-                        p.tags.put("stack_version", cd.entity.get("stack_version"));
-                    }
-
-                    if(cd.entity.containsKey("application_id")) {
-                        p.tags.put("application_id", cd.entity.get("application_id"));
-                    }
-
-                    if(cd.entity.containsKey("application_version")) {
-                        p.tags.put("application_version", cd.entity.get("application_version"));
+                    for(String field : TAG_FIELDS) {
+                        if(cd.entity.containsKey(field)) {
+                            p.tags.put(field, cd.entity.get(field));
+                        }
                     }
 
                     if(null!=e.getKey() && !"".equals(e.getKey())) {
