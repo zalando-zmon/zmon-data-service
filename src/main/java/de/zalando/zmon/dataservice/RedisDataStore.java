@@ -68,7 +68,6 @@ public class RedisDataStore  {
 
         String startTime = s.substring(0, s.indexOf(".") + 1 + 3)
             + s.substring(s.lastIndexOf("+"));
-        LOG.info("{}", startTime);
         Date date;
         try {
             date = LocalDateFormatter.get().parse(startTime);
