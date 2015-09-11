@@ -108,6 +108,14 @@ public class KairosDBStore {
                     p.name = timeSeries;
                     p.tags.put("entity", cd.entity_id.replace("[","_").replace("]","_").replace(":","_").replace("@","_"));
 
+                    if(cd.entity.containsKey("stack_name")) {
+                        p.tags.put("stack_name", cd.entity.get("stack_name"));
+                    }
+
+                    if(cd.entity.containsKey("stack_version")) {
+                        p.tags.put("stack_version", cd.entity.get("stack_version"));
+                    }
+
                     if(cd.entity.containsKey("application_id")) {
                         p.tags.put("application_id", cd.entity.get("application_id"));
                     }
