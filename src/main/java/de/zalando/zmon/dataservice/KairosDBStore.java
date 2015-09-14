@@ -110,7 +110,10 @@ public class KairosDBStore {
 
                     for(String field : TAG_FIELDS) {
                         if(cd.entity.containsKey(field)) {
-                            p.tags.put(field, cd.entity.get(field));
+                            String fieldValue = cd.entity.get(field);
+                            if(null != fieldValue && !"".equals(fieldValue)) {
+                                p.tags.put(field, cd.entity.get(field));
+                            }
                         }
                     }
 
@@ -119,7 +122,7 @@ public class KairosDBStore {
                     }
 
                     String metricName = extractMetricName(e.getKey());
-                    if(null!=metricName) {
+                    if(null != metricName) {
                         p.tags.put("metric", metricName.replace(":", "_").replace("@", "_"));
                     }
 
@@ -128,19 +131,19 @@ public class KairosDBStore {
                     if(config.actuator_metric_checks().contains(cd.check_id)) {
                         final String[] keyParts = e.getKey().split("\\.");
 
-                        if(keyParts.length>=3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
+                        if(keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
                             // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
                             continue;
                         }
 
-                        if(keyParts.length>=3) {
+                        if(keyParts.length >= 3) {
                             final String statusCode = keyParts[keyParts.length - 2];
                             p.tags.put("sc", statusCode);
                             p.tags.put("sg", statusCode.substring(0,1));
                         }
                     }
 
-                    if(null!=worker && !"".equals(worker)) {
+                    if(null != worker && !"".equals(worker)) {
                         p.tags.put("worker", worker);
                     }
 
