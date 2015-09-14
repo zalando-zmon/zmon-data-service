@@ -115,12 +115,12 @@ public class KairosDBStore {
                     }
 
                     if(null!=e.getKey() && !"".equals(e.getKey())) {
-                        p.tags.put("key", e.getKey());
+                        p.tags.put("key", e.getKey().replace(":", "_").replace("@", "_"));
                     }
 
                     String metricName = extractMetricName(e.getKey());
                     if(null!=metricName) {
-                        p.tags.put("metric", metricName);
+                        p.tags.put("metric", metricName.replace(":", "_").replace("@", "_"));
                     }
 
                     // handle zmon actuator metrics and extract the http status code into its own field
@@ -156,7 +156,7 @@ public class KairosDBStore {
             final Executor executor = Executor.newInstance();
 
             String query = mapper.writeValueAsString(points);
-            if(config.log_kairosdb_request()) {
+            if(config.log_kairosdb_requests()) {
                 LOG.info("KairosDB Query: {}", query);
             }
 
