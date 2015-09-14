@@ -155,7 +155,12 @@ public class KairosDBStore {
 
             final Executor executor = Executor.newInstance();
 
-            executor.execute(Request.Post(this.url).useExpectContinue().bodyString(mapper.writeValueAsString(points),
+            String query = mapper.writeValueAsString(points);
+            if(config.log_kairosdb_request()) {
+                LOG.info("KairosDB Query: {}", query);
+            }
+
+            executor.execute(Request.Post(this.url).useExpectContinue().bodyString(query,
                     ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
