@@ -133,6 +133,7 @@ public class Application {
             kairosStore.store(wr);
         }
         catch(Exception e) {
+            LOG.error("failed check={} data={}", checkId, data, e);
             metrics.markError();
         }
     }
