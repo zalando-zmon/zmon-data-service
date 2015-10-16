@@ -146,6 +146,11 @@ public class Application {
             return;
         }
 
+        if(node.has("infrastructure_account")) {
+            String id = node.get("infrastructure_account").textValue();
+            metrics.markEntity(id, 1);
+        }
+
         response.setContentType("application/json");
         URI uri = new URIBuilder().setPath(config.proxy_controller_url() + "/entities/").build();
 

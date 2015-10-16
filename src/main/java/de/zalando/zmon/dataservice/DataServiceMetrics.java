@@ -23,6 +23,8 @@ public class DataServiceMetrics {
     private final Map<String, Meter> checkMeters = new HashMap<>();
     private final Map<String, Counter> checkCounter = new HashMap<>();
 
+    private final Map<String, Meter> entityMeters = new HashMap<>();
+
     private final Meter totalRate;
     private final Meter kairosErrorMeter;
     private final Meter totalError;
@@ -85,12 +87,16 @@ public class DataServiceMetrics {
     }
 
     public void markAccount(String account, int size) {
-        getOrCreateMeter(accountMeters, "ds.acc."+account+".rate").mark(size);
-        getOrCreateCounter(accountCounter, "ds.acc."+account+".counter").inc();
+        getOrCreateMeter(accountMeters, "ds.acc."+account+".check.data-rate").mark(size);
+        getOrCreateCounter(accountCounter, "ds.acc."+account+".check.counter").inc();
     }
 
     public void markCheck(int checkId, int size) {
         getOrCreateMeter(checkMeters, "ds.check."+checkId+".rate").mark(size);
         getOrCreateCounter(checkCounter, "ds.check."+checkId+".counter").inc();
+    }
+
+    public void markEntity(String account, int size) {
+        getOrCreateMeter(entityMeters, "ds.acc."+account+".entity.rate").mark(size);
     }
 }
