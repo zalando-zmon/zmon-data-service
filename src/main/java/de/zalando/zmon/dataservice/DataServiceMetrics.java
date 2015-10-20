@@ -29,7 +29,7 @@ public class DataServiceMetrics {
     private final Meter totalRate;
     private final Meter kairosErrorMeter;
     private final Meter redisErrorMeter;
-    private final Meter totalError;
+    private final Meter parseError;
 
     private final Meter trialRunDataCount;
     private final Meter trialRunDataError;
@@ -40,7 +40,7 @@ public class DataServiceMetrics {
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
         this.totalRate = metrics.meter("data-service.total-rate");
-        this.totalError = metrics.meter("data-service.total-error");
+        this.parseError = metrics.meter("data-service.parse-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
         this.redisErrorMeter = metrics.meter("data-service.redis-errors");
         this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
@@ -84,8 +84,8 @@ public class DataServiceMetrics {
         totalRate.mark();
     }
 
-    public void markError() {
-        totalError.mark();
+    public void markParseError() {
+        parseError.mark();
     }
 
     public void markKairosError() {

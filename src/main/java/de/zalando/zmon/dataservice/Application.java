@@ -133,8 +133,8 @@ public class Application {
             wr.results = wr.results.stream().filter(x->x.entity_id.contains(accountId)).collect(Collectors.toList());
         }
         catch(Exception e) {
-            LOG.error("failed filter for check={} data={}", checkId, data, e);
-            metrics.markError();
+            LOG.error("failed parse for check={} data={}", checkId, data, e);
+            metrics.markParseError();
             return;
         }
 
