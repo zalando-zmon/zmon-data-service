@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice;
 
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -123,18 +124,38 @@ public class Application {
             LOG.info("{}", data);
         }
 
+        WorkerResult wr;
         try {
-            WorkerResult wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
+            wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
 
             // make sure that the unique account it is actually in th aws:<accountid> string
             // this should protect us from wrongly configured schedulers that execute the wrong checks
             wr.results = wr.results.stream().filter(x->x.entity_id.contains(accountId)).collect(Collectors.toList());
+        }
+        catch(Exception e) {
+            LOG.error("failed filter for check={} data={}", checkId, data, e);
+            metrics.markError();
+            return;
+        }
+
+        try {
             storage.store(wr);
+        }
+        catch(Exception e) {
+            LOG.error("failed redis write check={} data={}", checkId, data, e);
+            metrics.markRedisError();
+        }
+
+        Timer.Context c = metrics.getKairosDBTimer().time();
+        try {
             kairosStore.store(wr);
         }
         catch(Exception e) {
-            LOG.error("failed check={} data={}", checkId, data, e);
-            metrics.markError();
+            LOG.error("failed kairosdb write check={} data={}", checkId, data, e);
+            metrics.markKairosError();
+        }
+        finally {
+            c.stop();
         }
     }
 

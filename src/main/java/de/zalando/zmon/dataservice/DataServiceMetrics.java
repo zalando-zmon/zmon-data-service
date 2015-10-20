@@ -3,6 +3,7 @@ package de.zalando.zmon.dataservice;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +28,13 @@ public class DataServiceMetrics {
 
     private final Meter totalRate;
     private final Meter kairosErrorMeter;
+    private final Meter redisErrorMeter;
     private final Meter totalError;
+
     private final Meter trialRunDataCount;
     private final Meter trialRunDataError;
+
+    private final Timer kairosDBTimer;
 
     @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
@@ -37,9 +42,10 @@ public class DataServiceMetrics {
         this.totalRate = metrics.meter("data-service.total-rate");
         this.totalError = metrics.meter("data-service.total-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
-
+        this.redisErrorMeter = metrics.meter("data-service.redis-errors");
         this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
         this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
+        this.kairosDBTimer = metrics.timer("data-service.kairosdb.timer");
     }
 
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
@@ -85,6 +91,9 @@ public class DataServiceMetrics {
     public void markKairosError() {
         kairosErrorMeter.mark();
     }
+    public void markRedisError() {
+        redisErrorMeter.mark();
+    }
 
     public void markAccount(String account, int size) {
         getOrCreateMeter(accountMeters, "ds.acc."+account+".check.data-rate").mark(size);
@@ -98,5 +107,9 @@ public class DataServiceMetrics {
 
     public void markEntity(String account, int size) {
         getOrCreateMeter(entityMeters, "ds.acc."+account+".entity.rate").mark(size);
+    }
+
+    public Timer getKairosDBTimer() {
+        return kairosDBTimer;
     }
 }
