@@ -18,8 +18,8 @@ public class DataServiceMetrics {
 
     private final MetricRegistry metrics;
 
-    private final Map<String, Meter> accountMeters = new HashMap<>();
-    private final Map<String, Counter> accountCounter = new HashMap<>();
+    private final Map<String, Meter> accountRateMeters = new HashMap<>();
+    private final Map<String, Meter> accountByteMeters = new HashMap<>();
 
     private final Map<String, Meter> checkMeters = new HashMap<>();
     private final Map<String, Counter> checkCounter = new HashMap<>();
@@ -96,8 +96,8 @@ public class DataServiceMetrics {
     }
 
     public void markAccount(String account, int size) {
-        getOrCreateMeter(accountMeters, "ds.acc."+account+".check.data-rate").mark(size);
-        getOrCreateCounter(accountCounter, "ds.acc."+account+".check.counter").inc();
+        getOrCreateMeter(accountByteMeters, "ds.acc."+account+".check.data-rate").mark(size);
+        getOrCreateMeter(accountRateMeters, "ds.acc."+account+".check.check-rate").mark();
     }
 
     public void markCheck(int checkId, int size) {
