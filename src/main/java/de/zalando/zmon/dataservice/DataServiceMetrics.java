@@ -1,9 +1,6 @@
 package de.zalando.zmon.dataservice;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import com.codahale.metrics.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +10,25 @@ import java.util.Map;
 /**
  * Created by jmussler on 4/21/15.
  */
+
 @Component
 public class DataServiceMetrics {
+
+    public static class LastUpdateGauge implements Gauge<Long> {
+        private long v = System.currentTimeMillis();
+
+        public void mark() {
+            v = System.currentTimeMillis();
+        }
+
+        public LastUpdateGauge() {
+        }
+
+        @Override
+        public Long getValue() {
+            return v;
+        }
+    }
 
     private final MetricRegistry metrics;
 
@@ -25,6 +39,8 @@ public class DataServiceMetrics {
     private final Map<String, Counter> checkCounter = new HashMap<>();
 
     private final Map<String, Meter> entityMeters = new HashMap<>();
+
+    public final Map<String, LastUpdateGauge> entityLastUpdateStores = new HashMap<>();
 
     private final Meter totalRate;
     private final Meter kairosErrorMeter;
@@ -105,7 +121,23 @@ public class DataServiceMetrics {
         getOrCreateCounter(checkCounter, "ds.check."+checkId+".counter").inc();
     }
 
+    private void markEntityLastUpdate(String account) {
+        LastUpdateGauge g = entityLastUpdateStores.get(account);
+        if(null == g) {
+            synchronized(this) {
+                g = entityLastUpdateStores.get(account);
+                if(null == g) {
+                    g = new LastUpdateGauge();
+                    entityLastUpdateStores.put(account, g);
+                    metrics.register("ds.acc."+account+".entity.lastUpdate", g);
+                }
+            }
+        }
+        g.mark();
+    }
+
     public void markEntity(String account, int size) {
+        markEntityLastUpdate(account);
         getOrCreateMeter(entityMeters, "ds.acc."+account+".entity.rate").mark(size);
     }
 
