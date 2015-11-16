@@ -43,6 +43,11 @@ public class DataServiceMetrics {
     public final Map<String, LastUpdateGauge> entityLastUpdateStores = new HashMap<>();
 
     private final Meter totalRate;
+
+    public long getTotalCount() {
+        return totalRate.getCount();
+    }
+
     private final Meter kairosErrorMeter;
     private final Meter redisErrorMeter;
     private final Meter parseError;

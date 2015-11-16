@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
@@ -27,4 +28,7 @@ class DataServiceConfig {
   @BeanProperty var log_kairosdb_errors = false
 
   @BeanProperty var actuator_metric_checks : java.util.List[Integer] = new java.util.ArrayList[Integer]()
+
+  @Value("${server.port}")
+  @BeanProperty var server_port : String = null
 }
