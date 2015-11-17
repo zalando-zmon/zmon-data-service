@@ -116,7 +116,6 @@ public class Application {
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
 
-        metrics.markRate();
         metrics.markAccount(accountId, data.length());
         metrics.markCheck(checkId, data.length());
 
@@ -127,6 +126,7 @@ public class Application {
         WorkerResult wr;
         try {
             wr = valueMapper.readValue(data, new TypeReference<WorkerResult>(){});
+            metrics.markRate(wr.results.size());
 
             // make sure that the unique account it is actually in th aws:<accountid> string
             // this should protect us from wrongly configured schedulers that execute the wrong checks

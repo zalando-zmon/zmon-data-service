@@ -101,8 +101,8 @@ public class DataServiceMetrics {
         trialRunDataCount.mark();
     }
 
-    public void markRate() {
-        totalRate.mark();
+    public void markRate(long count) {
+        totalRate.mark(count);
     }
 
     public void markParseError() {
