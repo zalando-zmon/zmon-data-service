@@ -165,7 +165,9 @@ public class RedisDataStore  {
         }
         finally {
             try {
-                if(null!=jedis) pool.returnResource(jedis);
+                if(null!=jedis) {
+                    pool.returnResource(jedis);
+                }
             }
             catch(Exception ex) {
                 LOG.error("Redis return to pool failed", ex);
