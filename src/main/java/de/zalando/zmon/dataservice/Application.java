@@ -21,6 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -59,7 +60,11 @@ public class Application {
     @Bean
     @Autowired
     JedisPool getPool(DataServiceConfig config) {
-        return new JedisPool(config.redis_host(), config.redis_port());
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setMaxTotal(config.getRedis_pool_size());
+
+        return new JedisPool(poolConfig, config.redis_host(), config.redis_port());
     }
 
     private static ObjectMapper valueMapper;

@@ -13,6 +13,7 @@ import scala.beans.BeanProperty
 class DataServiceConfig {
   @BeanProperty var redis_host = "localhost"
   @BeanProperty var redis_port = 6378
+  @BeanProperty var redis_pool_size = 20
 
   @BeanProperty var kairosdb_host = "localhost"
   @BeanProperty var kairosdb_port = 8083

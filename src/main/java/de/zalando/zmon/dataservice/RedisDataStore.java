@@ -166,7 +166,7 @@ public class RedisDataStore  {
         finally {
             try {
                 if(null!=jedis) {
-                    pool.returnResource(jedis);
+                    jedis.close();
                 }
             }
             catch(Exception ex) {
