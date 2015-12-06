@@ -7,9 +7,9 @@ class DataSeries {
 
     private static int N = 120;
 
-    protected int statusCode;
-    protected long[] ts = new long[N];
-    protected double[][] points = new double[N][2];
+    protected final int statusCode;
+    protected final long[] ts = new long[N];
+    protected final double[][] points = new double[N][2];
 
     public DataSeries(int code) {
         statusCode = code;

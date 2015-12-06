@@ -49,7 +49,7 @@ class ApplicationVersion {
 
         for(ServiceInstance i : instances) {
             for(Endpoint e : i.endpoints) {
-                eps.add(e.path);
+                eps.add(e.path + "|" + e.method);
                 for(DataSeries d : e.series) {
                     codes.add(d.statusCode);
                 }
@@ -65,7 +65,7 @@ class ApplicationVersion {
                 List<DataSeries> series = new ArrayList<>();
                 for(ServiceInstance i : instances) {
                     for(Endpoint e : i.endpoints) {
-                        if(!e.path.equals(ep)) {
+                        if(!ep.equals(e.path+"|"+e.method)) {
                             continue;
                         }
                         for(DataSeries d : e.series) {
@@ -89,7 +89,7 @@ class ApplicationVersion {
                     boolean partial = false;
 
                     for (DataSeries s : series) {
-                        // assume that the TS is written and thus up to date, otherwise datapoint is invalid
+                        // assume that the TS is written and thus up to date, otherwise data point is invalid
                         if(s.ts[i]>(maxTs - (N*60000))) {
                             rate += s.points[i][0];
                             latency += s.points[i][1];
@@ -114,7 +114,7 @@ class ApplicationVersion {
     }
 
     /* for now assume no concurrency issue on instance level here, as freq too low and data arrives per instance */
-    public void addDataPoint(String id, String path, int status, long ts, double rate, double latency) {
+    public void addDataPoint(String id, String path, String method, int status, long ts, double rate, double latency) {
         ServiceInstance instance = null;
         for(ServiceInstance si : instances) {
             if(si.instanceId.equals(id)) {
@@ -128,15 +128,14 @@ class ApplicationVersion {
             }
         }
 
-
         Endpoint ep = null;
         for(Endpoint e : instance.endpoints) {
-            if(e.path.equals(path)) {
+            if(e.path.equals(path) && e.method.equals(method)) {
                 ep = e;
             }
         }
         if(null==ep) {
-            ep = new Endpoint(path);
+            ep = new Endpoint(path, method);
             instance.endpoints.add(ep);
         }
 
