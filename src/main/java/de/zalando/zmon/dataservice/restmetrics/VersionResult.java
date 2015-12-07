@@ -7,5 +7,5 @@ import java.util.Map;
  * Created by jmussler on 12/7/15.
  */
 public class VersionResult {
-    Map<String, EpResult> endpoints = new HashMap<>();
+    public Map<String, EpResult> endpoints = new HashMap<>();
 }

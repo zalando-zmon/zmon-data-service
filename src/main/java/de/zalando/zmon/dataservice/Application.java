@@ -122,6 +122,7 @@ public class Application {
         }
     }
 
+    @ResponseBody
     @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
     public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="False") boolean redirect) {
         if(!redirect) {
