@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import de.zalando.zmon.dataservice.restmetrics.AppMetricsService;
+import de.zalando.zmon.dataservice.restmetrics.ApplicationVersion;
+import de.zalando.zmon.dataservice.restmetrics.VersionResult;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
@@ -56,6 +59,9 @@ public class Application {
 
     @Autowired
     KairosDBStore kairosStore;
+
+    @Autowired
+    AppMetricsService applicationRestMetrics;
 
     @Bean
     @Autowired
@@ -116,6 +122,17 @@ public class Application {
         }
     }
 
+    @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
+    public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="False") boolean redirect) {
+        if(!redirect) {
+            return applicationRestMetrics.getAggrMetrics(applicationId, applicationVersion, System.currentTimeMillis());
+        }
+        else {
+            // resolve list of servers for application ID
+            return null;
+        }
+    }
+
     @RequestMapping(value="/api/v1/data/{account}/{checkid}/", method= RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putData(@PathVariable(value="checkid") int checkId, @PathVariable(value="account") String accountId, @RequestBody String data) {
 
@@ -147,6 +164,20 @@ public class Application {
         catch(Exception e) {
             LOG.error("failed redis write check={} data={}", checkId, data, e);
             metrics.markRedisError();
+        }
+
+        try {
+            for(CheckData d : wr.results) {
+                if(config.actuator_metric_checks().contains(d.check_id)) {
+                    Double ts = d.check_result.get("ts").asDouble();
+                    ts = ts * 1000.;
+                    Long tsL = ts.longValue();
+                    applicationRestMetrics.pushMetric(d.entity.get("application_id"), d.entity.get("application_version"),d.entity_id, tsL, d.check_result.get("value"));
+                }
+            }
+        }
+        catch(Exception ex) {
+            LOG.error("Failed to write to REST metrics data={}", data, ex);
         }
 
         Timer.Context c = metrics.getKairosDBTimer().time();

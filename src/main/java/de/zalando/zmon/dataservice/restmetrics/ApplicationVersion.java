@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Created by jmussler on 05.12.15.
  */
-class ApplicationVersion {
+public class ApplicationVersion {
 
     protected String applicationId;
     protected String applicationVersion;
@@ -13,33 +13,6 @@ class ApplicationVersion {
     protected List<ServiceInstance> instances = new ArrayList<>(4);
 
     private static int N = 120;
-
-    public static class VersionResult {
-        Map<String, EpResult> endpoints = new HashMap<>();
-    }
-
-    public static class EpResult {
-        public Map<Integer, List<EpPoint>> points = new HashMap<>();
-    }
-
-    public static class EpPoint {
-
-        public EpPoint(long t, double r, double l, double rMax, double lMax, boolean partial) {
-            ts = t;
-            rate = r;
-            latency = l;
-            this.partial = partial;
-            this.maxRate = rMax;
-            this.maxLatency= lMax;
-        }
-
-        public boolean partial;
-        public double rate;
-        public double maxRate;
-        public double latency;
-        public double maxLatency;
-        public long ts;
-    }
 
     public VersionResult getData(long maxTs) {
         VersionResult result = new VersionResult();
@@ -104,7 +77,7 @@ class ApplicationVersion {
                             partial = true;
                         }
                     }
-                    points.add(new EpPoint(tsMax, rate, latency/n, maxRate, maxLatency, partial));
+                    points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, partial));
                 }
                 epr.points.put(code, points);
             }
