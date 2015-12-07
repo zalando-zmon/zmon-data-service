@@ -41,12 +41,12 @@ public class AppMetricsService {
                 Map.Entry<String, JsonNode> endpoint = endpoints.next();
                 String path = endpoint.getKey();
 
-                Iterator<Map.Entry<String, JsonNode>> methods = ((ObjectNode) endpoint).fields();
+                Iterator<Map.Entry<String, JsonNode>> methods = ((ObjectNode) endpoint.getValue()).fields();
                 while(methods.hasNext()) {
                     Map.Entry<String, JsonNode> methodEntry = methods.next();
                     String method = methodEntry.getKey();
 
-                    Iterator<Map.Entry<String, JsonNode>> statusCodes = ((ObjectNode) methodEntry).fields();
+                    Iterator<Map.Entry<String, JsonNode>> statusCodes = ((ObjectNode) methodEntry.getValue()).fields();
                     while(statusCodes.hasNext()) {
                         Map.Entry<String, JsonNode> metricEntry = statusCodes.next();
                         if(metricEntry.getValue().has("99th") && metricEntry.getValue().has("mRate")) {
