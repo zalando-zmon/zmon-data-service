@@ -3,6 +3,8 @@ package de.zalando.zmon.dataservice.restmetrics;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ import java.util.Map;
 
 @Service
 public class AppMetricsService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AppMetricsService.class);
 
     private List<String> serviceHosts;
 
@@ -71,7 +75,8 @@ public class AppMetricsService {
             synchronized (this) {
                 v = appVersions.get(applicationId);
                 if(null==v) {
-                    v = new ApplicationVersion();
+                    LOG.info("Adding application version {} {}", applicationId, applicationVersion);
+                    v = new ApplicationVersion(applicationId, applicationVersion);
                     appVersions.put(applicationId, v);
                 }
             }

@@ -14,6 +14,11 @@ public class ApplicationVersion {
 
     private static int N = 120;
 
+    public ApplicationVersion(String applicationId, String applicationVersion) {
+        this.applicationId = applicationId;
+        this.applicationVersion = applicationVersion;
+    }
+
     public VersionResult getData(long maxTs) {
         VersionResult result = new VersionResult();
 

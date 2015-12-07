@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
  */
 class TestRestMetricStore extends FlatSpec with Matchers {
   "Store data" should "work" in {
-    val app = new ApplicationVersion();
+    val app = new ApplicationVersion("application","1");
     val start = System.currentTimeMillis()
 
     val N = 360 // time points

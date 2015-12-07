@@ -169,6 +169,9 @@ public class Application {
         try {
             for(CheckData d : wr.results) {
                 if(config.actuator_metric_checks().contains(d.check_id)) {
+                    if(d.exception) {
+                        continue;
+                    }
                     Double ts = d.check_result.get("ts").asDouble();
                     ts = ts * 1000.;
                     Long tsL = ts.longValue();
