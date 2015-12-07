@@ -66,6 +66,9 @@ public class AppMetricsService {
     }
 
     public VersionResult getAggrMetrics(String applicationId, String applicationVersion, long maxTs) {
+        if(!appVersions.containsKey(applicationId)) {
+            return null;
+        }
         return appVersions.get(applicationId).getData(maxTs);
     }
 
