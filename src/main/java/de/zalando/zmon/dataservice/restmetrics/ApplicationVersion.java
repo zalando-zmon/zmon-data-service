@@ -20,6 +20,7 @@ public class ApplicationVersion {
     }
 
     public VersionResult getData(long maxTs) {
+        maxTs = (maxTs - (N*60000));
         VersionResult result = new VersionResult();
 
         Set<String> eps = new HashSet<>();
@@ -68,7 +69,7 @@ public class ApplicationVersion {
 
                     for (DataSeries s : series) {
                         // assume that the TS is written and thus up to date, otherwise data point is invalid
-                        if(s.ts[i]>(maxTs - (N*60000))) {
+                        if(s.ts[i]>maxTs) {
                             rate += s.points[i][0];
                             latency += s.points[i][1];
                             tsMax = Math.max(tsMax, s.ts[i]);
@@ -82,7 +83,9 @@ public class ApplicationVersion {
                             partial = true;
                         }
                     }
-                    points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, partial));
+                    if(n>0) {
+                        points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, partial));
+                    }
                 }
                 epr.points.put(code, points);
             }

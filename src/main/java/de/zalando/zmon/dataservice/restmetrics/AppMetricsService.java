@@ -58,6 +58,10 @@ public class AppMetricsService {
         LOG.info("Host names {}", serviceHosts);
     }
 
+    public Collection<String> getRegisteredAppVersions() {
+        return appVersions.keySet();
+    }
+
     public void storeData(List<CheckData> data) {
         for(CheckData d: data) {
             Double ts = d.check_result.get("ts").asDouble();

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -129,6 +130,13 @@ public class Application {
         List<CheckData> results = mapper.readValue(data, new TypeReference<List<CheckData>>(){});
         LOG.info("Received count={} data points", results.size());
         applicationRestMetrics.storeData(results);
+    }
+
+    @ResponseBody
+    @RequestMapping(value="/api/v1/rest-api-metrics/applications", method=RequestMethod.GET)
+    public Collection<String> getRegisteredApplications(@RequestParam(value="global", defaultValue="false") boolean global) throws IOException {
+        // assume for now, that we only receive the right application data
+        return applicationRestMetrics.getRegisteredAppVersions();
     }
 
     @ResponseBody
