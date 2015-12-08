@@ -136,7 +136,7 @@ public class Application {
 
     @ResponseBody
     @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
-    public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="False") boolean redirect) {
+    public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="true") boolean redirect) {
         if(!redirect) {
             return applicationRestMetrics.getAggrMetrics(applicationId, applicationVersion, System.currentTimeMillis());
         }
@@ -188,7 +188,12 @@ public class Application {
 
             int i = 0;
             for(String host: config.getRest_metric_hosts()) {
-                LOG.info("metric partition host={} size={}", host, partitions.get(i).size());
+                if(partitions.containsKey(i)) {
+                    LOG.info("metric partition host={} size={}", host, partitions.get(i).size());
+                }
+                else {
+                    LOG.info("metric partition host={} size={}", host, 0);
+                }
                 ++i;
             }
             applicationRestMetrics.receiveData(partitions);
