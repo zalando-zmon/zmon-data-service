@@ -149,7 +149,7 @@ public class Application {
 
             Executor executor = Executor.newInstance();
             URIBuilder builder = new URIBuilder();
-            URI uri = builder.setHost(targetHost).setPath("/api/v1/rest-api-metrics/").setParameter("redirect", "false")
+            URI uri = builder.setHost("http://"+targetHost).setPath("/api/v1/rest-api-metrics/").setParameter("redirect", "false")
                                                                                       .setParameter("application_id", applicationId)
                                                                                       .setParameter("application_version", applicationVersion).build();
 
@@ -206,7 +206,7 @@ public class Application {
                 }
                 ++i;
             }
-            
+
             applicationRestMetrics.receiveData(partitions);
         }
         catch(Exception ex) {
