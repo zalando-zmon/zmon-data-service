@@ -29,7 +29,8 @@ public class AppMetricsService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppMetricsService.class);
 
-    private List<String> serviceHosts;
+    private final List<String> serviceHosts;
+    private final int serverPort;
 
     private HashMap<String, ApplicationVersion> appVersions = new HashMap<>();
 
@@ -44,6 +45,8 @@ public class AppMetricsService {
     public AppMetricsService(DataServiceConfig config) throws IOException {
         serviceHosts = config.getRest_metric_hosts();
         localHostName = InetAddress.getLocalHost().getHostName();
+        serverPort = Integer.parseInt(config.server_port());
+
         for(int i = 0; i < serviceHosts.size(); ++i) {
             if(serviceHosts.get(i).equals(localHostName)) {
                 localPartition = i;
@@ -71,11 +74,12 @@ public class AppMetricsService {
         }
 
         Async async = Async.newInstance().use(asyncExecutorPool);
-        for(int i = 0; i<serviceHosts.size(); ++i) {
+        for(int i = 0; i < serviceHosts.size(); ++i) {
             if(localPartition==i) continue;
             if(!data.containsKey(i) || data.get(i).size()<=0) continue;
+
             try {
-                Request r = Request.Post("http://"+serviceHosts.get(i)+"/api/v1/rest-api-metrics/").bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
+                Request r = Request.Post("http://"+serviceHosts.get(i)+":"+ serverPort +"/api/v1/rest-api-metrics/").bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
                 async.execute(r);
             }
             catch(IOException ex) {
