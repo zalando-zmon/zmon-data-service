@@ -29,8 +29,11 @@ import redis.clients.jedis.JedisPoolConfig;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -123,6 +126,15 @@ public class Application {
     }
 
     @ResponseBody
+    @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.POST)
+    public void putRestAPIMetrics(@RequestBody String data) throws IOException {
+        // assume for now, that we only receive the right application data
+        List<CheckData> results = mapper.readValue(data, new TypeReference<List<CheckData>>(){});
+        applicationRestMetrics.storeData(results);
+
+    }
+
+    @ResponseBody
     @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
     public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="False") boolean redirect) {
         if(!redirect) {
@@ -168,17 +180,18 @@ public class Application {
         }
 
         try {
-            for(CheckData d : wr.results) {
-                if(config.actuator_metric_checks().contains(d.check_id)) {
-                    if(d.exception) {
-                        continue;
-                    }
-                    Double ts = d.check_result.get("ts").asDouble();
-                    ts = ts * 1000.;
-                    Long tsL = ts.longValue();
-                    applicationRestMetrics.pushMetric(d.entity.get("application_id"), d.entity.get("application_version"),d.entity_id, tsL, d.check_result.get("value"));
-                }
+            Map<Integer, List<CheckData>> partitions =
+                    wr.results.stream()
+                              .filter(x -> config.actuator_metric_checks().contains(x.check_id))
+                              .filter(x -> !x.exception)
+                              .collect(Collectors.groupingBy(x -> x.entity.get("application_id").hashCode() % config.getRest_metric_hosts().size()));
+
+            int i = 0;
+            for(String host: config.getRest_metric_hosts()) {
+                LOG.info("metric partition host={} size={}", host, partitions.get(i).size());
+                ++i;
             }
+            applicationRestMetrics.receiveData(partitions);
         }
         catch(Exception ex) {
             LOG.error("Failed to write to REST metrics data={}", data, ex);
