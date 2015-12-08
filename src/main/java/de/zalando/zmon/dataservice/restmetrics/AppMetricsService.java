@@ -50,6 +50,9 @@ public class AppMetricsService {
                 break;
             }
         }
+
+        LOG.info("Setting local partition to {}", localPartition);
+        LOG.info("Host names {}", serviceHosts);
     }
 
     public void storeData(List<CheckData> data) {
@@ -63,7 +66,9 @@ public class AppMetricsService {
 
     public void receiveData(Map<Integer, List<CheckData>> data) {
         // store local data
-        storeData(data.get(localPartition));
+        if(data.containsKey(localPartition)) {
+            storeData(data.get(localPartition));
+        }
 
         Async async = Async.newInstance().use(asyncExecutorPool);
         for(int i = 0; i<serviceHosts.size(); ++i) {
