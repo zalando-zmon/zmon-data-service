@@ -143,8 +143,9 @@ public class Application {
             }
         }
         else {
-            int hostId = applicationId.hashCode()%config.getRest_metric_hosts().size();
+            int hostId = applicationId.hashCode() % config.getRest_metric_hosts().size();
             String targetHost = config.getRest_metric_hosts().get(hostId);
+            LOG.info("Redirecting metrics request to {} = {}/{}", applicationId, hostId, targetHost);
 
             Executor executor = Executor.newInstance();
             URIBuilder builder = new URIBuilder();
@@ -201,10 +202,11 @@ public class Application {
             int i = 0;
             for(String host: config.getRest_metric_hosts()) {
                 if(partitions.containsKey(i)) {
-                    LOG.info("metric partition host={} size={}", host, partitions.get(i).size());
+                    LOG.info("metrics partition host={} size={}", host, partitions.get(i).size());
                 }
                 ++i;
             }
+            
             applicationRestMetrics.receiveData(partitions);
         }
         catch(Exception ex) {
