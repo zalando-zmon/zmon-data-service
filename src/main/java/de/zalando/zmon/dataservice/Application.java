@@ -127,6 +127,7 @@ public class Application {
     public void putRestAPIMetrics(@RequestBody String data) throws IOException {
         // assume for now, that we only receive the right application data
         List<CheckData> results = mapper.readValue(data, new TypeReference<List<CheckData>>(){});
+        LOG.info("Received count={} data points", results.size());
         applicationRestMetrics.storeData(results);
     }
 
