@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.zalando.zmon.dataservice.restmetrics.AppMetricsService;
-import de.zalando.zmon.dataservice.restmetrics.ApplicationVersion;
-import de.zalando.zmon.dataservice.restmetrics.VersionResult;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
@@ -29,7 +27,6 @@ import redis.clients.jedis.JedisPoolConfig;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -131,18 +128,32 @@ public class Application {
         // assume for now, that we only receive the right application data
         List<CheckData> results = mapper.readValue(data, new TypeReference<List<CheckData>>(){});
         applicationRestMetrics.storeData(results);
-
     }
 
     @ResponseBody
     @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
-    public VersionResult getRestApiMetrics(@RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="true") boolean redirect) {
+    public void getRestApiMetrics(Writer writer, HttpServletResponse response, @RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="true") boolean redirect) throws URISyntaxException, IOException {
         if(!redirect) {
-            return applicationRestMetrics.getAggrMetrics(applicationId, applicationVersion, System.currentTimeMillis());
+            try {
+                response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+                writer.write(mapper.writeValueAsString(applicationRestMetrics.getAggrMetrics(applicationId, applicationVersion, System.currentTimeMillis())));
+            } catch (IOException ex) {
+                LOG.error("Failed to write metric result to output stream", ex);
+            }
         }
         else {
-            // resolve list of servers for application ID
-            return null;
+            int hostId = applicationId.hashCode()%config.getRest_metric_hosts().size();
+            String targetHost = config.getRest_metric_hosts().get(hostId);
+
+            Executor executor = Executor.newInstance();
+            URIBuilder builder = new URIBuilder();
+            URI uri = builder.setHost(targetHost).setPath("/api/v1/rest-api-metrics/").setParameter("redirect", "false")
+                                                                                      .setParameter("application_id", applicationId)
+                                                                                      .setParameter("application_version", applicationVersion).build();
+
+            String body = executor.execute(Request.Get(uri)).returnContent().asString();
+            response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+            writer.write(body);
         }
     }
 
@@ -190,9 +201,6 @@ public class Application {
             for(String host: config.getRest_metric_hosts()) {
                 if(partitions.containsKey(i)) {
                     LOG.info("metric partition host={} size={}", host, partitions.get(i).size());
-                }
-                else {
-                    LOG.info("metric partition host={} size={}", host, 0);
                 }
                 ++i;
             }

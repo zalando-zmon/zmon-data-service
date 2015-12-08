@@ -73,7 +73,7 @@ public class AppMetricsService {
         Async async = Async.newInstance().use(asyncExecutorPool);
         for(int i = 0; i<serviceHosts.size(); ++i) {
             if(localPartition==i) continue;
-            if(!data.containsKey(i)) continue;
+            if(!data.containsKey(i) || data.get(i).size()<=0) continue;
             try {
                 Request r = Request.Post(serviceHosts.get(i)+"/api/v1/rest-api-metrics/").bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
                 async.execute(r);
