@@ -143,7 +143,7 @@ public class Application {
             }
         }
         else {
-            int hostId = applicationId.hashCode() % config.getRest_metric_hosts().size();
+            int hostId = Math.abs(applicationId.hashCode() % config.getRest_metric_hosts().size());
             String targetHost = config.getRest_metric_hosts().get(hostId);
             LOG.info("Redirecting metrics request to {} = {}/{}", applicationId, hostId, targetHost);
 
@@ -197,16 +197,9 @@ public class Application {
                     wr.results.stream()
                               .filter(x -> config.actuator_metric_checks().contains(x.check_id))
                               .filter(x -> !x.exception)
-                              .collect(Collectors.groupingBy(x -> x.entity.get("application_id").hashCode() % config.getRest_metric_hosts().size()));
+                              .collect(Collectors.groupingBy(x -> Math.abs(x.entity.get("application_id").hashCode() % config.getRest_metric_hosts().size())));
 
             int i = 0;
-            for(String host: config.getRest_metric_hosts()) {
-                if(partitions.containsKey(i)) {
-                    LOG.info("metrics partition host={} size={}", host, partitions.get(i).size());
-                }
-                ++i;
-            }
-
             applicationRestMetrics.receiveData(partitions);
         }
         catch(Exception ex) {
