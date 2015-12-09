@@ -88,7 +88,7 @@ public class ApplicationVersion {
                             tsMax = Math.max(tsMax, s.ts[i]);
 
                             maxLatency = Math.max(s.points[i][1], maxLatency);
-                            minLatency = Math.max(s.points[i][1], minLatency);
+                            minLatency = Math.min(s.points[i][1], minLatency);
                             maxRate = Math.max(s.points[i][0], maxRate);
 
                             n++;
