@@ -5,13 +5,14 @@ package de.zalando.zmon.dataservice.restmetrics;
  */
 public class EpPoint {
 
-    public EpPoint(long t, double r, double l, double rMax, double lMax, boolean partial) {
+    public EpPoint(long t, double r, double l, double rMax, double lMax, double lMin, boolean partial) {
         ts = t;
         rate = r;
         latency = l;
         this.partial = partial;
         this.maxRate = rMax;
         this.maxLatency= lMax;
+        this.minLatency = lMin;
     }
 
     public boolean partial;
@@ -19,5 +20,6 @@ public class EpPoint {
     public double maxRate;
     public double latency;
     public double maxLatency;
+    public double minLatency;
     public long ts;
 }

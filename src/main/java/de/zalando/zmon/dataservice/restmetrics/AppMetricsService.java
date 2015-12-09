@@ -190,7 +190,14 @@ public class AppMetricsService {
                 r = q.addResult(applicationId, er.path+"."+er.method+"."+p.getKey()+".min", "min", p.getKey().toString(), p.getKey().toString().substring(0,1));
                 for(EpPoint dp : p.getValue()) {
                     ArrayNode a = mapper.createArrayNode();
-                    a.add(dp.ts).add(dp.latency);
+                    a.add(dp.ts).add(dp.minLatency);
+                    ((ArrayNode)r.get("values")).add(a);
+                }
+
+                r = q.addResult(applicationId, er.path+"."+er.method+"."+p.getKey()+".max", "max", p.getKey().toString(), p.getKey().toString().substring(0,1));
+                for(EpPoint dp : p.getValue()) {
+                    ArrayNode a = mapper.createArrayNode();
+                    a.add(dp.ts).add(dp.maxLatency);
                     ((ArrayNode)r.get("values")).add(a);
                 }
             }

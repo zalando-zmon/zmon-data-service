@@ -74,6 +74,7 @@ public class ApplicationVersion {
                     double rate = 0;
                     double latency = 0;
                     double maxLatency = 0;
+                    double minLatency = Double.MAX_VALUE;
                     double maxRate = 0;
                     long tsMax = 0;
                     int n = 0;
@@ -87,6 +88,7 @@ public class ApplicationVersion {
                             tsMax = Math.max(tsMax, s.ts[i]);
 
                             maxLatency = Math.max(s.points[i][1], maxLatency);
+                            minLatency = Math.max(s.points[i][1], minLatency);
                             maxRate = Math.max(s.points[i][0], maxRate);
 
                             n++;
@@ -96,7 +98,7 @@ public class ApplicationVersion {
                         }
                     }
                     if(n>0) {
-                        points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, partial));
+                        points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, minLatency, partial));
                     }
                 }
                 epr.points.put(code, points);
