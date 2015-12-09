@@ -101,6 +101,9 @@ public class ApplicationVersion {
                         points.add(new EpPoint(tsMax, rate, latency / n, maxRate, maxLatency, minLatency, partial));
                     }
                 }
+
+                // sort for now, ideally we only need to change above loop
+                Collections.sort(points, (EpPoint a, EpPoint b) -> Long.compare(a.ts, b.ts));
                 epr.points.put(code, points);
             }
         }
