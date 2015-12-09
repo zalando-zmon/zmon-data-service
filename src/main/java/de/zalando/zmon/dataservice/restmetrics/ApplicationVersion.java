@@ -19,6 +19,18 @@ public class ApplicationVersion {
         this.applicationVersion = applicationVersion;
     }
 
+    public Collection<String> getTrackedEndpoints() {
+        Set<String> endpoints = new HashSet<>();
+
+        for(ServiceInstance i : instances) {
+            for(Endpoint ep : i.endpoints) {
+                endpoints.add(ep.path + "|" + ep.method);
+            }
+        }
+
+        return endpoints;
+    }
+
     public VersionResult getData(long maxTs) {
         maxTs = (maxTs - (N*60000));
         VersionResult result = new VersionResult();

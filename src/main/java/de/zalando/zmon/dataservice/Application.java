@@ -128,7 +128,6 @@ public class Application {
     public void putRestAPIMetrics(@RequestBody String data) throws IOException {
         // assume for now, that we only receive the right application data
         List<CheckData> results = mapper.readValue(data, new TypeReference<List<CheckData>>(){});
-        LOG.info("Received count={} data points", results.size());
         applicationRestMetrics.storeData(results);
     }
 
@@ -137,6 +136,13 @@ public class Application {
     public Collection<String> getRegisteredApplications(@RequestParam(value="global", defaultValue="false") boolean global) throws IOException {
         // assume for now, that we only receive the right application data
         return applicationRestMetrics.getRegisteredAppVersions();
+    }
+
+    @ResponseBody
+    @RequestMapping(value="/api/v1/rest-api-metrics/tracked-endpoints", method=RequestMethod.GET)
+    public Collection<String> getRegisteredApplications(@RequestParam(value="application_id") String applicationId, @RequestParam(value="global", defaultValue="false") boolean global) throws IOException {
+        // assume for now, that we only receive the right application data
+        return applicationRestMetrics.getRegisteredEndpoints(applicationId);
     }
 
     @ResponseBody

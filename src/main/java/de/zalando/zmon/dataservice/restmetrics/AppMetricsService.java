@@ -62,6 +62,12 @@ public class AppMetricsService {
         return appVersions.keySet();
     }
 
+    public Collection<String> getRegisteredEndpoints(String applicationId) {
+        if(!appVersions.containsKey(applicationId)) return null;
+        ApplicationVersion v = appVersions.get(applicationId);
+        return v.getTrackedEndpoints();
+    }
+
     public void storeData(List<CheckData> data) {
         for(CheckData d: data) {
             Double ts = d.check_result.get("ts").asDouble();
