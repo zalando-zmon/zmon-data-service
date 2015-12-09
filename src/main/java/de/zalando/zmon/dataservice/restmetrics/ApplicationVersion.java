@@ -48,7 +48,7 @@ public class ApplicationVersion {
         }
 
         for(String ep : eps) {
-            EpResult epr = new EpResult();
+            EpResult epr = new EpResult(ep.split("\\|")[0], ep.split("\\|")[1]);
             result.endpoints.put(ep, epr);
 
             for(int code : codes) {

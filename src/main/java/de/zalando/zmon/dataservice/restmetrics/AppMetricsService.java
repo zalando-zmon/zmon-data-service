@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.restmetrics;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.CheckData;
 import de.zalando.zmon.dataservice.DataServiceConfig;
@@ -122,6 +123,80 @@ public class AppMetricsService {
             }
         }
     }
+
+    public static class KairosDBResultWrapper  {
+        public final List<Object> queries = new ArrayList<>(1);
+
+        public KairosDBResultWrapper() {
+
+        }
+    }
+
+    public static class KairosDBResultQuery {
+        public final List<ObjectNode> results = new ArrayList<>();
+
+        public KairosDBResultQuery() {
+        }
+
+        public ObjectNode addResult(String applicationId, String key, String metric, String sc, String sg) {
+            ObjectNode o = mapper.createObjectNode();
+            results.add(o);
+
+            ObjectNode tags = o.putObject("tags");
+            tags.putArray("key").add(key);
+            tags.putArray("metric").add(metric);
+            tags.putArray("application_id").add(applicationId);
+            tags.putArray("sg").add(sg);
+            tags.putArray("sc").add(sc);
+
+            o.putArray("values");
+
+            return o;
+        }
+    }
+
+    public static KairosDBResultWrapper convertToKairosDB(String applicationId, VersionResult data) {
+        KairosDBResultWrapper w = new KairosDBResultWrapper();
+        KairosDBResultQuery q = new KairosDBResultQuery();
+        w.queries.add(q);
+
+        for(EpResult er : data.endpoints.values()) {
+            for(Map.Entry<Integer, List<EpPoint>> p : er.points.entrySet()) {
+                ObjectNode r = q.addResult(applicationId, er.path+"."+er.method+"."+p.getKey()+".mRate", "mRate", p.getKey().toString(), p.getKey().toString().substring(0,1));
+                for(EpPoint dp : p.getValue()) {
+                    ArrayNode a = mapper.createArrayNode();
+                    a.add(dp.ts).add(dp.rate);
+                    ((ArrayNode)r.get("values")).add(a);
+                }
+
+                r = q.addResult(applicationId, er.path+"."+er.method+"."+p.getKey()+".median", "median", p.getKey().toString(), p.getKey().toString().substring(0,1));
+                for(EpPoint dp : p.getValue()) {
+                    ArrayNode a = mapper.createArrayNode();
+                    a.add(dp.ts).add(dp.latency);
+                    ((ArrayNode)r.get("values")).add(a);
+                }
+
+                r = q.addResult(applicationId, er.path+"."+er.method+"."+p.getKey()+".99th", "99th", p.getKey().toString(), p.getKey().toString().substring(0,1));
+                for(EpPoint dp : p.getValue()) {
+                    ArrayNode a = mapper.createArrayNode();
+                    a.add(dp.ts).add(dp.latency);
+                    ((ArrayNode)r.get("values")).add(a);
+                }
+            }
+        }
+
+        return w;
+    }
+
+    public KairosDBResultWrapper getKairosResult(String applicationId, String applicationVersion, long maxTs) {
+        if(!appVersions.containsKey(applicationId)) {
+            return null;
+        }
+
+        VersionResult data = appVersions.get(applicationId).getData(maxTs);
+        return convertToKairosDB(applicationId, data);
+    }
+
 
     public VersionResult getAggrMetrics(String applicationId, String applicationVersion, long maxTs) {
         if(!appVersions.containsKey(applicationId)) {

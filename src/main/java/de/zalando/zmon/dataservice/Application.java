@@ -146,6 +146,34 @@ public class Application {
     }
 
     @ResponseBody
+    @RequestMapping(value="/api/v1/rest-api-metrics/kairosdb-format", method=RequestMethod.GET)
+    public void getMetricsInKairosDBFormat(Writer writer, HttpServletResponse response, @RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version", defaultValue="1") String applicationVersion, @RequestParam(value="redirect", defaultValue="true") boolean redirect) throws URISyntaxException, IOException {
+        if(!redirect) {
+            try {
+                response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+                writer.write(mapper.writeValueAsString(applicationRestMetrics.getKairosResult(applicationId, applicationVersion, System.currentTimeMillis())));
+            } catch (IOException ex) {
+                LOG.error("Failed to write metric result to output stream", ex);
+            }
+        }
+        else {
+            int hostId = Math.abs(applicationId.hashCode() % config.getRest_metric_hosts().size());
+            String targetHost = config.getRest_metric_hosts().get(hostId);
+            LOG.info("Redirecting kairosdb metrics request to {} = {}/{}", applicationId, hostId, targetHost);
+
+            Executor executor = Executor.newInstance();
+            URIBuilder builder = new URIBuilder();
+            URI uri = builder.setScheme("http").setHost(targetHost).setPort(Integer.parseInt(config.getServer_port())).setPath("/api/v1/rest-api-metrics/kairosdb-format").setParameter("redirect", "false")
+                    .setParameter("application_id", applicationId)
+                    .setParameter("application_version", applicationVersion).build();
+
+            String body = executor.execute(Request.Get(uri)).returnContent().asString();
+            response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+            writer.write(body);
+        }
+    }
+
+    @ResponseBody
     @RequestMapping(value="/api/v1/rest-api-metrics/", method=RequestMethod.GET)
     public void getRestApiMetrics(Writer writer, HttpServletResponse response, @RequestParam(value="application_id") String applicationId, @RequestParam(value="application_version") String applicationVersion, @RequestParam(value="redirect", defaultValue="true") boolean redirect) throws URISyntaxException, IOException {
         if(!redirect) {

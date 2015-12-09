@@ -8,5 +8,12 @@ import java.util.Map;
  * Created by jmussler on 12/7/15.
  */
 public class EpResult {
+    public String path;
+    public String method;
+
+    public EpResult(String p, String m) {
+        path = p;
+        method = m;
+    }
     public Map<Integer, List<EpPoint>> points = new HashMap<>();
 }

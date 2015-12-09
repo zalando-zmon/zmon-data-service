@@ -63,6 +63,8 @@ class TestRestMetricStore extends FlatSpec with Matchers {
     var data = app.getData(System.currentTimeMillis())
     val stopAgg = System.currentTimeMillis()
 
+    var kairosData =AppMetricsService.convertToKairosDB("application", data);
+
     System.out.println("used compute: " + ((stopAgg - startAgg)/2.0));
   }
 }
