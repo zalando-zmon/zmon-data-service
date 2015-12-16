@@ -60,7 +60,7 @@ public class MobileApiProxy {
         while(i.hasNext()) {
             AlertHeader h = new AlertHeader();
             JsonNode n = i.next();
-            h.id = n.get("alert_id").asInt();
+            h.id = n.get("id").asInt();
             h.name = n.get("name").textValue();
             h.team = n.get("team").textValue();
             h.responsible_team = n.get("responsible_team").textValue();
