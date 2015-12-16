@@ -64,15 +64,9 @@ public class Application {
     @Autowired
     AppMetricsService applicationRestMetrics;
 
-    @Bean
     @Autowired
-    JedisPool getPool(DataServiceConfig config) {
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setTestOnBorrow(true);
-        poolConfig.setMaxTotal(config.getRedis_pool_size());
+    TokenInfoService tokenInfoService;
 
-        return new JedisPool(poolConfig, config.redis_host(), config.redis_port());
-    }
 
     private static ObjectMapper valueMapper;
     static {

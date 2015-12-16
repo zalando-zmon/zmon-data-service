@@ -23,6 +23,8 @@ class DataServiceConfig {
   @BeanProperty var proxy_controller = false
   @BeanProperty var proxy_controller_url = "http://localhost:8080/api/v1/"
 
+  @BeanProperty var proxy_controller_base_url = "http://localhost:8080/"
+
   @BeanProperty var proxy_scheduler = false
   @BeanProperty var proxy_scheduler_url = "http://localhost:8085/api/v1/"
 
@@ -36,4 +38,6 @@ class DataServiceConfig {
 
   @Value("${server.port}")
   @BeanProperty var server_port : String = null
+
+  @BeanProperty var oauth2_token_info_url : String = ""
 }
