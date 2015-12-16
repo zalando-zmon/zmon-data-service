@@ -40,6 +40,7 @@ public class MobileApiProxy {
         public String name;
         public int id;
         public String team;
+        public String responsible_team;
     }
 
     @RequestMapping(value="alert", method= RequestMethod.GET)
@@ -62,6 +63,7 @@ public class MobileApiProxy {
             h.id = n.get("alert_id").asInt();
             h.name = n.get("name").textValue();
             h.team = n.get("team").textValue();
+            h.responsible_team = n.get("responsible_team").textValue();
             alerts.add(h);
         }
 
@@ -76,6 +78,34 @@ public class MobileApiProxy {
         }
 
         URI uri = new URIBuilder().setPath(config.getProxy_controller_base_url() + "/rest/alertDetails").addParameter("alert_id", ""+alertId).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+
+        JsonNode node = mapper.readTree(r);
+        return new ResponseEntity<>( node, HttpStatus.OK);
+    }
+
+    @RequestMapping(value="status", method=RequestMethod.GET)
+    public ResponseEntity<JsonNode> getZMONStatus(@RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
+        Optional<String> uid = tokenInfoService.lookupUid(oauthHeader);
+        if (!uid.isPresent()) {
+            return new ResponseEntity<>((JsonNode)null, HttpStatus.UNAUTHORIZED);
+        }
+
+        URI uri = new URIBuilder().setPath(config.getProxy_controller_base_url() + "/rest/status").build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+
+        JsonNode node = mapper.readTree(r);
+        return new ResponseEntity<>( node, HttpStatus.OK);
+    }
+
+    @RequestMapping(value="all-teams", method=RequestMethod.GET)
+    public ResponseEntity<JsonNode> getAllTeams(@RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
+        Optional<String> uid = tokenInfoService.lookupUid(oauthHeader);
+        if (!uid.isPresent()) {
+            return new ResponseEntity<>((JsonNode)null, HttpStatus.UNAUTHORIZED);
+        }
+
+        URI uri = new URIBuilder().setPath(config.getProxy_controller_base_url() + "/rest/allTeams").build();
         final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
 
         JsonNode node = mapper.readTree(r);

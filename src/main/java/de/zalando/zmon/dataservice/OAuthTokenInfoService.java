@@ -27,6 +27,7 @@ public class OAuthTokenInfoService implements TokenInfoService {
     private final Cache<String, String> tokenCache = CacheBuilder.newBuilder().expireAfterWrite(600, TimeUnit.SECONDS).build();
 
     public OAuthTokenInfoService(String serviceUrl) {
+        LOG.info("Setting token service url to {}", serviceUrl);
         this.serviceUrl = serviceUrl;
         this.executor = Executor.newInstance();
     }
