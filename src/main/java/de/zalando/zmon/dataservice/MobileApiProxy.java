@@ -44,7 +44,7 @@ public class MobileApiProxy {
     }
 
     @RequestMapping(value="alert", method= RequestMethod.GET)
-    public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
+    public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value="team", required=false, defaultValue = "*") String team, @RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
         Optional<String> uid = tokenInfoService.lookupUid(oauthHeader);
         if (!uid.isPresent()) {
             return new ResponseEntity<>((List)null, HttpStatus.UNAUTHORIZED);
@@ -60,6 +60,10 @@ public class MobileApiProxy {
         while(i.hasNext()) {
             AlertHeader h = new AlertHeader();
             JsonNode n = i.next();
+            if(!team.equals("*") && !n.get("team").textValue().startsWith(team)) {
+                continue;
+            }
+
             h.id = n.get("id").asInt();
             h.name = n.get("name").textValue();
             h.team = n.get("team").textValue();
@@ -78,6 +82,20 @@ public class MobileApiProxy {
         }
 
         URI uri = new URIBuilder().setPath(config.getProxy_controller_base_url() + "/rest/alertDetails").addParameter("alert_id", ""+alertId).build();
+        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+
+        JsonNode node = mapper.readTree(r);
+        return new ResponseEntity<>( node, HttpStatus.OK);
+    }
+
+    @RequestMapping(value="active-alerts", method=RequestMethod.GET)
+    public ResponseEntity<JsonNode> getActiveAlerts(@RequestParam(value="team", required=false, defaultValue = "*") String team, @RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
+        Optional<String> uid = tokenInfoService.lookupUid(oauthHeader);
+        if (!uid.isPresent()) {
+            return new ResponseEntity<>((JsonNode)null, HttpStatus.UNAUTHORIZED);
+        }
+
+        URI uri = new URIBuilder().setPath(config.getProxy_controller_base_url() + "/rest/allAlerts").addParameter("team", team).build();
         final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
 
         JsonNode node = mapper.readTree(r);
