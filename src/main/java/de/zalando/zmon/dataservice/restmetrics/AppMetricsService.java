@@ -18,8 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Created by jmussler on 05.12.15.
@@ -42,6 +41,26 @@ public class AppMetricsService {
 
     private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(5);
 
+    private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
+
+    private static class CleanUpJob implements Runnable {
+
+        private final AppMetricsService appMetricService;
+
+        CleanUpJob(AppMetricsService aMS) {
+            appMetricService = aMS;
+        }
+
+        public void run() {
+            try {
+                appMetricService.cleanUp();
+            }
+            catch(Exception ex) {
+                LOG.error("Unexpected error in cleanup job");
+            }
+        }
+    }
+
     @Autowired
     public AppMetricsService(DataServiceConfig config) throws IOException {
         serviceHosts = config.getRest_metric_hosts();
@@ -55,8 +74,17 @@ public class AppMetricsService {
             }
         }
 
+        executorService.scheduleWithFixedDelay(new CleanUpJob(this), 60, 60, TimeUnit.MINUTES);
+
         LOG.info("Setting local partition to {}", localPartition);
         LOG.info("Host names {}", serviceHosts);
+    }
+
+    protected void cleanUp() {
+        LOG.info("Starting instance cleanup...");
+        for(ApplicationVersion v : appVersions.values()) {
+            v.cleanUp();
+        }
     }
 
     public Collection<String> getRegisteredAppVersions() {

@@ -1,11 +1,16 @@
 package de.zalando.zmon.dataservice.restmetrics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 /**
  * Created by jmussler on 05.12.15.
  */
 public class ApplicationVersion {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ApplicationVersion.class);
 
     protected String applicationId;
     protected String applicationVersion;
@@ -17,6 +22,21 @@ public class ApplicationVersion {
     public ApplicationVersion(String applicationId, String applicationVersion) {
         this.applicationId = applicationId;
         this.applicationVersion = applicationVersion;
+    }
+
+    public void cleanUp() {
+        int i = instances.size() - 1;
+        long now = System.currentTimeMillis();
+
+        // remove elements from the end
+        while(i>=0) {
+            long ts = instances.get(i).getMaxTimestamp();
+            if((now-ts)>1000*60*60*240) { // keep instances around for 240 minutes
+                LOG.info("Removing old instance: {}", instances.get(i).instanceId);
+                instances.remove(i);
+            }
+            --i;
+        }
     }
 
     public Collection<String> getTrackedEndpoints() {
