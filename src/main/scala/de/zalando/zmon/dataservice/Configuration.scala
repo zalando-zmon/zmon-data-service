@@ -35,6 +35,7 @@ class DataServiceConfig {
   @BeanProperty var actuator_metric_checks : java.util.List[Integer] = new java.util.ArrayList[Integer]()
 
   @BeanProperty var rest_metric_hosts : java.util.List[String] = new util.ArrayList[String]()
+  @BeanProperty var rest_metric_port : Integer = 8088
 
   @Value("${server.port}")
   @BeanProperty var server_port : String = null
