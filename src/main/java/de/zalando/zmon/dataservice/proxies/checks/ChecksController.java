@@ -22,53 +22,22 @@ public class ChecksController {
     @RequestMapping(value = "/api/v1/checks")
     public String getChecks(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveCheckDefinitions(query);
-
-//        if(!config.isProxy_controller()) {
-//            writer.write("");
-//            return;
-//        }
-//
-//        URI uri = new URIBuilder().setPath(config.getProxy_controller_url() + "/checks/all-active-check-definitions").setParameter("query",query).build();
-//        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
-//        writer.write(r);
     }
 
     //TODO, this starts with 'rest'
     @RequestMapping(value = "/rest/api/v1/checks/all-active-check-definitions")
     public String getChecksControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveCheckDefinitions(query);
-//        if(!config.isProxy_controller()) {
-//            writer.write("");
-//            return;
-//        }
-//
-//        URI uri = new URIBuilder().setPath(config.getProxy_controller_url() + "/checks/all-active-check-definitions").setParameter("query",query).build();
-//        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
-//        writer.write(r);
     }
 
     @RequestMapping(value = "/api/v1/alerts")
     public String getAlerts(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveAlertDefinitions(query);
-//        if(!config.isProxy_controller()) {
-//            writer.write("");
-//            return;
-//        }
-//        URI uri = new URIBuilder().setPath(config.getProxy_controller_url() + "/checks/all-active-alert-definitions").setParameter("query",query).build();
-//        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
-//        writer.write(r);
     }
 
   //TODO, this starts with 'rest'
     @RequestMapping(value = "/rest/api/v1/checks/all-active-alert-definitions")
     public String getAlertsControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveAlertDefinitions(query);
-//        if(!config.isProxy_controller()) {
-//            writer.write("");
-//            return;
-//        }
-//        URI uri = new URIBuilder().setPath(config.getProxy_controller_url() + "/checks/all-active-alert-definitions").setParameter("query",query).build();
-//        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
-//        writer.write(r);
     }
 }
