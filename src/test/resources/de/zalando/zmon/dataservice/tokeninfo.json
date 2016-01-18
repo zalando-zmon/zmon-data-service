@@ -1,0 +1,10 @@
+{
+  "uid":"klaustester",
+  "simpleScope":false,
+  "testscope":true,
+  "readscope":true,
+  "scope":["uid","simpleScope","extrascope","testscope","readscope"],
+  "expires_in":5000,
+  "token_type":"Bearer",
+  "access_token":"987654321"
+}
