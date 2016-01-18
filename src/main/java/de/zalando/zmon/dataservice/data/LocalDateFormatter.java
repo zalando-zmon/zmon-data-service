@@ -1,18 +1,18 @@
-package de.zalando.zmon.dataservice;
+package de.zalando.zmon.dataservice.data;
 
 import java.text.SimpleDateFormat;
 
 /**
  * Created by jmussler on 9/11/15.
  */
-public class LocalDateFormatter {
+class LocalDateFormatter {
     private static final ThreadLocal<SimpleDateFormat> THREAD_LOCAL_DATEFORMAT = new ThreadLocal<SimpleDateFormat>() {
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSXXX");
         }
     };
 
-    public static SimpleDateFormat get() {
+    static SimpleDateFormat get() {
         return THREAD_LOCAL_DATEFORMAT.get();
     }
 }

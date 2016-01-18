@@ -1,4 +1,4 @@
-package de.zalando.zmon.dataservice;
+package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

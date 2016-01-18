@@ -1,8 +1,11 @@
-package de.zalando.zmon.dataservice.restmetrics;
+package de.zalando.zmon.dataservice.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.zalando.zmon.dataservice.CheckData;
-import de.zalando.zmon.dataservice.DataServiceConfig;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.http.client.fluent.Async;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -11,9 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
 /**
  * Created by jmussler on 05.12.15.
@@ -27,15 +31,15 @@ public class AppMetricsClient {
     private final List<String> serviceHosts;
     private final int serverPort;
 
-    private final static ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(5);
 
-
     @Autowired
-    public AppMetricsClient(DataServiceConfig config) throws IOException {
-        serviceHosts = config.getRest_metric_hosts();
-        serverPort = config.getRest_metric_port();
+    public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper) throws IOException {
+        serviceHosts = config.getRestMetricHosts();
+        serverPort = config.getRestMetricPort();
+        this.mapper = defaultObjectMapper;
 
         LOG.info("App metric cache config: hosts {} port {}", serviceHosts, serverPort);
     }

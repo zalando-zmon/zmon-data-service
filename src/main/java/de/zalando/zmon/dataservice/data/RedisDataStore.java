@@ -1,9 +1,11 @@
-package de.zalando.zmon.dataservice;
+package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.eventlog.EventLogger;
+import de.zalando.zmon.dataservice.ZMonEventType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

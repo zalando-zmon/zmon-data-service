@@ -4,4 +4,10 @@ jdk:
   - oraclejdk8
 
 services:
- - redis-server
+  - redis-server
+
+before_script:
+  - pip install --user codecov
+
+after_success:
+  - codecov

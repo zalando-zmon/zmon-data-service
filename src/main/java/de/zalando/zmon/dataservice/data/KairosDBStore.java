@@ -1,8 +1,16 @@
-package de.zalando.zmon.dataservice;
+package de.zalando.zmon.dataservice.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.*;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -11,9 +19,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.DecimalNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
+import de.zalando.zmon.dataservice.DataServiceMetrics;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
 /**
  * Created by jmussler on 5/8/15.
@@ -23,7 +38,7 @@ public class KairosDBStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-    private final DataServiceConfig config;
+    private final DataServiceConfigProperties config;
 
     private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id","application_version","stack_name","stack_version"));
     private static final Set<String> SKIP_FIELDS = new HashSet<>(Arrays.asList("ts","td","worker"));
@@ -69,10 +84,10 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfig config, DataServiceMetrics metrics) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metrics = metrics;
         this.config = config;
-        this.url = "http://"+config.kairosdb_host()+":"+config.kairosdb_port()+"/api/v1/datapoints";
+        this.url = "http://"+config.getKairosdbHost() +":"+config.getKairosdbPort() +"/api/v1/datapoints";
     }
 
     public static String extractMetricName(String key) {
@@ -128,7 +143,7 @@ public class KairosDBStore {
 
                     // handle zmon actuator metrics and extract the http status code into its own field
                     // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-                    if(config.actuator_metric_checks().contains(cd.check_id)) {
+                    if(config.getActuatorMetricChecks().contains(cd.check_id)) {
                         final String[] keyParts = e.getKey().split("\\.");
 
                         if(keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
@@ -159,7 +174,7 @@ public class KairosDBStore {
             final Executor executor = Executor.newInstance();
 
             String query = mapper.writeValueAsString(points);
-            if(config.log_kairosdb_requests()) {
+            if(config.isLogKairosdbRequests()) {
                 LOG.info("KairosDB Query: {}", query);
             }
 
@@ -167,7 +182,7 @@ public class KairosDBStore {
                     ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
-            if(config.log_kairosdb_errors()) {
+            if(config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write failed", ex);
             }
             metrics.markKairosError();

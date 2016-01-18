@@ -1,5 +1,6 @@
-package de.zalando.zmon.dataservice;
+package de.zalando.zmon.dataservice.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,5 +9,5 @@ import java.util.List;
 public class WorkerResult {
     public String account;
     public String team;
-    public List<CheckData> results;
+    public List<CheckData> results = new ArrayList<CheckData>(0);
 }
