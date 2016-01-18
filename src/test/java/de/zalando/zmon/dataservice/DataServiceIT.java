@@ -11,6 +11,7 @@ import static org.zalando.riptide.Selectors.status;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -50,7 +51,7 @@ public class DataServiceIT extends AbstractControllerTest {
 	private int port;
 
 	@Rule
-	public final WireMockRule wireMockRule = new WireMockRule(9999);
+	public final WireMockRule wireMockRule = new WireMockRule(10080);
 
 	@Before
 	public void configureWireMockForCheck() throws IOException {
@@ -63,6 +64,7 @@ public class DataServiceIT extends AbstractControllerTest {
 	@Test
 	public void startUp() throws InterruptedException {
 		log.info("Service up and running, start with requests ...");
+		TimeUnit.SECONDS.sleep(3);
 
 		// try out RipTide
 		RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
