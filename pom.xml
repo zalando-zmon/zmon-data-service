@@ -30,13 +30,11 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <!--
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.6</version>
+            <groupId>org.zalando.stups</groupId>
+            <artifactId>stups-spring-oauth2-server</artifactId>
+            <version>1.0.8</version>
         </dependency>
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -96,6 +94,17 @@
             <optional>true</optional>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>riptide</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
@@ -117,6 +126,11 @@
             <artifactId>assertj-core</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.0</version>
         </dependency>
     </dependencies>
 
@@ -160,6 +174,19 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.19.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
