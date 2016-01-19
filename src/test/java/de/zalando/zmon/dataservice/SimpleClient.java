@@ -18,7 +18,7 @@ class SimpleClient {
 	}
 
 	public Map<String, Object> getTokenInfo() {
-		return restOperations.getForEntity("http://localhost:9999/oauth2/tokeninfo", Map.class).getBody();
+		return restOperations.getForEntity("http://localhost:10080/oauth2/tokeninfo", Map.class).getBody();
 	}
 
 }

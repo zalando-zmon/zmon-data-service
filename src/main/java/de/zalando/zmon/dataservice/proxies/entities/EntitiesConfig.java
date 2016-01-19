@@ -25,10 +25,10 @@ public class EntitiesConfig {
 
 	@Bean
 	public EntitiesService entitiesService() {
-		if (!config.isProxyController()) {
-			return new NoOpEntitiesService();
-		} else {
+		if (config.isProxyController()) {
 			return new DefaultEntitiesService(customObjectMapper, config, metrics);
+		} else {
+			return new NoOpEntitiesService();
 		}
 	}
 

@@ -14,10 +14,10 @@ public class ChecksConfig {
 
 	@Bean
 	public ChecksService checksService() {
-		if (!config.isProxyController()) {
-			return new NoOpChecksService();
-		} else {
+		if (config.isProxyController()) {
 			return new DefaultChecksService(config);
+		} else {
+			return new NoOpChecksService();
 		}
 	}
 }

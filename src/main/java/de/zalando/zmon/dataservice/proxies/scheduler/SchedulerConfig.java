@@ -14,10 +14,10 @@ public class SchedulerConfig {
 
 	@Bean
 	public SchedulerService schedulerProxy() {
-		if (!config.isProxyScheduler()) {
-			return new NoOpSchedulerService();
-		} else {
+		if (config.isProxyScheduler()) {
 			return new DefaultSchedulerService(config);
+		} else {
+			return new NoOpSchedulerService();
 		}
 	}
 }
