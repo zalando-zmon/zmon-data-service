@@ -29,6 +29,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.zalando.stups</groupId>
@@ -54,10 +55,8 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <type>jar</type>
-            <scope>compile</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
@@ -189,6 +188,19 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>de.sigmalab.maven.plugins</groupId>
+                <artifactId>redis-maven-plugin</artifactId>
+                <version>0.9.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.version}</version>
@@ -196,8 +208,27 @@
                     <mainClass>de.zalando.zmon.dataservice.Application</mainClass>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-sigmalab-maven-releases</id>
+            <name>bintray</name>
+            <url>http://dl.bintray.com/sigmalab/maven-releases</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-sigmalab-maven-releases</id>
+            <name>bintray-plugins</name>
+            <url>http://dl.bintray.com/sigmalab/maven-releases</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>

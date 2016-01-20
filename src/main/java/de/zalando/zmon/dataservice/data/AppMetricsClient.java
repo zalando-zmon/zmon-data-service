@@ -36,7 +36,7 @@ public class AppMetricsClient {
     private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(5);
 
     @Autowired
-    public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper) throws IOException {
+    public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper) {
         serviceHosts = config.getRestMetricHosts();
         serverPort = config.getRestMetricPort();
         this.mapper = defaultObjectMapper;
@@ -46,14 +46,16 @@ public class AppMetricsClient {
 
     public void receiveData(Map<Integer, List<CheckData>> data) {
         Async async = Async.newInstance().use(asyncExecutorPool);
-        for(int i = 0; i < serviceHosts.size(); ++i) {
-            if(!data.containsKey(i) || data.get(i).size()<=0) continue;
+        for (int i = 0; i < serviceHosts.size(); ++i) {
+            if (!data.containsKey(i) || data.get(i).size() <= 0)
+                continue;
 
             try {
-                Request r = Request.Post("http://"+serviceHosts.get(i)+":"+ serverPort +"/api/v1/rest-api-metrics/").bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
+                Request r = Request
+                        .Post("http://" + serviceHosts.get(i) + ":" + serverPort + "/api/v1/rest-api-metrics/")
+                        .bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
                 async.execute(r);
-            }
-            catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.error("Failed to serialize check data", ex);
             }
         }

@@ -41,61 +41,65 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 @SpringApplicationConfiguration(classes = { Application.class })
-@WebIntegrationTest(randomPort=true)
+@WebIntegrationTest(randomPort = true)
 @ActiveProfiles("it")
 public class DataServiceIT extends AbstractControllerTest {
-	
-	private static final Logger log = LoggerFactory.getLogger(DataServiceIT.class);
-	
-	@Value("${local.server.port}")
-	private int port;
 
-	@Rule
-	public final WireMockRule wireMockRule = new WireMockRule(10080);
+    private static final Logger log = LoggerFactory.getLogger(DataServiceIT.class);
 
-	@Before
-	public void configureWireMockForCheck() throws IOException {
-		wireMockRule.stubFor(get(urlPathEqualTo("/oauth2/tokeninfo"))
-				.willReturn(WireMock.aResponse().withBody(resourceToString(jsonResource("tokeninfo")))
-		                .withStatus(HTTP_OK)
-		                .withHeader("Content-Type", "application/json")));
-	}
+    @Value("${local.server.port}")
+    private int port;
 
-	@Test
-	public void startUp() throws InterruptedException {
-		log.info("Service up and running, start with requests ...");
-		TimeUnit.SECONDS.sleep(3);
+    @Rule
+    public final WireMockRule wireMockRule = new WireMockRule(10080);
 
-		// try out RipTide
-		RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-		//seems not to work with SimpleClientHttpRequestFactory
-		//RestTemplate rest = new RestTemplate();
+    @Before
+    public void configureWireMockForCheck() throws IOException {
+        wireMockRule.stubFor(get(urlPathEqualTo("/oauth2/tokeninfo"))
+                .willReturn(WireMock.aResponse().withBody(resourceToString(jsonResource("tokeninfo")))
+                        .withStatus(HTTP_OK).withHeader("Content-Type", "application/json")));
+    }
 
-		rest.setErrorHandler(new PassThroughResponseErrorHandler());
-		Rest r = Rest.create(rest);
-		r.execute(HttpMethod.GET, URI.create("http://localhost:" + port + "/api/v1/checks")).dispatch(status(), on(UNAUTHORIZED).call(pass()), anyStatus().call(new ThrowingConsumer<ClientHttpResponse, Exception>() {
-			@Override
-			public void accept(ClientHttpResponse input) throws AssertionError {
-				Assertions.fail("expect UNAUTHORIZED");
-			}
-		}));
+    @Test
+    public void startUp() throws InterruptedException {
+        log.info("Service up and running, start with requests ...");
+        TimeUnit.SECONDS.sleep(3);
 
-		//ResponseEntity<String> response1 = rest.exchange("http://localhost:" + port + "/api/v1/checks", HttpMethod.GET, null, String.class);
-//		Assertions.assertThat(response1).isNotNull();
-//		Assertions.assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-		
-		rest.getInterceptors().add(new ClientHttpRequestInterceptor() {
-			
-			@Override
-			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
-					throws IOException {
-				request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer: 987654321");
-				return execution.execute(request, body);
-			}
-		});
+        // try out RipTide
+        RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // seems not to work with SimpleClientHttpRequestFactory
+        // RestTemplate rest = new RestTemplate();
 
-		ResponseEntity<String> response2 = rest.exchange("http://localhost:" + port + "/api/v1/checks", HttpMethod.GET, null, String.class);
-		Assertions.assertThat(response2).isNotNull();
-		Assertions.assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
-	}
+        rest.setErrorHandler(new PassThroughResponseErrorHandler());
+        Rest r = Rest.create(rest);
+        r.execute(HttpMethod.GET, URI.create("http://localhost:" + port + "/api/v1/checks")).dispatch(status(),
+                on(UNAUTHORIZED).call(pass()), anyStatus().call(new ThrowingConsumer<ClientHttpResponse, Exception>() {
+                    @Override
+                    public void accept(ClientHttpResponse input) throws AssertionError {
+                        Assertions.fail("expect UNAUTHORIZED");
+                    }
+                }));
+
+        // ResponseEntity<String> response1 = rest.exchange("http://localhost:"
+        // + port + "/api/v1/checks", HttpMethod.GET, null, String.class);
+        // Assertions.assertThat(response1).isNotNull();
+        // Assertions.assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        rest.getInterceptors().add(new ClientHttpRequestInterceptor() {
+
+            @Override
+            public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+                    throws IOException {
+                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer: 987654321");
+                return execution.execute(request, body);
+            }
+        });
+
+        ResponseEntity<String> response2 = rest.exchange("http://localhost:" + port + "/api/v1/checks", HttpMethod.GET,
+                null, String.class);
+        Assertions.assertThat(response2).isNotNull();
+        Assertions.assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        TimeUnit.SECONDS.sleep(40);
+    }
 }
