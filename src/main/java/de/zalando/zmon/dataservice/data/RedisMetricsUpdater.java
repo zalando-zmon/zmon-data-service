@@ -25,7 +25,7 @@ import redis.clients.jedis.Pipeline;
  */
 
 @Service
-public class RedisMetricsUpdater {
+public class RedisMetricsUpdater implements TypedRedisOperations {
 
     private final Logger log = LoggerFactory.getLogger(RedisMetricsUpdater.class);
 
@@ -95,10 +95,12 @@ public class RedisMetricsUpdater {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected static ValueOperations<String, String> getValueOperations(RedisOperations operations) {
-        return operations.opsForValue();
-    }
+    // can be removed because of TypedRedisOperations
+    // @SuppressWarnings("unchecked")
+    // protected static ValueOperations<String, String>
+    // getValueOperations(RedisOperations operations) {
+    // return operations.opsForValue();
+    // }
 
     // avoid anonymous classes
     private MetricsRedisCallback mcb = new MetricsRedisCallback();

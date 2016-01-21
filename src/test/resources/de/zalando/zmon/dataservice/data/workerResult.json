@@ -1,0 +1,350 @@
+{
+  "account" : "0987654321",
+  "team" : "stups",
+  "results" : [ {
+    "time" : "1234567",
+    "worker" : "worker_0",
+    "check_id" : 0,
+    "entity_id" : "ENTITY_0",
+    "entity" : {
+      "entity_0" : "entityValue_0",
+      "entity_1" : "entityValue_1",
+      "entity_2" : "entityValue_2"
+    },
+    "run_time" : 0.0,
+    "check_result" : {
+      "someKey" : "someValue",
+      "someKey2" : "someValue2"
+    },
+    "exception" : true,
+    "alerts" : {
+      "ad_1" : {
+        "alert_id" : 1,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : false,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : false,
+        "active" : false,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : false
+      },
+      "ad_0" : {
+        "alert_id" : 0,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      },
+      "ad_2" : {
+        "alert_id" : 2,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      }
+    }
+  }, {
+    "time" : "1234567",
+    "worker" : "worker_1",
+    "check_id" : 1,
+    "entity_id" : "ENTITY_1",
+    "entity" : {
+      "entity_0" : "entityValue_0",
+      "entity_1" : "entityValue_1",
+      "entity_2" : "entityValue_2"
+    },
+    "run_time" : 1.2,
+    "check_result" : {
+      "someKey" : "someValue",
+      "someKey2" : "someValue2"
+    },
+    "exception" : false,
+    "alerts" : {
+      "ad_1" : {
+        "alert_id" : 1,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : false,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : false,
+        "active" : false,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : false
+      },
+      "ad_0" : {
+        "alert_id" : 0,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      },
+      "ad_2" : {
+        "alert_id" : 2,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      }
+    }
+  }, {
+    "time" : "1234567",
+    "worker" : "worker_2",
+    "check_id" : 2,
+    "entity_id" : "ENTITY_2",
+    "entity" : {
+      "entity_0" : "entityValue_0",
+      "entity_1" : "entityValue_1",
+      "entity_2" : "entityValue_2"
+    },
+    "run_time" : 2.4,
+    "check_result" : {
+      "someKey" : "someValue",
+      "someKey2" : "someValue2"
+    },
+    "exception" : true,
+    "alerts" : {
+      "ad_1" : {
+        "alert_id" : 1,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : false,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : false,
+        "active" : false,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : false
+      },
+      "ad_0" : {
+        "alert_id" : 0,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      },
+      "ad_2" : {
+        "alert_id" : 2,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      }
+    }
+  }, {
+    "time" : "1234567",
+    "worker" : "worker_3",
+    "check_id" : 3,
+    "entity_id" : "ENTITY_3",
+    "entity" : {
+      "entity_0" : "entityValue_0",
+      "entity_1" : "entityValue_1",
+      "entity_2" : "entityValue_2"
+    },
+    "run_time" : 3.5999999999999996,
+    "check_result" : {
+      "someKey" : "someValue",
+      "someKey2" : "someValue2"
+    },
+    "exception" : false,
+    "alerts" : {
+      "ad_1" : {
+        "alert_id" : 1,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : false,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : false,
+        "active" : false,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : false
+      },
+      "ad_0" : {
+        "alert_id" : 0,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      },
+      "ad_2" : {
+        "alert_id" : 2,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      }
+    }
+  }, {
+    "time" : "1234567",
+    "worker" : "worker_4",
+    "check_id" : 4,
+    "entity_id" : "ENTITY_4",
+    "entity" : {
+      "entity_0" : "entityValue_0",
+      "entity_1" : "entityValue_1",
+      "entity_2" : "entityValue_2"
+    },
+    "run_time" : 4.8,
+    "check_result" : {
+      "someKey" : "someValue",
+      "someKey2" : "someValue2"
+    },
+    "exception" : true,
+    "alerts" : {
+      "ad_1" : {
+        "alert_id" : 1,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : false,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : false,
+        "active" : false,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : false
+      },
+      "ad_0" : {
+        "alert_id" : 0,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      },
+      "ad_2" : {
+        "alert_id" : 2,
+        "captures" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "exception" : true,
+        "start_time" : "djadfjaadf",
+        "start_time_ts" : 1.2,
+        "changed" : true,
+        "active" : true,
+        "downtimes" : {
+          "someKey" : "someValue",
+          "someKey2" : "someValue2"
+        },
+        "in_period" : true
+      }
+    }
+  } ]
+}
