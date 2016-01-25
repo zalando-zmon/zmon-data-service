@@ -6,10 +6,11 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PyString {
+class PyString {
 
     private static final Logger LOG = LoggerFactory.getLogger(PyString.class);
 
+    // TODO, what should happen when total shit comes in or null?
     public static Date extractDate(String s) {
         // cut microseconds from string
         // "start_time":"2015-08-10 15:59:02.973108+02:00"
