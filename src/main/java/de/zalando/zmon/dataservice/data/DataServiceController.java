@@ -28,14 +28,8 @@ public class DataServiceController {
     private final Logger log = LoggerFactory.getLogger(DataServiceController.class);
 
     private final DataServiceMetrics metrics;
-    //
-    // private final KairosDBStore kairosStore;
-    //
-    // private final AppMetricsClient applicationMetricsClient;
-    //
-    private final RedisDataStore storage;
 
-    // private final DataServiceConfigProperties config;
+    private final RedisDataStore storage;
 
     private final ObjectMapper mapper;
 
@@ -76,9 +70,7 @@ public class DataServiceController {
         WriteData writeData = new WriteData(wrOptional, accountId, checkId, data);
 
         // some writer are async, keep in mind
-        for (WorkResultWriter writer : this.workResultWriter) {
-            writer.write(writeData);
-        }
+        workResultWriter.forEach(writer -> writer.write(writeData));
     }
 
     protected Optional<WorkerResult> extractAndFilter(String data, String accountId, int checkId) {
