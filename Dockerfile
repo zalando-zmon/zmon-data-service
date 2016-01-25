@@ -1,4 +1,4 @@
-FROM zalando/openjdk:8u40-b09-4
+FROM registry.opensource.zalan.do/stups/openjdk:8u66-b17-1-9
 
 RUN mkdir /app
 RUN mkdir /app/config
@@ -11,4 +11,3 @@ ADD config/application.yaml /app/config/application.yaml
 EXPOSE 8086
 
 CMD ["java","-jar","zmon-data-service.jar"]
-
