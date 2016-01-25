@@ -5,17 +5,18 @@ Worker send its data to the zmon-data-service, which is itself responsible for:
  * handle notifications (if we cannot do this in a distributed fashion (sms vs email))
 
 
-input object:
-  
+Input object:
+
+```
 {
-    "account":,
-    "team":,
+    "account": "",
+    "team": "",
     "results": [
         {
-            "time": ""
-            "check_id": 1234
+            "time": ...,
+            "check_id": 1234,
             "check_result": ...,
-            "run_time":,
+            "run_time": ...,
             "exception": 0/1,
             "entity_id": "",
             "alerts" : {
@@ -24,3 +25,4 @@ input object:
         }
     ]
 }
+```
