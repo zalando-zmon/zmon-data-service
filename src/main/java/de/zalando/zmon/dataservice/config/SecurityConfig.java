@@ -39,14 +39,14 @@ import org.zalando.stups.oauth2.spring.server.TokenInfoResourceServerTokenServic
 @EnableWebSecurity
 @EnableResourceServer
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements ResourceServerConfigurer {
-	
-	private static final String OAUTH2_CLIENT_ID = "zmon-data-service";
-	
-	@Autowired
-	private DataServiceConfigProperties config;
 
-	@Override
-	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+    private static final String OAUTH2_CLIENT_ID = "zmon-data-service";
+
+    @Autowired
+    private DataServiceConfigProperties config;
+
+    @Override
+    public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
         OAuth2ExceptionRenderer exceptionRenderer = new DefaultOAuth2ExceptionRenderer();
 
         final OAuth2AuthenticationEntryPoint authenticationEntryPoint = new OAuth2AuthenticationEntryPoint();
@@ -56,22 +56,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
         accessDeniedHandler.setExceptionRenderer(exceptionRenderer);
 
         resources.authenticationEntryPoint(authenticationEntryPoint).accessDeniedHandler(accessDeniedHandler);
-	}
+    }
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		web.ignoring().antMatchers("/health");
-	}
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/health");
+    }
 
-	@Override
-	public void configure(HttpSecurity http) throws Exception {
-		http.headers().defaultsDisabled().httpStrictTransportSecurity().and().addHeaderWriter(hstsHeaderWriter()).and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).and().httpBasic().disable()
-        .anonymous().disable().authorizeRequests()
-            .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('readscope')")
-            .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('writescope')")
-            .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('writescope')");
-	}
+    //@formatter:off
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        http
+            .headers()
+                .defaultsDisabled()
+                .httpStrictTransportSecurity()
+            .and()
+                .addHeaderWriter(hstsHeaderWriter())
+            .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
+            .and()
+                .httpBasic()
+                    .disable()
+                .anonymous()
+                    .disable()
+                .authorizeRequests()
+                    .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('zmon_data.read_all')")
+                    .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('zmon_data.write_all')")
+                    .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('zmon_data.write_all')");
+    }
+    //@formatter:on
 
     @Bean
     public ResourceServerTokenServices resourceServerTokenServices(final RestTemplate tokenInfo) {
@@ -83,7 +97,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
 
     @Bean
     public RestTemplate tokenInfo(final ClientHttpRequestFactory requestFactory,
-                                  final HttpMessageConverters messageConverters) {
+            final HttpMessageConverters messageConverters) {
         final RestTemplate restTemplate = new RestTemplate(requestFactory);
         restTemplate.setMessageConverters(messageConverters.getConverters());
 
@@ -102,8 +116,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
         return httpClientFactory;
     }
 
-
-	private HstsHeaderWriter hstsHeaderWriter() {
+    private HstsHeaderWriter hstsHeaderWriter() {
         return new HstsHeaderWriter(AnyRequestMatcher.INSTANCE, TimeUnit.DAYS.toSeconds(365), true);
     }
 
