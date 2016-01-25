@@ -3,6 +3,7 @@ package de.zalando.zmon.dataservice.data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,8 +22,9 @@ class LogDataWriter implements WorkResultWriter {
         this.config = config;
     }
 
-    // TODO, can this be async too
+    // TODO, can this be async too, but then expect another thread named in logs
     @Override
+    @Async
     public void write(WriteData writeData) {
         if (config.isLogCheckData()) {
             logData(writeData.getData());
