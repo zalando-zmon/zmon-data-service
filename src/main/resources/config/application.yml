@@ -1,0 +1,7 @@
+
+spring:
+  redis:
+    pool:
+      max-active: 10
+      max-idle: 4
+      min-idle: 2

@@ -1,0 +1,2 @@
+dataservice:
+  oauth2-token-info-url: http://localhost:10080/oauth2/tokeninfo
