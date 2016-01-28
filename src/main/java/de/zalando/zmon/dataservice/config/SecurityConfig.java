@@ -81,9 +81,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
                 .anonymous()
                     .disable()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('zmon_data.read_all')")
-                    .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('zmon_data.write_all')")
-                    .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('zmon_data.write_all')");
+                    .antMatchers(HttpMethod.GET, "/api/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
+                    .antMatchers(HttpMethod.GET, "/rest/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
+                    .antMatchers(HttpMethod.PUT, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')")
+                    .antMatchers(HttpMethod.DELETE, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')");
     }
     //@formatter:on
 
