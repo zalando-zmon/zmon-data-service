@@ -7,8 +7,6 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-// TODO, if we not depend on JedisPool directly anymore,
-// we can remove this and use RedisAutoConfiguration of Spring-Boot
 @Configuration
 public class RedisConfig {
 
