@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/health");
+        web.ignoring().antMatchers("/**");
     }
 
     //@formatter:off
@@ -78,15 +78,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
             .and()
                 .httpBasic()
                     .disable()
-                /* .anonymous()
-                      .disable() */
-                .authorizeRequests().anyRequest().authenticated();
-        /*
+                .anonymous().
+                    disable()
+                 .authorizeRequests()
                     .antMatchers(HttpMethod.GET, "/api/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
                     .antMatchers(HttpMethod.GET, "/rest/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
                     .antMatchers(HttpMethod.PUT, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')")
                     .antMatchers(HttpMethod.DELETE, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')");
-        */
+
     }
     //@formatter:on
 
