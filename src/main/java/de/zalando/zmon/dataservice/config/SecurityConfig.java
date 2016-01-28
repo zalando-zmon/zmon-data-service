@@ -78,8 +78,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
             .and()
                 .httpBasic()
                     .disable()
-                .anonymous()
-                    .disable()
+                /* .anonymous()
+                      .disable() */
                 .authorizeRequests().anyRequest().authenticated();
         /*
                     .antMatchers(HttpMethod.GET, "/api/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
