@@ -1,4 +1,7 @@
-Worker send its data to the zmon-data-service, which is itself responsible for:
+# ZMON Data Service
+
+Worker sends its data to the zmon-data-service, which is itself responsible for:
+
  * storing it in Redis for frontend
  * storing it in KairosDB for charting
  * track size/rate by team
@@ -25,4 +28,10 @@ Input object:
         }
     ]
 }
+```
+
+## Building
+
+```
+$ ./mvnw clean install
 ```
