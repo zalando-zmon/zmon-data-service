@@ -33,35 +33,19 @@ public class RedisMetricsUpdater implements TypedRedisOperations {
     private String name;
     private final DataServiceMetrics metrics;
 
-    private final RedisTemplate<Object, Object> redisTemplate;
-
     @Autowired
-    public RedisMetricsUpdater(DataServiceConfigProperties config, DataServiceMetrics metrics,
-            RedisTemplate<Object, Object> redisTemplate) {
-        // this.pool = pool;
+    public RedisMetricsUpdater(DataServiceConfigProperties config, DataServiceMetrics metrics, JedisPool pool) {
+        this.pool = pool;
         this.metrics = metrics;
         try {
             name = "d-p" + config.getServerPort() + "." + InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             name = "d-p" + config.getServerPort() + ".unknown_host";
         }
-
-        this.redisTemplate = redisTemplate;
     }
 
     @Scheduled(fixedRate = 3000, initialDelay = 15000)
     public void run() {
-        log.warn("write scheduled metrics ...");
-        // when using 'before()' make sure 'pool' will be assigned in
-        // constructor
-
-        // before();
-        // after();
-        after2();
-        log.warn("scheduled metrics written");
-    }
-
-    protected void before() {
         try {
             Jedis jedis = pool.getResource();
             try {
@@ -71,56 +55,10 @@ public class RedisMetricsUpdater implements TypedRedisOperations {
                 p.set("zmon:metrics:" + name + ":ts", System.currentTimeMillis() / 1000 + "");
                 p.sync();
             } finally {
-                pool.returnResource(jedis);
+                jedis.close();
             }
         } catch (Exception e) {
             log.warn(e.getMessage(), e);
-        }
-    }
-
-    // no resource handling (returnResource()) here, handled by template
-    protected void after() {
-        try {
-            redisTemplate.executePipelined(new SessionCallback<Object>() {
-                @Override
-                public <K, V> Object execute(RedisOperations<K, V> operations) throws DataAccessException {
-                    ValueOperations<String, String> vOps = getValueOperations(operations);
-                    vOps.set("zmon:metrics:" + name + ":check.count", metrics.getTotalCount() + "");
-                    vOps.set("zmon:metrics:" + name + ":ts", System.currentTimeMillis() / 1000 + "");
-                    return null;
-                }
-            });
-        } catch (Exception e) {
-            log.warn(e.getMessage(), e);
-        }
-    }
-
-    // can be removed because of TypedRedisOperations
-    // @SuppressWarnings("unchecked")
-    // protected static ValueOperations<String, String>
-    // getValueOperations(RedisOperations operations) {
-    // return operations.opsForValue();
-    // }
-
-    // avoid anonymous classes
-    private MetricsRedisCallback mcb = new MetricsRedisCallback();
-
-    protected void after2() {
-        try {
-            redisTemplate.execute(mcb);
-        } catch (Exception e) {
-            log.warn(e.getMessage(), e);
-        }
-    }
-
-    class MetricsRedisCallback implements SessionCallback<Object> {
-
-        @Override
-        public <K, V> Object execute(RedisOperations<K, V> operations) throws DataAccessException {
-            ValueOperations<String, String> vOps = getValueOperations(operations);
-            vOps.set("zmon:metrics:" + name + ":check.count", metrics.getTotalCount() + "");
-            vOps.set("zmon:metrics:" + name + ":ts", System.currentTimeMillis() / 1000 + "");
-            return null;
         }
 
     }
