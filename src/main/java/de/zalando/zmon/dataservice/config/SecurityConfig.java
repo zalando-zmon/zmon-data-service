@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.web.header.writers.HstsHeaderWriter;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.web.client.RestTemplate;
+import org.zalando.stups.oauth2.spring.security.expression.ExtendedOAuth2WebSecurityExpressionHandler;
 import org.zalando.stups.oauth2.spring.server.LaxAuthenticationExtractor;
 import org.zalando.stups.oauth2.spring.server.TokenInfoResourceServerTokenServices;
 
@@ -56,6 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
         accessDeniedHandler.setExceptionRenderer(exceptionRenderer);
 
         resources.authenticationEntryPoint(authenticationEntryPoint).accessDeniedHandler(accessDeniedHandler);
+
+        // here is the important part
+        resources.expressionHandler(new ExtendedOAuth2WebSecurityExpressionHandler());
     }
 
     @Override
@@ -81,10 +85,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
                 .anonymous()
                     .disable()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/api/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
-                    .antMatchers(HttpMethod.GET, "/rest/**").access("#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')")
-                    .antMatchers(HttpMethod.PUT, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')")
-                    .antMatchers(HttpMethod.DELETE, "/api/**").access("#oauth2.hasScope('zmon_data.write_all') || #oauth2.hasScope('uid')");
+                    .antMatchers(HttpMethod.GET, "/api/**").access(config.getOauth2Scopes().get("getApi"))
+                    .antMatchers(HttpMethod.GET, "/rest/**").access(config.getOauth2Scopes().get("getRest"))
+                    .antMatchers(HttpMethod.PUT, "/api/**").access(config.getOauth2Scopes().get("putApi"))
+                    .antMatchers(HttpMethod.DELETE, "/api/**").access(config.getOauth2Scopes().get("deleteApi"));
 
     }
     //@formatter:on
