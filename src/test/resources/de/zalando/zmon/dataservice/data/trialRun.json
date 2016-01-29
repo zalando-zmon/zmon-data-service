@@ -1,1 +1,1 @@
-{"id":"345", "result":{"entity":{"id":"987"}}}
+{"id":"request-id-345", "result":{"value":{"value":"result value"}, "entity":{"id":"987"}}}

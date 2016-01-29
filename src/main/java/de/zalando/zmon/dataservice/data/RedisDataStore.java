@@ -78,25 +78,22 @@ public class RedisDataStore {
     }
 
     public void storeTrialRun(String requestId, String id, String result) {
-        final String key = "zmon:trial_run:" + requestId + ":results";
+        /*final String key = "zmon:trial_run:" + requestId + ":results";
         BoundHashOperations<Object, String, String> bho = redisTemplate.boundHashOps(key);
         bho.put(id, result);
         bho.expire(300, TimeUnit.SECONDS);
-        // before was
-        // Jedis jedis = null;
-        // try {
-        // jedis = pool.getResource();
-        // // String key = "zmon:trial_run:" + requestId + ":results";
-        // jedis.hset(key, id, result);
-        // jedis.expire(key, 300);
-        // } finally {
-        // try {
-        // if (null != jedis)
-        // pool.returnResource(jedis);
-        // } catch (Exception ex) {
-        // LOG.error("Failed to return Redis to pool in trial run");
-        // }
-        // }
+        */
+
+        Jedis jedis = null;
+        try {
+          jedis = pool.getResource();
+          String key = "zmon:trial_run:" + requestId + ":results";
+          jedis.hset(key, id, result);
+          jedis.expire(key, 300);
+        } finally {
+          if (null != jedis)
+                jedis.close();
+        }
     }
 
     public void createEvents(String entity, int checkId, String checkValue, AlertData ad) {
