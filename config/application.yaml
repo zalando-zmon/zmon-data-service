@@ -11,10 +11,10 @@ dataservice:
   redis-port: 6379
   oauth2-token-info-url: http://localhost:54321/oauth2/tokeninfo
   oauth2-scopes:
-    getApi: "#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')"
-    getRest: "#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')"
-    putApi: "#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')"
-    deleteApi: "#oauth2.hasScope('zmon_data.read_all') || #oauth2.hasScope('uid')"
+    getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
+    getRest: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
+    putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
+    deleteApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
 
 
 spring:
