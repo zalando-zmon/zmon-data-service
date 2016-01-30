@@ -7,5 +7,6 @@
   "scope":["uid","simpleScope","testscope","zmon_data.write_all","zmon_data.read_all"],
   "expires_in":5000,
   "token_type":"Bearer",
-  "access_token":"987654321"
+  "access_token":"987654321",
+  "realm":"yourRealm"
 }

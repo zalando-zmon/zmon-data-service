@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
@@ -44,7 +44,7 @@ public class PutDataTest implements Resources {
     private JedisPool jedisPool;
 
     @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Before
     public void setUp() throws IOException {
@@ -53,14 +53,14 @@ public class PutDataTest implements Resources {
 
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, redisTemplate);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate);
         ds.before(wr);
         TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void putDataWithRedisTemplate() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, redisTemplate);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate);
         ds.after(wr);
         TimeUnit.SECONDS.sleep(10);
     }

@@ -30,6 +30,7 @@ class ApplicationMetricsWriter implements WorkResultWriter {
     @Async
     @Override
     public void write(WriteData writeData) {
+        log.debug("write application-metrics ...");
         if (writeData.getWorkerResultOptional().isPresent()) {
             try {
                 Map<Integer, List<CheckData>> partitions = writeData.getWorkerResultOptional().get().results.stream()
@@ -38,6 +39,7 @@ class ApplicationMetricsWriter implements WorkResultWriter {
                                 .abs(x.entity.get("application_id").hashCode() % config.getRestMetricHosts().size())));
 
                 applicationMetricsClient.receiveData(partitions);
+                log.debug("application-metrics written");
             } catch (Exception ex) {
                 // TODO, do we have a metric for this error too
                 log.error("Failed to write to REST metrics data={}", writeData.getData(), ex);

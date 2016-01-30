@@ -1,0 +1,8 @@
+logging:
+  level:
+    de.zalando.zmon: DEBUG
+
+dataservice:
+  log-check-data: true
+  log-kairosdb-requests: true
+  log-kairosdb-errors: true

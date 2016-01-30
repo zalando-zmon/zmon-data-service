@@ -1,5 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -8,6 +10,8 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 
 @Component
 class MarkWriter implements WorkResultWriter {
+
+    private final Logger log = LoggerFactory.getLogger(MarkWriter.class);
 
     private final DataServiceMetrics metrics;
 
@@ -19,8 +23,10 @@ class MarkWriter implements WorkResultWriter {
     @Async
     @Override
     public void write(WriteData writeData) {
+        log.debug("write metrics ...");
         metrics.markAccount(writeData.getAccountId(), writeData.getData().length());
         metrics.markCheck(writeData.getCheckId(), writeData.getData().length());
+        log.debug("metrics written");
     }
 
 }

@@ -3,20 +3,18 @@ package de.zalando.zmon.dataservice.data;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -57,16 +55,16 @@ public class RedisDataStore {
 
     private static final EventLogger EVENT_LOG = EventLogger.getLogger(RedisDataStore.class);
 
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     private final RedisScript<Long> checkAlertScript;
 
     @Autowired
     public RedisDataStore(JedisPool pool, @DefaultObjectMapper ObjectMapper mapper,
-            RedisTemplate<Object, Object> redisTemplate) {
+            StringRedisTemplate stringRedisTemplate) {
         this.pool = pool;
         this.mapper = mapper;
-        this.redisTemplate = redisTemplate;
+        this.stringRedisTemplate = stringRedisTemplate;
         this.checkAlertScript = initializeScript();
     }
 
@@ -78,20 +76,21 @@ public class RedisDataStore {
     }
 
     public void storeTrialRun(String requestId, String id, String result) {
-        /*final String key = "zmon:trial_run:" + requestId + ":results";
-        BoundHashOperations<Object, String, String> bho = redisTemplate.boundHashOps(key);
-        bho.put(id, result);
-        bho.expire(300, TimeUnit.SECONDS);
-        */
+        /*
+         * final String key = "zmon:trial_run:" + requestId + ":results";
+         * BoundHashOperations<Object, String, String> bho =
+         * redisTemplate.boundHashOps(key); bho.put(id, result); bho.expire(300,
+         * TimeUnit.SECONDS);
+         */
 
         Jedis jedis = null;
         try {
-          jedis = pool.getResource();
-          String key = "zmon:trial_run:" + requestId + ":results";
-          jedis.hset(key, id, result);
-          jedis.expire(key, 300);
+            jedis = pool.getResource();
+            String key = "zmon:trial_run:" + requestId + ":results";
+            jedis.hset(key, id, result);
+            jedis.expire(key, 300);
         } finally {
-          if (null != jedis)
+            if (null != jedis)
                 jedis.close();
         }
     }
@@ -167,10 +166,10 @@ public class RedisDataStore {
 
     protected void after(WorkerResult wr) {
         StoreWorkerResultCallback callback = new StoreWorkerResultCallback(wr);
-        redisTemplate.executePipelined(callback);
+        stringRedisTemplate.executePipelined(callback);
         LOG.debug("WorkerResult stored");
         for (String key : callback.getKeysToCheck()) {
-            redisTemplate.execute(checkAlertScript, Collections.singletonList("zmon:alerts:" + key), key);
+            stringRedisTemplate.execute(checkAlertScript, Collections.singletonList("zmon:alerts:" + key), key);
         }
         LOG.debug("Script executed for all keys");
     }
