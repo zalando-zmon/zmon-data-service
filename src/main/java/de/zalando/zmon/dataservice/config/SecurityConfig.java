@@ -2,6 +2,8 @@ package de.zalando.zmon.dataservice.config;
 
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +43,8 @@ import org.zalando.stups.oauth2.spring.server.TokenInfoResourceServerTokenServic
 @EnableResourceServer
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements ResourceServerConfigurer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);
+
     private static final String OAUTH2_CLIENT_ID = "zmon-data-service";
 
     @Autowired
@@ -70,6 +74,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
     //@formatter:off
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        LOG.info("Using the following oauth2 constraints:");
+        LOG.info("    getApi: {}", config.getOauth2Scopes().get("getApi"));
+        LOG.info("    getRest: {}", config.getOauth2Scopes().get("getRest"));
+        LOG.info("    putApi: {}", config.getOauth2Scopes().get("putApi"));
+        LOG.info("    deleteApi: {}", config.getOauth2Scopes().get("deleteApi"));
+
         http
             .headers()
                 .defaultsDisabled()
