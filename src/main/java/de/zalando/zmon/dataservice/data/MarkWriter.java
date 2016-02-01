@@ -11,7 +11,7 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 @Component
 class MarkWriter implements WorkResultWriter {
 
-    private final Logger log = LoggerFactory.getLogger(MarkWriter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MarkWriter.class);
 
     private final DataServiceMetrics metrics;
 
@@ -23,10 +23,10 @@ class MarkWriter implements WorkResultWriter {
     @Async
     @Override
     public void write(WriteData writeData) {
-        log.debug("write metrics ...");
+        LOG.debug("write metrics ...");
         metrics.markAccount(writeData.getAccountId(), writeData.getData().length());
         metrics.markCheck(writeData.getCheckId(), writeData.getData().length());
-        log.debug("metrics written");
+        LOG.debug("metrics written");
     }
 
 }
