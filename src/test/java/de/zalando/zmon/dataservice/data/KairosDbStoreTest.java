@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -49,8 +48,8 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     static class TestConfig {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            DataServiceConfigProperties props = new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            DataServiceConfigProperties props = new DataServiceConfigProperties();
             props.setKairosdbHost("localhost");
             props.setKairosdbPort(10081);
             props.setLogKairosdbRequests(true);
