@@ -1,0 +1,11 @@
+logging:
+  level:
+    de.zalando.zmon: DEBUG
+
+server:
+  port: 59935
+
+dataservice:
+  log-check-data: true
+  log-kairosdb-requests: true
+  log-kairosdb-errors: true

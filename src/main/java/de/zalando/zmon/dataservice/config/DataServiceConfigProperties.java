@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 @Configuration
 @ConfigurationProperties(prefix = "dataservice")
@@ -39,9 +41,14 @@ public class DataServiceConfigProperties {
     private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
 
     // @Value("${server.port}")
-    private int serverPort;
+    private int serverPort = 0;
 
     private String oauth2TokenInfoUrl;
+
+    @Autowired
+    public DataServiceConfigProperties(Environment environment) {
+        this.serverPort = environment.getProperty("server.port", int.class, 0);
+    }
 
     public String getRedisHost() {
         return redisHost;

@@ -3,9 +3,6 @@ package de.zalando.zmon.dataservice;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
@@ -16,7 +13,7 @@ import com.codahale.metrics.Timer;
  * Created by jmussler on 4/21/15.
  */
 
-@Component
+// @Component
 public class DataServiceMetrics {
 
     public static class LastUpdateGauge implements Gauge<Long> {
@@ -62,7 +59,7 @@ public class DataServiceMetrics {
 
     private final Timer kairosDBTimer;
 
-    @Autowired
+    // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
         this.totalRate = metrics.meter("data-service.total-rate");
@@ -76,10 +73,12 @@ public class DataServiceMetrics {
 
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
         Meter m = meters.get(name);
-        if(null!=m) return m;
+        if (null != m)
+            return m;
         synchronized (this) {
             m = meters.get(name);
-            if(null!=m) return m;
+            if (null != m)
+                return m;
             m = metrics.meter(name);
             meters.put(name, m);
             return m;
@@ -88,10 +87,12 @@ public class DataServiceMetrics {
 
     public Counter getOrCreateCounter(Map<String, Counter> counters, String name) {
         Counter m = counters.get(name);
-        if(null!=m) return m;
+        if (null != m)
+            return m;
         synchronized (this) {
             m = counters.get(name);
-            if(null!=m) return m;
+            if (null != m)
+                return m;
             m = metrics.counter(name);
             counters.put(name, m);
             return m;
@@ -117,29 +118,30 @@ public class DataServiceMetrics {
     public void markKairosError() {
         kairosErrorMeter.mark();
     }
+
     public void markRedisError() {
         redisErrorMeter.mark();
     }
 
     public void markAccount(String account, int size) {
-        getOrCreateMeter(accountByteMeters, "ds.acc."+account+".check.data-rate").mark(size);
-        getOrCreateMeter(accountRateMeters, "ds.acc."+account+".check.check-rate").mark();
+        getOrCreateMeter(accountByteMeters, "ds.acc." + account + ".check.data-rate").mark(size);
+        getOrCreateMeter(accountRateMeters, "ds.acc." + account + ".check.check-rate").mark();
     }
 
     public void markCheck(int checkId, int size) {
-        getOrCreateMeter(checkMeters, "ds.check."+checkId+".rate").mark(size);
-        getOrCreateCounter(checkCounter, "ds.check."+checkId+".counter").inc();
+        getOrCreateMeter(checkMeters, "ds.check." + checkId + ".rate").mark(size);
+        getOrCreateCounter(checkCounter, "ds.check." + checkId + ".counter").inc();
     }
 
     private void markEntityLastUpdate(String account) {
         LastUpdateGauge g = entityLastUpdateStores.get(account);
-        if(null == g) {
-            synchronized(this) {
+        if (null == g) {
+            synchronized (this) {
                 g = entityLastUpdateStores.get(account);
-                if(null == g) {
+                if (null == g) {
                     g = new LastUpdateGauge();
                     entityLastUpdateStores.put(account, g);
-                    metrics.register("ds.acc."+account+".entity.lastUpdate", g);
+                    metrics.register("ds.acc." + account + ".entity.lastUpdate", g);
                 }
             }
         }
@@ -148,7 +150,7 @@ public class DataServiceMetrics {
 
     public void markEntity(String account, int size) {
         markEntityLastUpdate(account);
-        getOrCreateMeter(entityMeters, "ds.acc."+account+".entity.rate").mark(size);
+        getOrCreateMeter(entityMeters, "ds.acc." + account + ".entity.rate").mark(size);
     }
 
     public Timer getKairosDBTimer() {
