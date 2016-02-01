@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -95,8 +94,8 @@ public class EntitiesControllerTest extends AbstractControllerTest {
     static class TestConfig {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            DataServiceConfigProperties props = new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            DataServiceConfigProperties props = new DataServiceConfigProperties();
             props.setProxyController(true);
             props.setProxyControllerUrl("http://localhost:9998");
             return props;

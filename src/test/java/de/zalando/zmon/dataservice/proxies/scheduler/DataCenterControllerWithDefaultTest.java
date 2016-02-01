@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
@@ -32,8 +31,8 @@ public class DataCenterControllerWithDefaultTest extends AbstractDataCenterContr
     static class TestConfig {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            DataServiceConfigProperties props = new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            DataServiceConfigProperties props = new DataServiceConfigProperties();
             props.setProxyScheduler(true);
             props.setProxySchedulerUrl("http://localhost:9999");
             return props;

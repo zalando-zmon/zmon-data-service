@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.codahale.metrics.Timer;
@@ -109,8 +108,8 @@ public class DataServiceControllerTest extends AbstractControllerTest {
     static class TestConfig {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            return new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            return new DataServiceConfigProperties();
         }
 
         @Bean

@@ -4,7 +4,6 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
@@ -19,8 +18,8 @@ public class ChecksControllerWithNoOpServiceTest extends AbstractCheckController
     static class TestConfig {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            return new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            return new DataServiceConfigProperties();
         }
 
         @Bean

@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.mock.env.MockEnvironment;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
@@ -18,7 +17,7 @@ public class LogDataWriterTest {
 
     @Before
     public void setUp() {
-        config = new DataServiceConfigProperties(new MockEnvironment());
+        config = new DataServiceConfigProperties();
         writer = new LogDataWriter(config);
         spy = Mockito.spy(writer);
     }

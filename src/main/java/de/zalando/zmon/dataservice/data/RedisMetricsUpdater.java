@@ -3,14 +3,16 @@ package de.zalando.zmon.dataservice.data;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
@@ -28,14 +30,23 @@ public class RedisMetricsUpdater implements TypedRedisOperations {
     private String name;
     private final DataServiceMetrics metrics;
 
+    @Value("${server.port:0}")
+    private int serverPort;
+
     @Autowired
-    public RedisMetricsUpdater(DataServiceConfigProperties config, DataServiceMetrics metrics, JedisPool pool) {
+    public RedisMetricsUpdater(DataServiceMetrics metrics, JedisPool pool)
+
+    {
         this.pool = pool;
         this.metrics = metrics;
+    }
+
+    @PostConstruct
+    public void init() {
         try {
-            name = "d-p" + config.getServerPort() + "." + InetAddress.getLocalHost().getHostName();
+            name = "d-p" + serverPort + "." + InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            name = "d-p" + config.getServerPort() + ".unknown_host";
+            name = "d-p" + serverPort + ".unknown_host";
         }
     }
 

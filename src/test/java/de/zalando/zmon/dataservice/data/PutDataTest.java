@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
@@ -71,8 +70,8 @@ public class PutDataTest implements Resources {
     static class TestConfiguration {
 
         @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties(Environment env) {
-            DataServiceConfigProperties props = new DataServiceConfigProperties(env);
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            DataServiceConfigProperties props = new DataServiceConfigProperties();
 
             props.setRedisPort(6379);
             return props;
