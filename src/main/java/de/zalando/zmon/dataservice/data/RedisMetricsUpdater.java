@@ -30,7 +30,7 @@ public class RedisMetricsUpdater implements TypedRedisOperations {
     private String name;
     private final DataServiceMetrics metrics;
 
-    @Value("${server.port}")
+    @Value("${server.port:0}")
     private int serverPort;
 
     @Autowired
@@ -39,12 +39,6 @@ public class RedisMetricsUpdater implements TypedRedisOperations {
     {
         this.pool = pool;
         this.metrics = metrics;
-        // try {
-        // name = "d-p" + serverPort + "." +
-        // InetAddress.getLocalHost().getHostName();
-        // } catch (UnknownHostException e) {
-        // name = "d-p" + serverPort + ".unknown_host";
-        // }
     }
 
     @PostConstruct
