@@ -43,7 +43,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 @SpringApplicationConfiguration(classes = { Application.class })
-@WebIntegrationTest(randomPort = true)
+@WebIntegrationTest(randomPort = false)
 @ActiveProfiles("local-it")
 public class DataServiceLocalIT extends AbstractControllerTest {
 
@@ -51,6 +51,9 @@ public class DataServiceLocalIT extends AbstractControllerTest {
 
     @Value("${local.server.port}")
     private int port;
+
+    @Value("${server.port}")
+    private int serverPort;
 
     @Rule
     public final WireMockRule wireMockRule = new WireMockRule(10080);
@@ -65,6 +68,7 @@ public class DataServiceLocalIT extends AbstractControllerTest {
     @Test
     public void startUp() throws InterruptedException, IOException {
         log.info("Service up and running, start with requests ...");
+        log.info("Server-Port is : {}", serverPort);
         TimeUnit.SECONDS.sleep(3);
 
         // try out RipTide
