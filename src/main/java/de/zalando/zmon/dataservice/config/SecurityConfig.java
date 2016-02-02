@@ -98,8 +98,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
                     .antMatchers(HttpMethod.GET, "/api/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.GET, "/rest/**").access(config.getOauth2Scopes().get("getRest"))
                     .antMatchers(HttpMethod.PUT, "/api/**").access(config.getOauth2Scopes().get("putApi"))
-                    .antMatchers(HttpMethod.DELETE, "/api/**").access(config.getOauth2Scopes().get("deleteApi"));
-
+                    .antMatchers(HttpMethod.DELETE, "/api/**").access(config.getOauth2Scopes().get("deleteApi"))
+                    // deny anything else to avoid opening up other APIs by mistake!!
+                    .anyRequest().denyAll();
     }
     //@formatter:on
 
