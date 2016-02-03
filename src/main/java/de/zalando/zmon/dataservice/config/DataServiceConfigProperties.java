@@ -53,11 +53,11 @@ public class DataServiceConfigProperties {
     private int tokenInfoCacheMaxSize = 1000;
 
     /**
-     * How long these information will be stored in cache. Unit is HOUR.
+     * How long these information will be stored in cache. Unit is MINUTES.
      * 
-     * Default: 4
+     * Default: 240
      */
-    private int tokenInfoCacheTime = 4;
+    private int tokenInfoCacheTime = 240;
 
     private String oauth2TokenInfoUrl;
 

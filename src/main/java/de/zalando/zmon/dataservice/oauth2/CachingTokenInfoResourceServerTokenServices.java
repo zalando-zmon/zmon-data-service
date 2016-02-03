@@ -42,13 +42,13 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
     }
 
     /**
-     * {@link CacheBuilder} with max-entries = 1000 and expireAfterWrite = 4
-     * HOURS.
+     * {@link CacheBuilder} with max-entries = 1000 and expireAfterWrite = 10
+     * MINUTES.
      * 
      * @return
      */
     public static CacheBuilder<String, OAuth2Authentication> getDefaultCacheBuilder() {
-        return getCacheBuilder(1000, 4);
+        return getCacheBuilder(1000, 10);
     }
 
     /**
@@ -56,11 +56,11 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
      * 
      * @param maxSize
      * @param expireAfter
-     *            in HOURS
+     *            in MINUTES
      * @return
      */
     public static CacheBuilder<String, OAuth2Authentication> getCacheBuilder(int maxSize, int expireAfter) {
-        return CacheBuilder.newBuilder().maximumSize(maxSize).expireAfterWrite(expireAfter, TimeUnit.HOURS)
+        return CacheBuilder.newBuilder().maximumSize(maxSize).expireAfterWrite(expireAfter, TimeUnit.MINUTES)
                 .removalListener(new CacheRemovalListener());
     }
 
