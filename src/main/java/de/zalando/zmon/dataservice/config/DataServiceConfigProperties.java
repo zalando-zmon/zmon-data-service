@@ -38,6 +38,12 @@ public class DataServiceConfigProperties {
 
     private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
 
+    private boolean tokenInfoCacheEnabled = false;
+
+    private int tokenInfoCacheMaxSize = 1000;
+
+    private int tokenInfoCacheTime = 4;
+
     private String oauth2TokenInfoUrl;
 
     public String getRedisHost() {
@@ -182,6 +188,30 @@ public class DataServiceConfigProperties {
 
     public void setOauth2Scopes(Map<String, String> oauth2Scopes) {
         this.oauth2Scopes = oauth2Scopes;
+    }
+
+    public int getTokenInfoCacheMaxSize() {
+        return tokenInfoCacheMaxSize;
+    }
+
+    public void setTokenInfoCacheMaxSize(int tokenInfoCacheMaxSize) {
+        this.tokenInfoCacheMaxSize = tokenInfoCacheMaxSize;
+    }
+
+    public int getTokenInfoCacheTime() {
+        return tokenInfoCacheTime;
+    }
+
+    public void setTokenInfoCacheTime(int tokenInfoCacheTime) {
+        this.tokenInfoCacheTime = tokenInfoCacheTime;
+    }
+
+    public boolean isTokenInfoCacheEnabled() {
+        return tokenInfoCacheEnabled;
+    }
+
+    public void setTokenInfoCacheEnabled(boolean tokenInfoCacheEnabled) {
+        this.tokenInfoCacheEnabled = tokenInfoCacheEnabled;
     }
 
 }
