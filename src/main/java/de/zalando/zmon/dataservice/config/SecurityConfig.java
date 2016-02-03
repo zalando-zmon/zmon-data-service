@@ -69,6 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers("/health");
+        web.ignoring().antMatchers("/api/**");
     }
 
     //@formatter:off
