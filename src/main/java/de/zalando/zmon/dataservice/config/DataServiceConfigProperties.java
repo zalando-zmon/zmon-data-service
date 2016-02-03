@@ -38,10 +38,25 @@ public class DataServiceConfigProperties {
 
     private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
 
+    /**
+     * Enables caching for information about a token.
+     * 
+     * Default: false
+     */
     private boolean tokenInfoCacheEnabled = false;
 
+    /**
+     * Maximum size for the cache.
+     * 
+     * Default : 1000
+     */
     private int tokenInfoCacheMaxSize = 1000;
 
+    /**
+     * How long these information will be stored in cache. Unit is HOUR.
+     * 
+     * Default: 4
+     */
     private int tokenInfoCacheTime = 4;
 
     private String oauth2TokenInfoUrl;
