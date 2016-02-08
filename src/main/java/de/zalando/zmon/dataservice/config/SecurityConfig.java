@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedRe
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.error.DefaultOAuth2ExceptionRenderer;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
@@ -30,8 +31,13 @@ import org.springframework.security.web.header.writers.HstsHeaderWriter;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.web.client.RestTemplate;
 import org.zalando.stups.oauth2.spring.security.expression.ExtendedOAuth2WebSecurityExpressionHandler;
-import org.zalando.stups.oauth2.spring.server.LaxAuthenticationExtractor;
+import org.zalando.stups.oauth2.spring.server.AuthenticationExtractor;
+import org.zalando.stups.oauth2.spring.server.DefaultAuthenticationExtractor;
 import org.zalando.stups.oauth2.spring.server.TokenInfoResourceServerTokenServices;
+
+import com.google.common.cache.CacheBuilder;
+
+import de.zalando.zmon.dataservice.oauth2.CachingTokenInfoResourceServerTokenServices;
 
 /**
  * 
@@ -107,9 +113,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
     @Bean
     public ResourceServerTokenServices resourceServerTokenServices(final RestTemplate tokenInfo) {
         String endpoint = config.getOauth2TokenInfoUrl();
-        final LaxAuthenticationExtractor authenticationExtractor = new LaxAuthenticationExtractor();
 
-        return new TokenInfoResourceServerTokenServices(endpoint, OAUTH2_CLIENT_ID, authenticationExtractor, tokenInfo);
+        final AuthenticationExtractor authenticationExtractor = new DefaultAuthenticationExtractor();
+
+        if (config.isTokenInfoCacheEnabled()) {
+            LOG.info("Use caching for tokenInfo.");
+            CacheBuilder<String, OAuth2Authentication> cacheBuilder = CachingTokenInfoResourceServerTokenServices
+                    .getCacheBuilder(config.getTokenInfoCacheMaxSize(), config.getTokenInfoCacheTime());
+
+            return new CachingTokenInfoResourceServerTokenServices(endpoint, OAUTH2_CLIENT_ID, authenticationExtractor,
+                    tokenInfo, cacheBuilder);
+        } else {
+            LOG.info("Use default for tokenInfo.");
+            return new TokenInfoResourceServerTokenServices(endpoint, OAUTH2_CLIENT_ID, authenticationExtractor,
+                    tokenInfo);
+        }
     }
 
     @Bean
@@ -127,6 +145,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
 
     @Bean
     ClientHttpRequestFactory requestFactory() {
+        // TODO, we use 'http.maxConnection' as systemProperties
+        // CloseableHttpClient httpClient =
+        // HttpClientBuilder.create().useSystemProperties().setMaxConnTotal(200)
+        // .setMaxConnPerRoute(200).build();
+
         final HttpComponentsClientHttpRequestFactory httpClientFactory = new HttpComponentsClientHttpRequestFactory();
         httpClientFactory.setConnectTimeout(2000);
         httpClientFactory.setReadTimeout(2000);
