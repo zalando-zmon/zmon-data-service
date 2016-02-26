@@ -15,6 +15,7 @@ import org.zalando.stups.oauth2.spring.server.TokenInfoResourceServerTokenServic
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * 
@@ -75,7 +76,14 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
             authentication = cache.get(accessToken);
             return authentication;
         } catch (ExecutionException e) {
-            log.error("Error getting Authentication from cache : {}", accessToken.substring(0, 6));
+            if (log.isDebugEnabled()) {
+                log.error("Error getting Authentication from cache : {}", accessToken.substring(0, 6));
+            }
+            throw new CacheReadAuthenticationException(e.getMessage(), e);
+        } catch (UncheckedExecutionException e) {
+            if (log.isDebugEnabled()) {
+                log.error(e.getMessage(), e);
+            }
             throw new CacheReadAuthenticationException(e.getMessage(), e);
         }
     }
