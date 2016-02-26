@@ -19,7 +19,9 @@ class CacheRemovalListener implements RemovalListener<String, OAuth2Authenticati
 
     @Override
     public void onRemoval(RemovalNotification<String, OAuth2Authentication> notification) {
-        log.info("Remove Authentication for token : {}", notification.getKey().substring(0, 6));
+        if (log.isDebugEnabled()) {
+            log.debug("Remove Authentication for token : {}", notification.getKey().substring(0, 6));
+        }
     }
 
 }
