@@ -38,6 +38,71 @@ public class DataServiceConfigProperties {
 
     private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
 
+    private int kairosDBConnections = 50;
+    private int kairosDBTimeout = 1000;
+    private int kairosDBSockeTimeout = 500;
+
+    private String dataProxyUrl = null;
+    private int dataProxyConnections = 50;
+    private int dataProxySocketTimeout = 500;
+    private int dataProxyTimeout = 1000;
+
+    public String getDataProxyUrl() {
+        return dataProxyUrl;
+    }
+
+    public void setDataProxyUrl(String dataProxyUrl) {
+        this.dataProxyUrl = dataProxyUrl;
+    }
+
+    public int getDataProxyConnections() {
+        return dataProxyConnections;
+    }
+
+    public void setDataProxyConnections(int dataProxyConnections) {
+        this.dataProxyConnections = dataProxyConnections;
+    }
+
+    public int getDataProxySocketTimeout() {
+        return dataProxySocketTimeout;
+    }
+
+    public void setDataProxySocketTimeout(int dataProxySocketTimeout) {
+        this.dataProxySocketTimeout = dataProxySocketTimeout;
+    }
+
+    public int getDataProxyTimeout() {
+        return dataProxyTimeout;
+    }
+
+    public void setDataProxyTimeout(int dataProxyTimeout) {
+        this.dataProxyTimeout = dataProxyTimeout;
+    }
+
+    public int getKairosDBConnections() {
+        return kairosDBConnections;
+    }
+
+    public void setKairosDBConnections(int kairosDBConnections) {
+        this.kairosDBConnections = kairosDBConnections;
+    }
+
+    public int getKairosDBTimeout() {
+        return kairosDBTimeout;
+    }
+
+    public void setKairosDBTimeout(int kairosDBTimeout) {
+        this.kairosDBTimeout = kairosDBTimeout;
+    }
+
+    public int getKairosDBSockeTimeout() {
+        return kairosDBSockeTimeout;
+    }
+
+    public void setKairosDBSockeTimeout(int kairosDBSockeTimeout) {
+        this.kairosDBSockeTimeout = kairosDBSockeTimeout;
+    }
+
     /**
      * Enables caching for information about a token.
      * 

@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +44,6 @@ public class KairosDBStore {
     private final DataServiceConfigProperties config;
 
     private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id","application_version","stack_name","stack_version"));
-    private static final Set<String> SKIP_FIELDS = new HashSet<>(Arrays.asList("ts","td","worker"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if(base instanceof NumericNode) {
@@ -76,6 +78,7 @@ public class KairosDBStore {
 
     private final String url;
     private final DataServiceMetrics metrics;
+    private final Executor executor;
 
     private static class DataPoint {
         public String name;
@@ -83,11 +86,18 @@ public class KairosDBStore {
         public Map<String, String> tags = new HashMap<>();
     }
 
+    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
+        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
+        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
+    }
+
     @Autowired
     public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metrics = metrics;
         this.config = config;
         this.url = "http://"+config.getKairosdbHost() +":"+config.getKairosdbPort() +"/api/v1/datapoints";
+
+        executor = Executor.newInstance(getHttpClient(config.getKairosDBSockeTimeout(), config.getKairosDBTimeout(), config.getKairosDBConnections()));
     }
 
     public static String extractMetricName(String key) {
@@ -170,8 +180,6 @@ public class KairosDBStore {
                     points.add(p);
                 }
             }
-
-            final Executor executor = Executor.newInstance();
 
             String query = mapper.writeValueAsString(points);
             if(config.isLogKairosdbRequests()) {
