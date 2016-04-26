@@ -76,13 +76,13 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
             authentication = cache.get(accessToken);
             return authentication;
         } catch (ExecutionException e) {
-            if (log.isDebugEnabled()) {
-                log.error("Error getting Authentication from cache : {}", accessToken.substring(0, 6));
+            if (true) {
+                log.error("Error getting Authentication from cache : {}", accessToken, e);
             }
             throw new CacheReadAuthenticationException(e.getMessage(), e);
         } catch (UncheckedExecutionException e) {
-            if (log.isDebugEnabled()) {
-                log.error(e.getMessage(), e);
+            if (true) {
+                log.error("Error getting Authentication from cache : {}", accessToken, e);
             }
             throw new CacheReadAuthenticationException(e.getMessage(), e);
         }
