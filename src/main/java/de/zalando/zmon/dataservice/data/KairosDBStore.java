@@ -97,9 +97,9 @@ public class KairosDBStore {
         this.config = config;
         this.url = "http://"+config.getKairosdbHost() +":"+config.getKairosdbPort() +"/api/v1/datapoints";
 
-        LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSocketimeout(), config.getKairosdbTimeout());
+        LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
 
-        executor = Executor.newInstance(getHttpClient(config.getKairosdbSocketimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
+        executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
     }
 
     public static String extractMetricName(String key) {

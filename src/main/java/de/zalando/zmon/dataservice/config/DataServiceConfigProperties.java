@@ -40,7 +40,7 @@ public class DataServiceConfigProperties {
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
-    private int kairosdbSocketimeout = 500;
+    private int kairosdbSockettimeout = 500;
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
@@ -95,12 +95,12 @@ public class DataServiceConfigProperties {
         this.kairosdbTimeout = kairosdbTimeout;
     }
 
-    public int getKairosdbSocketimeout() {
-        return kairosdbSocketimeout;
+    public int getKairosdbSockettimeout() {
+        return kairosdbSockettimeout;
     }
 
-    public void setKairosdbSocketimeout(int kairosdbSocketimeout) {
-        this.kairosdbSocketimeout = kairosdbSocketimeout;
+    public void setKairosdbSockettimeout(int kairosdbSockettimeout) {
+        this.kairosdbSockettimeout = kairosdbSockettimeout;
     }
 
     /**
