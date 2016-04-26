@@ -97,6 +97,8 @@ public class KairosDBStore {
         this.config = config;
         this.url = "http://"+config.getKairosdbHost() +":"+config.getKairosdbPort() +"/api/v1/datapoints";
 
+        LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosDBConnections(), config.getKairosDBSockeTimeout(), config.getKairosDBTimeout());
+
         executor = Executor.newInstance(getHttpClient(config.getKairosDBSockeTimeout(), config.getKairosDBTimeout(), config.getKairosDBConnections()));
     }
 
