@@ -37,15 +37,18 @@ public class DataServiceController {
 
     private final List<WorkResultWriter> workResultWriter;
 
+    private final ProxyWriter proxyWriter;
+
     @Autowired
     public DataServiceController(RedisDataStore storage, DataServiceMetrics dataServiceMetrics,
             @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
-            List<WorkResultWriter> workResultWriter) {
+            List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter) {
         this.storage = storage;
         this.metrics = dataServiceMetrics;
         this.mapper = defaultObjectMapper;
         this.valueMapper = customObjectMapper;
         this.workResultWriter = workResultWriter;
+        this.proxyWriter = proxyWriter;
     }
 
     @RequestMapping(value = "/trial-run/", method = RequestMethod.PUT, consumes = { "text/plain", "application/json" })
