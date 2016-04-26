@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,6 +12,7 @@ public class ProxyWriter {
 
     private final String forwardUrl;
 
+    @Autowired
     public ProxyWriter(DataServiceConfigProperties configuration) {
         forwardUrl = configuration.getDataProxyUrl();
     }
