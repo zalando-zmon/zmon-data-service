@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.cglib.proxy.Proxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,8 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     private KairosDBStore kairosStore;
 
+    private ProxyWriter proxyWriter;
+
     @Autowired
     @DefaultObjectMapper
     private ObjectMapper defaultObjectMapper;
@@ -58,9 +61,10 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
         storage = Mockito.mock(RedisDataStore.class);
         kairosStore = Mockito.mock(KairosDBStore.class);
+        proxyWriter = Mockito.mock(ProxyWriter.class);
 
         controller = new DataServiceController(storage, metrics, defaultObjectMapper, customObjectMapper,
-                workResultWriter);
+                workResultWriter, proxyWriter);
     }
 
     @After
