@@ -74,6 +74,10 @@ public class DataServiceMetrics {
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
     }
 
+    public MetricRegistry getMetricRegistry() {
+        return metrics;
+    }
+
     public Meter getOrCreateMeter(Map<String, Meter> meters, String name) {
         Meter m = meters.get(name);
         if (null != m)

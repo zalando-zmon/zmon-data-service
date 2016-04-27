@@ -21,7 +21,6 @@ public class DataServiceConfigProperties {
 
     private boolean proxyController = false;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
-
     private String proxyControllerBaseUrl = "http://localhost:8080/";
 
     private boolean proxyScheduler = false;
@@ -46,6 +45,43 @@ public class DataServiceConfigProperties {
     private int dataProxyConnections = 50;
     private int dataProxySocketTimeout = 500;
     private int dataProxyTimeout = 1000;
+
+    private String proxyKairosdbUrl = "";
+    private int proxyKairosdbConnections = 25;
+    private int proxyKairosdbSockettimeout = 500;
+    private int proxyKairosdbTimeout = 1000;
+
+    public String getProxyKairosdbUrl() {
+        return proxyKairosdbUrl;
+    }
+
+    public void setProxyKairosdbUrl(String proxyKairosdbUrl) {
+        this.proxyKairosdbUrl = proxyKairosdbUrl;
+    }
+
+    public int getProxyKairosdbConnections() {
+        return proxyKairosdbConnections;
+    }
+
+    public void setProxyKairosdbConnections(int proxyKairosdbConnections) {
+        this.proxyKairosdbConnections = proxyKairosdbConnections;
+    }
+
+    public int getProxyKairosdbSockettimeout() {
+        return proxyKairosdbSockettimeout;
+    }
+
+    public void setProxyKairosdbSockettimeout(int proxyKairosdbSockettimeout) {
+        this.proxyKairosdbSockettimeout = proxyKairosdbSockettimeout;
+    }
+
+    public int getProxyKairosdbTimeout() {
+        return proxyKairosdbTimeout;
+    }
+
+    public void setProxyKairosdbTimeout(int proxyKairosdbTimeout) {
+        this.proxyKairosdbTimeout = proxyKairosdbTimeout;
+    }
 
     public String getDataProxyUrl() {
         return dataProxyUrl;
