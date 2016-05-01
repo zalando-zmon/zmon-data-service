@@ -65,7 +65,6 @@ public class ProxyWriter {
 
         try {
             Request request = Request.Put(forwardUrl + "/api/v1/data/" + accountId + "/" + checkId + "/")
-                    .useExpectContinue()
                     .addHeader("Authorization", "Bearer: " + token)
                     .bodyString(data, ContentType.APPLICATION_JSON);
 
