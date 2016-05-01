@@ -25,14 +25,14 @@ public class DefaultSchedulerService implements SchedulerService {
 	@Override
 	public String trialRun(String dc) throws IOException, URISyntaxException {
 		URI uri = new URIBuilder().setPath(config.getProxySchedulerUrl() + "/trial-runs/" + dc + "/").build();
-		return Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+		return Request.Get(uri).execute().returnContent().asString();
 	}
 
 	@Override
 	public String instantEvaluations(String dc) throws IOException, URISyntaxException {
 		URI uri = new URIBuilder().setPath(config.getProxySchedulerUrl() + "/instant-evaluations/" + dc + "/")
 				.build();
-		return Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+		return Request.Get(uri).execute().returnContent().asString();
 	}
 
 }

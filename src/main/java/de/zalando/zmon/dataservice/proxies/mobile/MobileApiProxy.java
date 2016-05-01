@@ -59,7 +59,7 @@ public class MobileApiProxy {
     public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value="team", required=false, defaultValue = "*") String team) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/api/v1/checks/all-active-alert-definitions").build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         JsonNode node = mapper.readTree(r);
         List<AlertHeader> alerts = new ArrayList<>();
         JsonNode alertDefinitions = ((ArrayNode)node.get("alert_definitions"));
@@ -87,7 +87,7 @@ public class MobileApiProxy {
     public ResponseEntity<String> getAlertDetails(@PathVariable(value="alert_id") int alertId) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/alertDetails").addParameter("alert_id", ""+alertId).build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         return new ResponseEntity<>( r, HttpStatus.OK);
     }
 
@@ -95,7 +95,7 @@ public class MobileApiProxy {
     public ResponseEntity<String> getActiveAlerts(@RequestParam(value="team", required=false, defaultValue = "*") String team, @RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allAlerts").addParameter("team", team).build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         return new ResponseEntity<>( r, HttpStatus.OK);
     }
 
@@ -103,7 +103,7 @@ public class MobileApiProxy {
     public ResponseEntity<String> getZMONStatus() throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/status").build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         return new ResponseEntity<>( r, HttpStatus.OK);
     }
 
@@ -111,7 +111,7 @@ public class MobileApiProxy {
     public ResponseEntity<String> getAllTeams() throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allTeams").build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         return new ResponseEntity<>( r, HttpStatus.OK);
     }
 }
