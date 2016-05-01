@@ -1,7 +1,5 @@
 package de.zalando.zmon.dataservice.data;
 
-import de.zalando.zmon.dataservice.DataServiceMetrics;
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -10,9 +8,11 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
 /**
  * Created by jmussler on 25.04.16.
@@ -47,6 +47,7 @@ public class ProxyWriter {
     /*
     * We will reuse the original request's token for the proxy call, that saves us some setup/dependency to token management
     * */
+    @Async
     public void write(String token, String accountId, String checkId, String data) {
         if (null == forwardUrl && !"".equals(forwardUrl)) {
             return;
@@ -62,7 +63,7 @@ public class ProxyWriter {
                 metrics.markProxyError();
             }
         }
-        catch(IOException ex) {
+        catch (Exception ex) {
             metrics.markProxyError();
         }
     }

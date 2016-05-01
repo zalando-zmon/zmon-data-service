@@ -9,7 +9,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.cglib.proxy.Proxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -105,6 +104,20 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
         Mockito.verify(metrics, Mockito.atLeastOnce()).markTrialRunData();
         Mockito.verify(metrics, Mockito.never()).markTrialRunError();
+    }
+
+    @Test
+    public void extractToken() {
+        Optional<String> token = controller.extractTokenFromHeader("Bearer: 123456789");
+        Assertions.assertThat(token).isNotNull();
+        Assertions.assertThat(token.isPresent()).isTrue();
+        Assertions.assertThat(token.get()).isEqualTo("123456789");
+    }
+
+    @Test
+    public void writeToProxy() {
+        controller.proxyData("Bearer: 123456789", "123", "12345", "");
+        Mockito.verify(proxyWriter, Mockito.times(1)).write("123456789", "123", "12345", "");
     }
 
     @Configuration

@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +26,8 @@ import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 @RestController
 @RequestMapping("/api/v1/data")
 public class DataServiceController {
+
+    private static final String BEARER = "Bearer: ";
 
     private final Logger log = LoggerFactory.getLogger(DataServiceController.class);
 
@@ -67,13 +71,27 @@ public class DataServiceController {
     @RequestMapping(value = "/{account}/{checkid}/", method = RequestMethod.PUT, consumes = { "text/plain",
             "application/json" })
     void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId,
-            @RequestBody String data) {
+            @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+
+        proxyData(authHeader, accountId, String.valueOf(checkId), data);
 
         Optional<WorkerResult> wrOptional = extractAndFilter(data, accountId, checkId);
         WriteData writeData = new WriteData(wrOptional, accountId, checkId, data);
 
         // some writer are async, keep in mind
         workResultWriter.forEach(writer -> writer.write(writeData));
+    }
+
+    protected void proxyData(String authHeader, String accountId, String checkId, String data) {
+        extractTokenFromHeader(authHeader).ifPresent(t -> proxyWriter.write(t, accountId, checkId, data));
+    }
+
+    protected Optional<String> extractTokenFromHeader(String header) {
+        try {
+            return Optional.ofNullable(header.substring(BEARER.length()));
+        } catch (IndexOutOfBoundsException e) {
+            return Optional.empty();
+        }
     }
 
     protected Optional<WorkerResult> extractAndFilter(String data, String accountId, int checkId) {
