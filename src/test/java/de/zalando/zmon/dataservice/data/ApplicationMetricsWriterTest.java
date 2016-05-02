@@ -1,5 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.After;
@@ -18,6 +20,9 @@ public class ApplicationMetricsWriterTest {
     @Before
     public void setUp() {
         config = new DataServiceConfigProperties();
+        List<String> metricHosts = new ArrayList<>();
+        metricHosts.add("localhost");
+        config.setRestMetricHosts(metricHosts);
         applicationMetricsClient = Mockito.mock(AppMetricsClient.class);
     }
 
