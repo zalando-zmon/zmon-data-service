@@ -31,7 +31,7 @@ class ApplicationMetricsWriter implements WorkResultWriter {
     @Override
     public void write(WriteData writeData) {
         log.debug("write application-metrics ...");
-        if (writeData.getWorkerResultOptional().isPresent()) {
+        if (writeData.getWorkerResultOptional().isPresent() && config.getRestMetricHosts()!=null && config.getRestMetricHosts().size()>0) {
             try {
                 Map<Integer, List<CheckData>> partitions = writeData.getWorkerResultOptional().get().results.stream()
                         .filter(x -> config.getActuatorMetricChecks().contains(x.check_id)).filter(x -> !x.exception)
