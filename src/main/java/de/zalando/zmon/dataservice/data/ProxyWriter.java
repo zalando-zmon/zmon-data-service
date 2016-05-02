@@ -65,7 +65,7 @@ public class ProxyWriter {
 
         try {
             Request request = Request.Put(forwardUrl + "/api/v1/data/" + accountId + "/" + checkId + "/")
-                    .addHeader("Authorization", "Bearer: " + token)
+                    .addHeader("Authorization", "Bearer " + token)
                     .bodyString(data, ContentType.APPLICATION_JSON);
 
             async.execute(request, new FutureCallback<Content>() {

@@ -27,8 +27,6 @@ import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 @RequestMapping("/api/v1/data")
 public class DataServiceController {
 
-    private static final String BEARER = "Bearer: ";
-
     private final Logger log = LoggerFactory.getLogger(DataServiceController.class);
 
     private final DataServiceMetrics metrics;
@@ -88,7 +86,7 @@ public class DataServiceController {
 
     protected Optional<String> extractTokenFromHeader(String header) {
         try {
-            return Optional.ofNullable(header.substring(BEARER.length()));
+            return Optional.ofNullable(header.substring(7)); // Bearer
         } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         }
