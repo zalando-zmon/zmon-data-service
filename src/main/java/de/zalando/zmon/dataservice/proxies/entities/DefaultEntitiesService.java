@@ -40,13 +40,13 @@ public class DefaultEntitiesService implements EntitiesService {
 
         final Executor executor = Executor.newInstance();
 
-        return executor.execute(Request.Delete(uri).useExpectContinue()).returnContent().asString();
+        return executor.execute(Request.Delete(uri)).returnContent().asString();
 	}
 
 	@Override
 	public String getEntities(String query) throws URISyntaxException, IOException {
 		URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/").setParameter("query",query).build();
-        final String r = Request.Get(uri).useExpectContinue().execute().returnContent().asString();
+        final String r = Request.Get(uri).execute().returnContent().asString();
         return r;
 	}
 
@@ -62,7 +62,7 @@ public class DefaultEntitiesService implements EntitiesService {
 
 		final Executor executor = Executor.newInstance();
 
-		String r = executor.execute(Request.Put(uri).useExpectContinue()
+		String r = executor.execute(Request.Put(uri)
 				.bodyString(customObjectMapper.writeValueAsString(node), ContentType.APPLICATION_JSON)).returnContent()
 				.asString();
 		return r;

@@ -188,8 +188,7 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            executor.execute(Request.Post(this.url).useExpectContinue().bodyString(query,
-                    ContentType.APPLICATION_JSON)).returnContent().asString();
+            executor.execute(Request.Post(this.url).bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
         }
         catch(IOException ex) {
             if(config.isLogKairosdbErrors()) {

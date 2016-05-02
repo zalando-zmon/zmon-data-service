@@ -43,6 +43,7 @@ public class DataServiceConfigProperties {
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
+    private int dataProxyPoolSize = 50;
     private int dataProxySocketTimeout = 500;
     private int dataProxyTimeout = 1000;
 
@@ -50,6 +51,14 @@ public class DataServiceConfigProperties {
     private int proxyKairosdbConnections = 25;
     private int proxyKairosdbSockettimeout = 500;
     private int proxyKairosdbTimeout = 1000;
+
+    public int getDataProxyPoolSize() {
+        return dataProxyPoolSize;
+    }
+
+    public void setDataProxyPoolSize(int dataProxyPoolSize) {
+        this.dataProxyPoolSize = dataProxyPoolSize;
+    }
 
     public String getProxyKairosdbUrl() {
         return proxyKairosdbUrl;

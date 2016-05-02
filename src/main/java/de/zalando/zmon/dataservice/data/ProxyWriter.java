@@ -3,16 +3,22 @@ package de.zalando.zmon.dataservice.data;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.fluent.Async;
+import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by jmussler on 25.04.16.
@@ -26,6 +32,8 @@ public class ProxyWriter {
 
     private DataServiceMetrics metrics;
 
+    private Async async;
+
     @Autowired
     public ProxyWriter(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.forwardUrl = config.getDataProxyUrl();
@@ -33,9 +41,12 @@ public class ProxyWriter {
 
         if (null != forwardUrl) {
             executor = Executor.newInstance(getHttpClient(config.getDataProxySocketTimeout(), config.getDataProxyTimeout(), config.getDataProxyConnections()));
+            ExecutorService threadpool = Executors.newFixedThreadPool(config.getDataProxyPoolSize());
+            async = Async.newInstance().use(threadpool).use(executor);
         }
         else {
             executor = null;
+            async = null;
         }
     }
 
@@ -47,21 +58,29 @@ public class ProxyWriter {
     /*
     * We will reuse the original request's token for the proxy call, that saves us some setup/dependency to token management
     * */
-    @Async
     public void write(String token, String accountId, String checkId, String data) {
         if (null == forwardUrl && !"".equals(forwardUrl)) {
             return;
         }
 
         try {
-            HttpResponse r = executor.execute(Request.Put(forwardUrl + "/api/v1/data/" + accountId + "/" + checkId + "/")
-                                                    .useExpectContinue()
-                                                    .addHeader("Authorization", "Bearer: " + token)
-                                                    .bodyString(data, ContentType.APPLICATION_JSON)).returnResponse();
+            Request request = Request.Put(forwardUrl + "/api/v1/data/" + accountId + "/" + checkId + "/")
+                    .addHeader("Authorization", "Bearer: " + token)
+                    .bodyString(data, ContentType.APPLICATION_JSON);
 
-            if (r.getStatusLine().getStatusCode()!= 200) {
-                metrics.markProxyError();
-            }
+            async.execute(request, new FutureCallback<Content>() {
+
+                public void failed(final Exception ex) {
+                    metrics.markProxyError();
+                }
+
+                public void completed(final Content content) {
+                }
+
+                public void cancelled() {
+                }
+
+            });
         }
         catch (Exception ex) {
             metrics.markProxyError();
