@@ -9,7 +9,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import java.io.IOException;
 
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
@@ -36,8 +37,8 @@ import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
 @DirtiesContext
 public class EntitiesControllerTest extends AbstractControllerTest {
 
-    @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(9998);
+    @ClassRule
+    public static final WireMockRule wireMockRule = new WireMockRule(9998);
 
     private MockMvc mockMvc;
 
@@ -46,14 +47,17 @@ public class EntitiesControllerTest extends AbstractControllerTest {
 
     private EntitiesService spy;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeClass
+    public static void setUpOnce() {
         wireMockRule.stubFor(delete(urlPathEqualTo("/entities/12")).willReturn(aResponse().withStatus(200)));
         wireMockRule.stubFor(get(urlPathEqualTo("/entities"))
                 .willReturn(aResponse().withStatus(200).withBody("").withFixedDelay(200)));
         wireMockRule.stubFor(put(urlPathEqualTo("/entities"))
                 .willReturn(aResponse().withStatus(200).withBody("").withFixedDelay(200)));
+    }
 
+    @Before
+    public void setUp() throws IOException {
         spy = Mockito.spy(entitiesService);
         this.mockMvc = MockMvcBuilders.standaloneSetup(new EntitiesController(spy))
                 .alwaysDo(MockMvcResultHandlers.print()).build();
