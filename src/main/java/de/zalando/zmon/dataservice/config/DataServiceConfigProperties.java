@@ -52,9 +52,9 @@ public class DataServiceConfigProperties {
     private int proxyKairosdbSockettimeout = 500;
     private int proxyKairosdbTimeout = 1000;
 
-    private int asyncPoolCoreSize = 50;
-    private int asyncPoolMaxSize = 100;
-    private int asyncPoolQueueSize = 10000;
+    private int asyncPoolCoreSize = 100;
+    private int asyncPoolMaxSize = 150;
+    private int asyncPoolQueueSize = 5000;
 
     public int getAsyncPoolCoreSize() {
         return asyncPoolCoreSize;
