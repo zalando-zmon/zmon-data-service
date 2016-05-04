@@ -22,12 +22,8 @@ public class ZMonAsyncConfigurer implements AsyncConfigurer {
 
     private final static Logger LOG = LoggerFactory.getLogger(ZMonAsyncConfigurer.class);
 
-    private final DataServiceConfigProperties properties;
-
     @Autowired
-    public ZMonAsyncConfigurer(DataServiceConfigProperties properties) {
-        this.properties = properties;
-    }
+    private DataServiceConfigProperties properties;
 
     @Override
     public Executor getAsyncExecutor() {
