@@ -1,6 +1,5 @@
 package de.zalando.zmon.dataservice.data;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Async;
@@ -18,7 +17,6 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Created by jmussler on 25.04.16.
@@ -28,11 +26,11 @@ public class ProxyWriter {
 
     private final String forwardUrl;
 
-    private Executor executor;
+    private final Executor executor;
 
     private DataServiceMetrics metrics;
 
-    private Async async;
+    private final Async async;
 
     @Autowired
     public ProxyWriter(DataServiceConfigProperties config, DataServiceMetrics metrics) {
