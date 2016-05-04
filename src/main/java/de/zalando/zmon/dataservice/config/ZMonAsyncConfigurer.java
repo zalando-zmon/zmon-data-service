@@ -38,7 +38,7 @@ public class ZMonAsyncConfigurer implements AsyncConfigurer {
     @Bean
     LinkedBlockingQueue<Runnable> taskExecutorQueue() {
         LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(properties.getAsyncPoolQueueSize());
-        metricRegistry.register(MetricRegistry.name("zmon.async.executor", "queue", "size"), new Gauge<Integer>() {
+        metricRegistry.register(MetricRegistry.name("data-service.async.executor", "queue", "size"), new Gauge<Integer>() {
             @Override
             public Integer getValue() {
                 return queue.size();
