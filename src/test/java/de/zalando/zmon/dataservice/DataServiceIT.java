@@ -90,7 +90,7 @@ public class DataServiceIT extends AbstractControllerTest {
             @Override
             public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
                     throws IOException {
-                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer: 987654321");
+                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer 987654321");
                 return execution.execute(request, body);
             }
         });
@@ -99,7 +99,5 @@ public class DataServiceIT extends AbstractControllerTest {
                 null, String.class);
         Assertions.assertThat(response2).isNotNull();
         Assertions.assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        TimeUnit.SECONDS.sleep(40);
     }
 }

@@ -96,7 +96,7 @@ public class DataServiceLocalIT extends AbstractControllerTest {
             @Override
             public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
                     throws IOException {
-                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer: 987654321");
+                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer 987654321");
                 return execution.execute(request, body);
             }
         });
@@ -125,7 +125,5 @@ public class DataServiceLocalIT extends AbstractControllerTest {
         ResponseEntity<String> putDataResponse = rest.exchange(putDataRequest, String.class);
         Assertions.assertThat(putDataResponse).isNotNull();
         Assertions.assertThat(putDataResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        TimeUnit.SECONDS.sleep(40);
     }
 }
