@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.config;
 
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class ZMonAsyncConfigurer implements AsyncConfigurer {
         executor.setMaxPoolSize(properties.getAsyncPoolMaxSize());
         executor.setQueueCapacity(properties.getAsyncPoolQueueSize());
         executor.setThreadNamePrefix("zmon-async-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         executor.initialize();
         return executor;
     }
