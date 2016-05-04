@@ -108,7 +108,7 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     @Test
     public void extractToken() {
-        Optional<String> token = controller.extractTokenFromHeader("Bearer: 123456789");
+        Optional<String> token = controller.extractTokenFromHeader("Bearer 123456789");
         Assertions.assertThat(token).isNotNull();
         Assertions.assertThat(token.isPresent()).isTrue();
         Assertions.assertThat(token.get()).isEqualTo("123456789");
@@ -116,7 +116,7 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     @Test
     public void writeToProxy() {
-        controller.proxyData("Bearer: 123456789", "123", "12345", "");
+        controller.proxyData("Bearer 123456789", "123", "12345", "");
         Mockito.verify(proxyWriter, Mockito.times(1)).write("123456789", "123", "12345", "");
     }
 
