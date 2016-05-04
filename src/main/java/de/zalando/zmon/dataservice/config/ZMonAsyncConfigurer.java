@@ -1,6 +1,8 @@
 package de.zalando.zmon.dataservice.config;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +17,8 @@ import java.util.concurrent.Executor;
 @Configuration
 public class ZMonAsyncConfigurer implements AsyncConfigurer {
 
+    private final static Logger LOG = LoggerFactory.getLogger(ZMonAsyncConfigurer.class);
+
     private final DataServiceConfigProperties properties;
 
     @Autowired
@@ -24,6 +28,7 @@ public class ZMonAsyncConfigurer implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
+        LOG.info("Creating Async Pool with core-size={} max-size={} queue-size={}", properties.getAsyncPoolCoreSize(), properties.getAsyncPoolMaxSize(), properties.getAsyncPoolQueueSize());
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(properties.getAsyncPoolCoreSize());
         executor.setMaxPoolSize(properties.getAsyncPoolMaxSize());
