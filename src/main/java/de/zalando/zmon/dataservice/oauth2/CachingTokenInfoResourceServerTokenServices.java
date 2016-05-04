@@ -77,12 +77,15 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
             authentication = cache.get(accessToken);
             return authentication;
         } catch (ExecutionException e) {
-            throw new CacheReadAuthenticationException(e.getMessage(), e);
+            // throw new CacheReadAuthenticationException(e.getMessage(), e);
+            throw new InvalidTokenException(e.getMessage());
         } catch (UncheckedExecutionException e) {
             if (e.getCause() instanceof OAuth2Exception) {
                 throw (OAuth2Exception) e.getCause();
             } else {
-                throw new CacheReadAuthenticationException(e.getMessage(), e);
+                throw new InvalidTokenException(e.getMessage());
+                // throw new CacheReadAuthenticationException(e.getMessage(),
+                // e);
             }
         }
     }
