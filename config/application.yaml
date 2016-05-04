@@ -9,12 +9,12 @@ server:
 dataservice:
   redis-host: localhost
   redis-port: 6379
-  oauth2-token-info-url: http://localhost:10080/oauth2/tokeninfo
+  oauth2-token-info-url: ${TOKENINFO_URL:http://localhost:10080/oauth2/tokeninfo}
   oauth2-scopes:
-    getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
-    getRest: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
-    putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
-    deleteApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('yourRealm'))"
+    getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
+    getRest: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
+    putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
+    deleteApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
 
 
 spring:

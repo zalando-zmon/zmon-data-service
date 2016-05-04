@@ -35,3 +35,10 @@ Input object:
 ```
 $ ./mvnw clean install
 ```
+
+## Running
+
+```
+$ export TOKENINFO_URL=...
+$ java -jar target/zmon-data-service-1.0-SNAPSHOT.jar
+```

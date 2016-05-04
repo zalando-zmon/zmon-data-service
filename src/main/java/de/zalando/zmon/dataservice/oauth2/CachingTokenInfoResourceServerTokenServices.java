@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -76,15 +77,13 @@ public class CachingTokenInfoResourceServerTokenServices extends TokenInfoResour
             authentication = cache.get(accessToken);
             return authentication;
         } catch (ExecutionException e) {
-            if (true) {
-                log.error("Error getting Authentication from cache : {}", accessToken, e);
-            }
             throw new CacheReadAuthenticationException(e.getMessage(), e);
         } catch (UncheckedExecutionException e) {
-            if (true) {
-                log.error("Error getting Authentication from cache : {}", accessToken, e);
+            if (e.getCause() instanceof OAuth2Exception) {
+                throw (OAuth2Exception) e.getCause();
+            } else {
+                throw new CacheReadAuthenticationException(e.getMessage(), e);
             }
-            throw new CacheReadAuthenticationException(e.getMessage(), e);
         }
     }
 
