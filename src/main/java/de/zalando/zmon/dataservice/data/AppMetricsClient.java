@@ -33,19 +33,21 @@ public class AppMetricsClient {
 
     private final ObjectMapper mapper;
 
-    private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(5);
+    private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(15);
+
+    private final Async async;
 
     @Autowired
     public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper) {
         serviceHosts = config.getRestMetricHosts();
         serverPort = config.getRestMetricPort();
         this.mapper = defaultObjectMapper;
+        async = Async.newInstance().use(asyncExecutorPool);
 
         LOG.info("App metric cache config: hosts {} port {}", serviceHosts, serverPort);
     }
 
     public void receiveData(Map<Integer, List<CheckData>> data) {
-        Async async = Async.newInstance().use(asyncExecutorPool);
         for (int i = 0; i < serviceHosts.size(); ++i) {
             if (!data.containsKey(i) || data.get(i).size() <= 0)
                 continue;
@@ -53,6 +55,7 @@ public class AppMetricsClient {
             try {
                 Request r = Request
                         .Post("http://" + serviceHosts.get(i) + ":" + serverPort + "/api/v1/rest-api-metrics/")
+                        .addHeader("Cookie", "metric_cache="+i)
                         .bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
                 async.execute(r);
             } catch (IOException ex) {
