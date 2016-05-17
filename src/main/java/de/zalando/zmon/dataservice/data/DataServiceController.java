@@ -43,8 +43,8 @@ public class DataServiceController {
 
     @Autowired
     public DataServiceController(RedisDataStore storage, DataServiceMetrics dataServiceMetrics,
-            @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
-            List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter) {
+                                 @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
+                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter) {
         this.storage = storage;
         this.metrics = dataServiceMetrics;
         this.mapper = defaultObjectMapper;
@@ -53,7 +53,7 @@ public class DataServiceController {
         this.proxyWriter = proxyWriter;
     }
 
-    @RequestMapping(value = "/trial-run/", method = RequestMethod.PUT, consumes = { "text/plain", "application/json" })
+    @RequestMapping(value = "/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putTrialRunData(@RequestBody String data) {
         try {
             metrics.markTrialRunData();
@@ -66,10 +66,10 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = "/{account}/{checkid}/", method = RequestMethod.PUT, consumes = { "text/plain",
-            "application/json" })
+    @RequestMapping(value = "/{account}/{checkid}/", method = RequestMethod.PUT, consumes = {"text/plain",
+            "application/json"})
     void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId,
-            @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+                 @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
 
         proxyData(authHeader, accountId, String.valueOf(checkId), data);
 
@@ -101,13 +101,16 @@ public class DataServiceController {
 
                 metrics.markRate(wrOptional.get().results.size());
 
-                // make sure that the unique account it is actually in th
-                // aws:<accountid> string
-                // this should protect us from wrongly configured schedulers
-                // that
-                // execute the wrong checks
-                wrOptional.get().results = wrOptional.get().results.stream()
-                        .filter(x -> x.entity_id.contains(accountId)).collect(Collectors.toList());
+                // arbitrary entities might be pushed from on-premise data centers "dc:..."
+                if (!accountId.startsWith("dc:")) {
+                    // make sure that the unique account it is actually in th
+                    // aws:<accountid> string
+                    // this should protect us from wrongly configured schedulers
+                    // that
+                    // execute the wrong checks
+                    wrOptional.get().results = wrOptional.get().results.stream()
+                            .filter(x -> x.entity_id.contains(accountId)).collect(Collectors.toList());
+                }
             }
             return wrOptional;
         } catch (Exception e) {
