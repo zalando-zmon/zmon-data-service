@@ -40,6 +40,7 @@ public class DataServiceConfigProperties {
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
     private int kairosdbSockettimeout = 500;
+    private boolean kairosdbEnabled = true;
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
@@ -55,6 +56,14 @@ public class DataServiceConfigProperties {
     private int asyncPoolCoreSize = 150;
     private int asyncPoolMaxSize = 200;
     private int asyncPoolQueueSize = 5000;
+
+    public boolean isKairosdbEnabled() {
+        return kairosdbEnabled;
+    }
+
+    public void setKairosdbEnabled(boolean kairosdbEnabled) {
+        this.kairosdbEnabled = kairosdbEnabled;
+    }
 
     public int getAsyncPoolCoreSize() {
         return asyncPoolCoreSize;

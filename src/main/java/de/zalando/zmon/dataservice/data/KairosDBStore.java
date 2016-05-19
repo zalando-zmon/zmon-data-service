@@ -43,34 +43,30 @@ public class KairosDBStore {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
 
-    private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id","application_version","stack_name","stack_version"));
+    private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id", "application_version", "stack_name", "stack_version"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
-        if(base instanceof NumericNode) {
-            values.put(prefix, (NumericNode)base);
-        }
-        else if (base instanceof TextNode) {
+        if (base instanceof NumericNode) {
+            values.put(prefix, (NumericNode) base);
+        } else if (base instanceof TextNode) {
             // try to convert string node in case it is numeric
             try {
-                TextNode t = (TextNode)base;
+                TextNode t = (TextNode) base;
                 BigDecimal db = new BigDecimal(t.textValue());
                 DecimalNode dn = new DecimalNode(db);
                 values.put(prefix, dn);
-            }
-            catch(NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 // Ignore
             }
-        }
-        else if  (base instanceof ObjectNode) {
+        } else if (base instanceof ObjectNode) {
             Iterator<String> i = base.fieldNames();
-            while(i.hasNext()) {
+            while (i.hasNext()) {
                 String k = i.next();
 
-                if(prefix.length()==0) {
+                if (prefix.length() == 0) {
                     fillFlatValueMap(values, k, base.get(k));
-                }
-                else {
-                    fillFlatValueMap(values, prefix+"."+k, base.get(k));
+                } else {
+                    fillFlatValueMap(values, prefix + "." + k, base.get(k));
                 }
             }
         }
@@ -95,24 +91,34 @@ public class KairosDBStore {
     public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metrics = metrics;
         this.config = config;
-        this.url = "http://"+config.getKairosdbHost() +":"+config.getKairosdbPort() +"/api/v1/datapoints";
+        this.url = "http://" + config.getKairosdbHost() + ":" + config.getKairosdbPort() + "/api/v1/datapoints";
 
-        LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
+        if (config.isKairosdbEnabled()) {
+            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
 
-        executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
+            executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
+        } else {
+            LOG.info("KairosDB is disabled.");
+
+            executor = null;
+        }
+
     }
 
     public static String extractMetricName(String key) {
-        if(null==key || "".equals(key)) return null;
+        if (null == key || "".equals(key)) return null;
         String[] keyParts = key.split("\\.");
-        String metricName = keyParts[keyParts.length-1];
-        if("".equals(metricName)) {
-            metricName = keyParts[keyParts.length-2];
+        String metricName = keyParts[keyParts.length - 1];
+        if ("".equals(metricName)) {
+            metricName = keyParts[keyParts.length - 2];
         }
         return metricName;
     }
 
     public void store(WorkerResult wr) {
+        if (!config.isKairosdbEnabled()) {
+            return;
+        }
         try {
             List<DataPoint> points = new ArrayList<>();
             for (CheckData cd : wr.results) {
@@ -120,7 +126,7 @@ public class KairosDBStore {
                 final String timeSeries = "zmon.check." + cd.check_id;
 
                 String worker = "";
-                if(cd.check_result.has("worker")) {
+                if (cd.check_result.has("worker")) {
                     worker = cd.check_result.get("worker").asText();
                 }
 
@@ -133,44 +139,44 @@ public class KairosDBStore {
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
-                    p.tags.put("entity", cd.entity_id.replace("[","_").replace("]","_").replace(":","_").replace("@","_"));
+                    p.tags.put("entity", cd.entity_id.replace("[", "_").replace("]", "_").replace(":", "_").replace("@", "_"));
 
-                    for(String field : TAG_FIELDS) {
-                        if(cd.entity.containsKey(field)) {
+                    for (String field : TAG_FIELDS) {
+                        if (cd.entity.containsKey(field)) {
                             String fieldValue = cd.entity.get(field);
-                            if(null != fieldValue && !"".equals(fieldValue)) {
+                            if (null != fieldValue && !"".equals(fieldValue)) {
                                 p.tags.put(field, cd.entity.get(field));
                             }
                         }
                     }
 
-                    if(null!=e.getKey() && !"".equals(e.getKey())) {
+                    if (null != e.getKey() && !"".equals(e.getKey())) {
                         p.tags.put("key", e.getKey().replace(":", "_").replace("@", "_"));
                     }
 
                     String metricName = extractMetricName(e.getKey());
-                    if(null != metricName) {
+                    if (null != metricName) {
                         p.tags.put("metric", metricName.replace(":", "_").replace("@", "_"));
                     }
 
                     // handle zmon actuator metrics and extract the http status code into its own field
                     // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-                    if(config.getActuatorMetricChecks().contains(cd.check_id)) {
+                    if (config.getActuatorMetricChecks().contains(cd.check_id)) {
                         final String[] keyParts = e.getKey().split("\\.");
 
-                        if(keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
+                        if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
                             // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
                             continue;
                         }
 
-                        if(keyParts.length >= 3) {
+                        if (keyParts.length >= 3) {
                             final String statusCode = keyParts[keyParts.length - 2];
                             p.tags.put("sc", statusCode);
-                            p.tags.put("sg", statusCode.substring(0,1));
+                            p.tags.put("sg", statusCode.substring(0, 1));
                         }
                     }
 
-                    if(null != worker && !"".equals(worker)) {
+                    if (null != worker && !"".equals(worker)) {
                         p.tags.put("worker", worker);
                     }
 
@@ -184,14 +190,13 @@ public class KairosDBStore {
             }
 
             String query = mapper.writeValueAsString(points);
-            if(config.isLogKairosdbRequests()) {
+            if (config.isLogKairosdbRequests()) {
                 LOG.info("KairosDB Query: {}", query);
             }
 
             executor.execute(Request.Post(this.url).bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-        }
-        catch(IOException ex) {
-            if(config.isLogKairosdbErrors()) {
+        } catch (IOException ex) {
+            if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write failed", ex);
             }
             metrics.markKairosError();
