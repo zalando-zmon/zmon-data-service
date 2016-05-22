@@ -34,26 +34,27 @@ public class DefaultEntitiesService implements EntitiesService {
         this.metrics = metrics;
     }
 
-    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
-        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
+    /**
+     * @return HTTP executor to use only once (no conection pooling)
+     */
+    private Executor getExecutor() {
+        final int maxConnections = 1;
+        final RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(config.getProxyControllerSocketTimeout()).setConnectTimeout(config.getProxyControllerConnectTimeout()).build();
+        final HttpClient httpClient = HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig).build();
+        final Executor executor = Executor.newInstance(httpClient);
+        return executor;
     }
 
     @Override
     public String deleteEntity(String id) throws URISyntaxException, IOException {
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/" + id + "/").build();
-
-        final Executor executor = Executor.newInstance(getHttpClient(100, 5000, 1));
-        return executor.execute(Request.Delete(uri)).returnContent().asString();
+        return getExecutor().execute(Request.Delete(uri)).returnContent().asString();
     }
 
     @Override
     public String getEntities(String query) throws URISyntaxException, IOException {
-
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/").setParameter("query", query).build();
-
-        final Executor executor = Executor.newInstance(getHttpClient(100, 5000, 1));
-        return executor.execute(Request.Get(uri)).returnContent().asString();
+        return getExecutor().execute(Request.Get(uri)).returnContent().asString();
     }
 
     @Override
@@ -66,8 +67,7 @@ public class DefaultEntitiesService implements EntitiesService {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/").build();
 
-        final Executor executor = Executor.newInstance(getHttpClient(100, 5000, 1));
-        String r = executor.execute(Request.Put(uri)
+        String r = getExecutor().execute(Request.Put(uri)
                 .bodyString(customObjectMapper.writeValueAsString(node), ContentType.APPLICATION_JSON)).returnContent()
                 .asString();
         return r;
