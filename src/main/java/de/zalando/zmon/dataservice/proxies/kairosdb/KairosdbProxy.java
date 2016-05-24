@@ -85,8 +85,10 @@ public class KairosdbProxy {
 
         final String kairosDBURL = url + "/api/v1/datapoints/query";
 
-        final String r = executor.execute(Request.Post(kairosDBURL).addHeader("X-ZMON-CHECK-ID", checkId).bodyString(node.toString(),
-                ContentType.APPLICATION_JSON)).returnContent().asString();
+        final String r = executor.execute(Request.Post(kairosDBURL)
+                                                 .addHeader("X-ZMON-CHECK-ID", checkId)
+                                                 .addHeader("Cookie", "x-zmon-check-id=" + checkId)
+                                                 .bodyString(node.toString(), ContentType.APPLICATION_JSON)).returnContent().asString();
 
         if (timer != null) {
             timer.stop();
