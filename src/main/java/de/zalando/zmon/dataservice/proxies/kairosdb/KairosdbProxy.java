@@ -63,13 +63,19 @@ public class KairosdbProxy {
                              final HttpServletResponse response) throws IOException {
 
         response.setContentType("application/json");
-
         if (!enabled) {
             writer.write("");
             return;
         }
 
-        final String checkId = node.get("metrics").get(0).get("name").textValue().replace("zmon.check.", "");
+        final String metricName = node.get("metrics").get(0).get("name").textValue();
+        if (!metricName.startsWith("zmon.check")) {
+            writer.write("{}");
+            return;
+        }
+
+        final String checkId = metricName.replace("zmon.check.", "");
+
         Timer.Context timer = metricRegistry.timer("kairosdb.check.query." + checkId).time();
 
         // align all queries to full minutes
