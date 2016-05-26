@@ -72,7 +72,6 @@ public class KairosDBStore {
         }
     }
 
-    private final String url;
     private final DataServiceMetrics metrics;
     private final Executor executor;
 
@@ -91,7 +90,6 @@ public class KairosDBStore {
     public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metrics = metrics;
         this.config = config;
-        this.url = "http://" + config.getKairosdbHost() + ":" + config.getKairosdbPort() + "/api/v1/datapoints";
 
         if (config.isKairosdbEnabled()) {
             LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
@@ -194,10 +192,20 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            executor.execute(Request.Post(this.url).bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
+            for(String url : config.getKairosdbWriteUrls()) {
+                try {
+                    executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
+                }
+                catch(IOException ex) {
+                    if (config.isLogKairosdbErrors()) {
+                        LOG.error("KairosDB write failed url={}", url, ex);
+                    }
+                    metrics.markKairosHostError();
+                }
+            }
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {
-                LOG.error("KairosDB write failed", ex);
+                LOG.error("KairosDB write path failed", ex);
             }
             metrics.markKairosError();
         }
