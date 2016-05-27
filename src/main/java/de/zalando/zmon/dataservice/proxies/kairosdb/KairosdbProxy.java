@@ -12,6 +12,8 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,8 @@ import java.io.Writer;
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
 public class KairosdbProxy {
+
+    private final Logger log = LoggerFactory.getLogger(KairosdbProxy.class);
 
     private final Executor executor;
 
@@ -47,9 +51,10 @@ public class KairosdbProxy {
         this.metrics = metrics;
         this.metricRegistry = metrics.getMetricRegistry();
         this.url = config.getProxyKairosdbUrl();
-        this.enabled = this.url!=null && !this.url.equals("");
+        this.enabled = this.url != null && !this.url.equals("");
 
         if (null != url) {
+            log.info("KairosDB Proxy: {}", url);
             executor = Executor.newInstance(getHttpClient(config.getProxyKairosdbSockettimeout(), config.getProxyKairosdbTimeout(), config.getProxyKairosdbConnections()));
         }
         else {

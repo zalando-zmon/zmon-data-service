@@ -9,6 +9,8 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,12 +27,12 @@ import java.util.concurrent.Executors;
 public class ProxyWriter {
 
     private final String forwardUrl;
-
     private final Executor executor;
 
     private DataServiceMetrics metrics;
-
     private final Async async;
+
+    private final Logger log = LoggerFactory.getLogger(ProxyWriter.class);
 
     @Autowired
     public ProxyWriter(DataServiceConfigProperties config, DataServiceMetrics metrics) {
@@ -38,11 +40,13 @@ public class ProxyWriter {
         this.metrics = metrics;
 
         if (null != forwardUrl) {
+            log.info("Forwarding data to: {}", this.forwardUrl);
             executor = Executor.newInstance(getHttpClient(config.getDataProxySocketTimeout(), config.getDataProxyTimeout(), config.getDataProxyConnections()));
             ExecutorService threadpool = Executors.newFixedThreadPool(config.getDataProxyPoolSize());
             async = Async.newInstance().use(threadpool).use(executor);
         }
         else {
+            log.info("Forwarding data disabled");
             executor = null;
             async = null;
         }

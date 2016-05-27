@@ -8,6 +8,8 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author jbellmann
@@ -15,9 +17,11 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 public class DefaultSchedulerService implements SchedulerService {
 
     private final DataServiceConfigProperties config;
+    private final Logger log = LoggerFactory.getLogger(DefaultSchedulerService.class);
 
     public DefaultSchedulerService(DataServiceConfigProperties config) {
         this.config = config;
+        log.info("Scheduler url: {}", config.getProxySchedulerUrl());
     }
 
     @Override
@@ -32,5 +36,4 @@ public class DefaultSchedulerService implements SchedulerService {
                 .build();
         return Request.Get(uri).execute().returnContent().asString();
     }
-
 }

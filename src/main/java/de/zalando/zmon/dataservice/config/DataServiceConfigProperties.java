@@ -21,6 +21,7 @@ public class DataServiceConfigProperties {
     private boolean proxyController = false;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
     private String proxyControllerBaseUrl = "http://localhost:8080/";
+    private boolean proxyControllerOauth2 = false;
     private int proxyControllerConnectTimeout = 1000; // ms
     private int proxyControllerSocketTimeout = 500; // ms
 
@@ -57,6 +58,14 @@ public class DataServiceConfigProperties {
     private int asyncPoolCoreSize = 150;
     private int asyncPoolMaxSize = 200;
     private int asyncPoolQueueSize = 5000;
+
+    public boolean isProxyControllerOauth2() {
+        return proxyControllerOauth2;
+    }
+
+    public void setProxyControllerOauth2(boolean proxyControllerOauth2) {
+        this.proxyControllerOauth2 = proxyControllerOauth2;
+    }
 
     public boolean isKairosdbEnabled() {
         return kairosdbEnabled;
