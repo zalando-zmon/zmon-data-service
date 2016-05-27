@@ -21,13 +21,11 @@ public class DataCenterController {
 
 	@RequestMapping(value = "/trial-runs/{dc}")
 	public String getTrialRuns(@PathVariable final String dc) throws IOException, URISyntaxException {
-
 		return schedulerService.trialRun(dc);
 	}
 
 	@RequestMapping(value = "/instant-evaluations/{dc}")
 	public String getInstantEvals(@PathVariable final String dc) throws IOException, URISyntaxException {
-
 		return schedulerService.instantEvaluations(dc);
 	}
 

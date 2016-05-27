@@ -9,15 +9,15 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 @Configuration
 public class SchedulerConfig {
 
-	@Autowired
-	private DataServiceConfigProperties config;
+    @Autowired
+    private DataServiceConfigProperties config;
 
-	@Bean
-	public SchedulerService schedulerProxy() {
-		if (config.isProxyScheduler()) {
-			return new DefaultSchedulerService(config);
-		} else {
-			return new NoOpSchedulerService();
-		}
-	}
+    @Bean
+    public SchedulerService schedulerProxy() {
+        if (config.isProxyScheduler()) {
+            return new DefaultSchedulerService(config);
+        } else {
+            return new NoOpSchedulerService();
+        }
+    }
 }
