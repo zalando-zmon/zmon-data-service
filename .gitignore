@@ -15,3 +15,4 @@ eventlog.*
 
 config/*-jb.yml
 
+scm-source.json
