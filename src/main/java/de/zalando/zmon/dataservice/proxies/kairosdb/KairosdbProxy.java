@@ -6,10 +6,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import org.apache.http.HttpException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -33,9 +36,6 @@ public class KairosdbProxy {
 
     private final Executor executor;
 
-    private final DataServiceConfigProperties config;
-
-    private final DataServiceMetrics metrics;
     private final MetricRegistry metricRegistry;
     private final String url;
     private final boolean enabled;
@@ -47,8 +47,6 @@ public class KairosdbProxy {
 
     @Autowired
     public KairosdbProxy(DataServiceConfigProperties config, DataServiceMetrics metrics) {
-        this.config = config;
-        this.metrics = metrics;
         this.metricRegistry = metrics.getMetricRegistry();
         this.url = config.getProxyKairosdbUrl();
         this.enabled = this.url != null && !this.url.equals("");
@@ -56,9 +54,27 @@ public class KairosdbProxy {
         if (null != url) {
             log.info("KairosDB Proxy: {}", url);
             executor = Executor.newInstance(getHttpClient(config.getProxyKairosdbSockettimeout(), config.getProxyKairosdbTimeout(), config.getProxyKairosdbConnections()));
-        }
-        else {
+        } else {
             executor = null;
+        }
+    }
+
+    private void proxy(Request request, Writer writer, HttpServletResponse response) throws IOException {
+        if (!enabled) {
+            writer.write("");
+            return;
+        }
+
+        try {
+            String data = executor.execute(request).returnContent().toString();
+            response.setContentType("application/json");
+            writer.write(data);
+        } catch (HttpResponseException hre) {
+            log.warn("KairosDB returned non 2xx response: {}", hre.getMessage());
+            response.sendError(hre.getStatusCode());
+        } catch (IOException e) {
+            log.warn("I/O error while calling KairosDB: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_GATEWAY);
         }
     }
 
@@ -67,14 +83,15 @@ public class KairosdbProxy {
     public void kairosDBPost(@RequestBody(required = true) final JsonNode node, final Writer writer,
                              final HttpServletResponse response) throws IOException {
 
-        response.setContentType("application/json");
-        if (!enabled) {
-            writer.write("");
+        String metricName = null;
+        try {
+            metricName = node.get("metrics").get(0).get("name").textValue();
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-
-        final String metricName = node.get("metrics").get(0).get("name").textValue();
-        if (!metricName.startsWith("zmon.check")) {
+        if (!metricName.startsWith("zmon.check.")) {
+            response.setContentType("application/json");
             writer.write("{}");
             return;
         }
@@ -96,53 +113,31 @@ public class KairosdbProxy {
 
         final String kairosDBURL = url + "/api/v1/datapoints/query";
 
-        final String r = executor.execute(Request.Post(kairosDBURL)
-                                                 .addHeader("X-ZMON-CHECK-ID", checkId)
-                                                 .addHeader("Cookie", "x-zmon-check-id=" + checkId)
-                                                 .bodyString(node.toString(), ContentType.APPLICATION_JSON)).returnContent().asString();
+        proxy(Request.Post(kairosDBURL)
+                .addHeader("X-ZMON-CHECK-ID", checkId)
+                .bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response
+        );
 
         if (timer != null) {
             timer.stop();
         }
 
-        writer.write(r);
     }
 
     @ResponseBody
     @RequestMapping(value = {"/api/v1/datapoints/query/tags"}, method = RequestMethod.POST, produces = "application/json")
     public void kairosDBtags(@RequestBody(required = true) final JsonNode node, final Writer writer,
                              final HttpServletResponse response) throws IOException {
-
-        response.setContentType("application/json");
-
-        if (!enabled) {
-            writer.write("");
-            return;
-        }
-
         final String kairosDBURL = url + "/api/v1/datapoints/query/tags";
 
-        final String r = executor.execute(Request.Post(kairosDBURL).useExpectContinue().bodyString(node.toString(),
-                ContentType.APPLICATION_JSON)).returnContent().asString();
-
-        writer.write(r);
+        proxy(Request.Post(kairosDBURL).bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response);
     }
 
     @ResponseBody
     @RequestMapping(value = {"/api/v1/metricnames"}, method = RequestMethod.GET, produces = "application/json")
     public void kairosDBmetrics(final Writer writer, final HttpServletResponse response) throws IOException {
-
-        response.setContentType("application/json");
-
-        if (!enabled) {
-            writer.write("");
-            return;
-        }
-
         final String kairosDBURL = url + "/api/v1/metricnames";
 
-        final String r = executor.execute(Request.Get(kairosDBURL).useExpectContinue()).returnContent().asString();
-
-        writer.write(r);
+        proxy(Request.Get(kairosDBURL), writer, response);
     }
 }
