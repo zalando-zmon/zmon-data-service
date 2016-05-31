@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,34 +66,34 @@ public class EntitiesControllerTest extends AbstractControllerTest {
 
     @Test
     public void getEntities() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/entities?query=htg"))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities("htg");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg");
     }
 
     @Test
     public void getEntitiesRest() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/rest/api/v1/entities?query=htg"))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/rest/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities("htg");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg");
     }
 
     @Test
     public void addEntities() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/entities").content("true"))
+        this.mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/entities").header("Authorization", "Bearer 1").content("true"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).addEntities("true");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).addEntities(Optional.of("1"), "true");
     }
 
     @Test
     public void deleteEntities() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/entities/12"))
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/entities/12").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).deleteEntity("12");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).deleteEntity(Optional.of("1"), "12");
     }
 
     @Configuration

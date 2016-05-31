@@ -3,6 +3,7 @@ package de.zalando.zmon.dataservice.proxies.entities;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -18,24 +19,31 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.components.CustomObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author jbellmann
  */
 public class DefaultEntitiesService implements EntitiesService {
 
+    private final Logger log = LoggerFactory.getLogger(DefaultEntitiesService.class);
+
     private final DataServiceConfigProperties config;
     private final ObjectMapper customObjectMapper;
     private final DataServiceMetrics metrics;
+    private final boolean oauth2Enabled;
 
     public DefaultEntitiesService(@CustomObjectMapper ObjectMapper customObjectMapper, DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.customObjectMapper = customObjectMapper;
         this.config = config;
         this.metrics = metrics;
+        this.oauth2Enabled = config.isProxyControllerOauth2();
+        log.info("Entity service proxy: {}", config.getProxyControllerBaseUrl());
     }
 
     /**
-     * @return HTTP executor to use only once (no conection pooling)
+     * @return HTTP executor to use only once (no connection pooling)
      */
     private Executor getExecutor() {
         final int maxConnections = 1;
@@ -46,19 +54,28 @@ public class DefaultEntitiesService implements EntitiesService {
     }
 
     @Override
-    public String deleteEntity(String id) throws URISyntaxException, IOException {
+    public String deleteEntity(Optional<String> token, String id) throws URISyntaxException, IOException {
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/" + id + "/").build();
-        return getExecutor().execute(Request.Delete(uri)).returnContent().asString();
+        Request r = Request.Delete(uri);
+        if (oauth2Enabled && token.isPresent()) {
+            r.addHeader("Authorization", "Bearer " + token);
+        }
+        return getExecutor().execute(r).returnContent().asString();
     }
 
     @Override
-    public String getEntities(String query) throws URISyntaxException, IOException {
+    public String getEntities(Optional<String> token, String query) throws URISyntaxException, IOException {
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/").setParameter("query", query).build();
-        return getExecutor().execute(Request.Get(uri)).returnContent().asString();
+
+        Request r = Request.Get(uri);
+        if (oauth2Enabled && token.isPresent()) {
+            r.addHeader("Authorization", "Bearer " + token);
+        }
+        return getExecutor().execute(r).returnContent().asString();
     }
 
     @Override
-    public String addEntities(String entities) throws URISyntaxException, IOException {
+    public String addEntities(Optional<String> token, String entities) throws URISyntaxException, IOException {
         JsonNode node = customObjectMapper.readTree(entities);
         if (node.has("infrastructure_account")) {
             String id = node.get("infrastructure_account").textValue();
@@ -67,10 +84,11 @@ public class DefaultEntitiesService implements EntitiesService {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/entities/").build();
 
-        String r = getExecutor().execute(Request.Put(uri)
-                .bodyString(customObjectMapper.writeValueAsString(node), ContentType.APPLICATION_JSON)).returnContent()
-                .asString();
-        return r;
-    }
+        Request r = Request.Put(uri).bodyString(customObjectMapper.writeValueAsString(node), ContentType.APPLICATION_JSON);
+        if (oauth2Enabled && token.isPresent()) {
+            r.addHeader("Authorization", "Bearer " + token);
+        }
 
+        return getExecutor().execute(r).returnContent().asString();
+    }
 }

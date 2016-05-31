@@ -19,6 +19,9 @@ import de.zalando.zmon.dataservice.AbstractControllerTest;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ContextConfiguration
 public class KairosDbStoreTest extends AbstractControllerTest {
 
@@ -50,8 +53,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         @Bean
         public DataServiceConfigProperties dataServiceConfigProperties() {
             DataServiceConfigProperties props = new DataServiceConfigProperties();
-            props.setKairosdbHost("localhost");
-            props.setKairosdbPort(10081);
+            List<String> kairosdbHosts = new ArrayList<>(1);
+            kairosdbHosts.add("http://localhost:10081");
+            props.setKairosdbWriteUrls(kairosdbHosts);
             props.setLogKairosdbRequests(true);
             props.setLogKairosdbErrors(true);
             return props;

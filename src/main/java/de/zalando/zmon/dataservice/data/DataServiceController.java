@@ -84,7 +84,7 @@ public class DataServiceController {
         extractTokenFromHeader(authHeader).ifPresent(t -> proxyWriter.write(t, accountId, checkId, data));
     }
 
-    protected Optional<String> extractTokenFromHeader(String header) {
+    public static Optional<String> extractTokenFromHeader(String header) {
         try {
             return Optional.ofNullable(header.substring(7)); // Bearer
         } catch (IndexOutOfBoundsException e) {

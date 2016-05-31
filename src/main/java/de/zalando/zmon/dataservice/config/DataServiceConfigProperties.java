@@ -16,12 +16,12 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
-    private String kairosdbHost = "localhost";
-    private int kairosdbPort = 8083;
+    private List<String> kairosdbWriteUrls;
 
     private boolean proxyController = false;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
     private String proxyControllerBaseUrl = "http://localhost:8080/";
+    private boolean proxyControllerOauth2 = false;
     private int proxyControllerConnectTimeout = 1000; // ms
     private int proxyControllerSocketTimeout = 500; // ms
 
@@ -58,6 +58,14 @@ public class DataServiceConfigProperties {
     private int asyncPoolCoreSize = 150;
     private int asyncPoolMaxSize = 200;
     private int asyncPoolQueueSize = 5000;
+
+    public boolean isProxyControllerOauth2() {
+        return proxyControllerOauth2;
+    }
+
+    public void setProxyControllerOauth2(boolean proxyControllerOauth2) {
+        this.proxyControllerOauth2 = proxyControllerOauth2;
+    }
 
     public boolean isKairosdbEnabled() {
         return kairosdbEnabled;
@@ -234,22 +242,6 @@ public class DataServiceConfigProperties {
         this.redisPoolSize = redisPoolSize;
     }
 
-    public String getKairosdbHost() {
-        return kairosdbHost;
-    }
-
-    public void setKairosdbHost(String kairosdbHost) {
-        this.kairosdbHost = kairosdbHost;
-    }
-
-    public int getKairosdbPort() {
-        return kairosdbPort;
-    }
-
-    public void setKairosdbPort(int kairosdbPort) {
-        this.kairosdbPort = kairosdbPort;
-    }
-
     public boolean isProxyController() {
         return proxyController;
     }
@@ -394,4 +386,11 @@ public class DataServiceConfigProperties {
         this.tokenInfoCacheEnabled = tokenInfoCacheEnabled;
     }
 
+    public List<String> getKairosdbWriteUrls() {
+        return kairosdbWriteUrls;
+    }
+
+    public void setKairosdbWriteUrls(List<String> kairosdbWriteUrls) {
+        this.kairosdbWriteUrls = kairosdbWriteUrls;
+    }
 }
