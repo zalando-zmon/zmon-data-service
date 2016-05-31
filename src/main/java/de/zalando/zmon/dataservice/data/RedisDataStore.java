@@ -276,10 +276,10 @@ public class RedisDataStore {
         vNode.set("captures", alert.captures);
         vNode.set("downtimes", alert.downtimes);
 
-        Double alertStart;
+        Double alertStart = null;
         if (alert.start_time_ts != null) {
             alertStart = alert.start_time_ts;
-        } else {
+        } else if (alert.start_time != null) {
             alertStart = PyString.extractDate(alert.start_time).getTime() / 1000.;
         }
 

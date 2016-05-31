@@ -59,6 +59,16 @@ public class DataServiceConfigProperties {
     private int asyncPoolMaxSize = 200;
     private int asyncPoolQueueSize = 5000;
 
+    private int resultSizeWarning = 100;
+
+    public int getResultSizeWarning() {
+        return resultSizeWarning;
+    }
+
+    public void setResultSizeWarning(int resultSizeWarning) {
+        this.resultSizeWarning = resultSizeWarning;
+    }
+
     public boolean isProxyControllerOauth2() {
         return proxyControllerOauth2;
     }
