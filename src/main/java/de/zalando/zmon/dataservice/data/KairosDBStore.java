@@ -74,6 +74,7 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final Executor executor;
+    private final int resultSizeWarning;
 
     private static class DataPoint {
         public String name;
@@ -90,6 +91,8 @@ public class KairosDBStore {
     public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metrics = metrics;
         this.config = config;
+        this.resultSizeWarning = config.getResultSizeWarning();
+
 
         if (config.isKairosdbEnabled()) {
             LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
@@ -117,6 +120,7 @@ public class KairosDBStore {
         if (!config.isKairosdbEnabled()) {
             return;
         }
+
         try {
             List<DataPoint> points = new ArrayList<>();
             for (CheckData cd : wr.results) {
@@ -184,6 +188,10 @@ public class KairosDBStore {
 
                     p.datapoints.add(arrayNode);
                     points.add(p);
+
+                    if (points.size() > resultSizeWarning) {
+                        LOG.warn("result size warning: check={} data-points={}", cd.check_id, points.size());
+                    }
                 }
             }
 
