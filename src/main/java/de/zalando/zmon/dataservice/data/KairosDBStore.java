@@ -191,7 +191,7 @@ public class KairosDBStore {
                 }
 
                 if (points.size() > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={}", cd.check_id, points.size());
+                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.check_id, points.size(), cd.entity_id);
                 }
             }
 

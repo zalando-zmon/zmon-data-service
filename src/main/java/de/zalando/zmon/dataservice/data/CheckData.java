@@ -13,9 +13,9 @@ public class CheckData {
     public String worker;
     public int check_id;
     public String entity_id;
-    public Map<String,String> entity = new HashMap<String,String>();
+    public Map<String,String> entity = new HashMap<>();
     public double run_time;
     public JsonNode check_result;
     public boolean exception;
-    public Map<String, AlertData> alerts = new HashMap<String,AlertData>(0);
+    public Map<String, AlertData> alerts = new HashMap<>(0);
 }
