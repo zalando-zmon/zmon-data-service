@@ -83,8 +83,15 @@ public class KairosdbProxy {
     public void kairosDBPost(@RequestBody(required = true) final JsonNode node, final Writer writer,
                              final HttpServletResponse response) throws IOException {
 
-        final String metricName = node.get("metrics").get(0).get("name").textValue();
-        if (!metricName.startsWith("zmon.check")) {
+        String metricName = null;
+        try {
+            metricName = node.get("metrics").get(0).get("name").textValue();
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        if (!metricName.startsWith("zmon.check.")) {
+            response.setContentType("application/json");
             writer.write("{}");
             return;
         }
@@ -108,7 +115,6 @@ public class KairosdbProxy {
 
         proxy(Request.Post(kairosDBURL)
                 .addHeader("X-ZMON-CHECK-ID", checkId)
-                .addHeader("Cookie", "x-zmon-check-id=" + checkId)
                 .bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response
         );
 
@@ -124,8 +130,7 @@ public class KairosdbProxy {
                              final HttpServletResponse response) throws IOException {
         final String kairosDBURL = url + "/api/v1/datapoints/query/tags";
 
-        proxy(Request.Post(kairosDBURL).useExpectContinue().bodyString(node.toString(),
-                ContentType.APPLICATION_JSON), writer, response);
+        proxy(Request.Post(kairosDBURL).bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response);
     }
 
     @ResponseBody
@@ -133,6 +138,6 @@ public class KairosdbProxy {
     public void kairosDBmetrics(final Writer writer, final HttpServletResponse response) throws IOException {
         final String kairosDBURL = url + "/api/v1/metricnames";
 
-        proxy(Request.Get(kairosDBURL).useExpectContinue(), writer, response);
+        proxy(Request.Get(kairosDBURL), writer, response);
     }
 }
