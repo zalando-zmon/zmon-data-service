@@ -188,10 +188,10 @@ public class KairosDBStore {
 
                     p.datapoints.add(arrayNode);
                     points.add(p);
+                }
 
-                    if (points.size() > resultSizeWarning) {
-                        LOG.warn("result size warning: check={} data-points={}", cd.check_id, points.size());
-                    }
+                if (points.size() > resultSizeWarning) {
+                    LOG.warn("result size warning: check={} data-points={}", cd.check_id, points.size());
                 }
             }
 
