@@ -19,7 +19,7 @@ class Fixture {
     private static final Logger LOG = LoggerFactory.getLogger(Fixture.class);
 
     static WriteData writeData(Optional<WorkerResult> workerResultOptional) {
-        return new WriteData(workerResultOptional, "stups", 13, "{}");
+        return new WriteData(workerResultOptional, "stups", Optional.empty(), 13, "{}");
     }
 
     public static WorkerResult buildWorkerResult() {

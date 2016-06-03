@@ -9,14 +9,16 @@ class WriteData {
 
     private final Optional<WorkerResult> workerResultOptional;
     private final String accountId;
+    private final Optional<String> region;
     private final int checkId;
     private final String data;
 
-    WriteData(Optional<WorkerResult> workerResultOptional, String accountId, int checkId, String data) {
+    WriteData(Optional<WorkerResult> workerResultOptional, String accountId, Optional<String> region, int checkId, String data) {
         this.workerResultOptional = workerResultOptional;
         this.accountId = accountId;
         this.checkId = checkId;
         this.data = data;
+        this.region = region;
     }
 
     public Optional<WorkerResult> getWorkerResultOptional() {
@@ -35,4 +37,7 @@ class WriteData {
         return data;
     }
 
+    public Optional<String> getRegion() {
+        return region;
+    }
 }

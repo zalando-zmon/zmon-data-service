@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -136,9 +137,15 @@ public class DataServiceMetrics {
         redisErrorMeter.mark();
     }
 
-    public void markAccount(String account, int size) {
-        getOrCreateMeter(accountByteMeters, "ds.acc." + account + ".check.data-rate").mark(size);
-        getOrCreateMeter(accountRateMeters, "ds.acc." + account + ".check.check-rate").mark();
+    public void markAccount(String account, Optional<String> region, int size) {
+        if(region.isPresent()) {
+            getOrCreateMeter(accountByteMeters, "ds.acc." + account + "." + region.get() + ".check.data-rate").mark(size);
+            getOrCreateMeter(accountRateMeters, "ds.acc." + account + "." + region.get() + ".check.check-rate").mark();
+        }
+        else {
+            getOrCreateMeter(accountByteMeters, "ds.acc." + account + ".check.data-rate").mark(size);
+            getOrCreateMeter(accountRateMeters, "ds.acc." + account + ".check.check-rate").mark();
+        }
     }
 
     public void markCheck(int checkId, int size) {

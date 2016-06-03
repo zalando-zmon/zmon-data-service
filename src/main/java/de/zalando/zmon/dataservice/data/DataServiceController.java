@@ -24,7 +24,7 @@ import de.zalando.zmon.dataservice.components.CustomObjectMapper;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 
 @RestController
-@RequestMapping("/api/v1/data")
+@RequestMapping("/api")
 public class DataServiceController {
 
     private final Logger log = LoggerFactory.getLogger(DataServiceController.class);
@@ -53,7 +53,7 @@ public class DataServiceController {
         this.proxyWriter = proxyWriter;
     }
 
-    @RequestMapping(value = "/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
+    @RequestMapping(value = "/v1/data/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
     void putTrialRunData(@RequestBody String data) {
         try {
             metrics.markTrialRunData();
@@ -66,7 +66,7 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = "/{account}/{checkid}/", method = RequestMethod.PUT, consumes = {"text/plain",
+    @RequestMapping(value = "/v1/data/{account}/{checkid}/", method = RequestMethod.PUT, consumes = {"text/plain",
             "application/json"})
     void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId,
                  @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
@@ -74,7 +74,7 @@ public class DataServiceController {
         proxyData(authHeader, accountId, String.valueOf(checkId), data);
 
         Optional<WorkerResult> wrOptional = extractAndFilter(data, accountId, checkId);
-        WriteData writeData = new WriteData(wrOptional, accountId, checkId, data);
+        WriteData writeData = new WriteData(wrOptional, accountId, Optional.empty(), checkId, data);
 
         // some writer are async, keep in mind
         workResultWriter.forEach(writer -> writer.write(writeData));
@@ -118,5 +118,19 @@ public class DataServiceController {
             metrics.markParseError();
             return wrOptional;
         }
+    }
+
+    @RequestMapping(value = "/v2/data/{account}/{checkid}/{region}/", method = RequestMethod.PUT, consumes = {"text/plain",
+            "application/json"})
+    void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId, @PathVariable(value="region") String region,
+                 @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+
+        proxyData(authHeader, accountId, String.valueOf(checkId), data);
+
+        Optional<WorkerResult> wrOptional = extractAndFilter(data, accountId, checkId);
+        WriteData writeData = new WriteData(wrOptional, accountId, Optional.of(region), checkId, data);
+
+        // some writer are async, keep in mind
+        workResultWriter.forEach(writer -> writer.write(writeData));
     }
 }

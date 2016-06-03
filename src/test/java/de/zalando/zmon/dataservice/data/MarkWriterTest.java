@@ -38,7 +38,7 @@ public class MarkWriterTest {
     }
 
     protected void verify() {
-        Mockito.verify(metrics, Mockito.times(1)).markAccount(Mockito.anyString(), Mockito.anyInt());
+        Mockito.verify(metrics, Mockito.times(1)).markAccount(Mockito.anyString(), Mockito.anyObject(), Mockito.anyInt());
         Mockito.verify(metrics, Mockito.times(1)).markCheck(Mockito.anyInt(), Mockito.anyInt());
     }
 

@@ -24,7 +24,7 @@ class MarkWriter implements WorkResultWriter {
     @Override
     public void write(WriteData writeData) {
         LOG.debug("write metrics ...");
-        metrics.markAccount(writeData.getAccountId(), writeData.getData().length());
+        metrics.markAccount(writeData.getAccountId(), writeData.getRegion(), writeData.getData().length());
         metrics.markCheck(writeData.getCheckId(), writeData.getData().length());
         LOG.debug("metrics written");
     }
