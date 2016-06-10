@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import de.zalando.eventlog.EventType;
-
 public enum ZMonEventType implements EventType {
 
     // worker events

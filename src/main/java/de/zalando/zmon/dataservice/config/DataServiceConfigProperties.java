@@ -37,7 +37,10 @@ public class DataServiceConfigProperties {
     private List<String> restMetricHosts = new ArrayList<>();
     private int restMetricPort = 8088;
 
-    private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
+    private Map<String, String> oauth2Scopes = new HashMap<>(0);
+
+    private boolean eventLogEnabled = false;
+    private String eventLogUrl = "http://localhost:8081/";
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
@@ -402,5 +405,21 @@ public class DataServiceConfigProperties {
 
     public void setKairosdbWriteUrls(List<String> kairosdbWriteUrls) {
         this.kairosdbWriteUrls = kairosdbWriteUrls;
+    }
+
+    public boolean isEventLogEnabled() {
+        return eventLogEnabled;
+    }
+
+    public void setEventLogEnabled(boolean eventLogEnabled) {
+        this.eventLogEnabled = eventLogEnabled;
+    }
+
+    public String getEventLogUrl() {
+        return eventLogUrl;
+    }
+
+    public void setEventLogUrl(String eventLogUrl) {
+        this.eventLogUrl = eventLogUrl;
     }
 }

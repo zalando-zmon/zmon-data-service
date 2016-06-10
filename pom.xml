@@ -78,11 +78,6 @@
             <version>4.3.6</version>
         </dependency>
         <dependency>
-            <groupId>de.zalando</groupId>
-            <artifactId>eventlog</artifactId>
-            <version>1.0.8</version>
-        </dependency>
-        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <scope>runtime</scope>
@@ -92,8 +87,6 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-
-
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>riptide</artifactId>
