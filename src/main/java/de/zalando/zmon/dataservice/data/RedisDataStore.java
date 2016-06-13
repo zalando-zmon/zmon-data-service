@@ -96,6 +96,10 @@ public class RedisDataStore {
     }
 
     public void createEvents(String entity, int checkId, String checkValue, AlertData ad) {
+        if (eventLogger == null) {
+            return;
+        }
+
         if (ad.active && ad.changed) {
             eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity);
         } else if (!ad.active && ad.changed) {
