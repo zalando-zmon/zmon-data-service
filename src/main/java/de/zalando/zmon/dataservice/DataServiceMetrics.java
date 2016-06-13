@@ -62,6 +62,7 @@ public class DataServiceMetrics {
     private final Timer kairosDBTimer;
 
     private final Meter proxyErrorMeter;
+    private final Meter eventlogErrorMeter;
 
     // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
@@ -75,6 +76,7 @@ public class DataServiceMetrics {
         this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
         this.kairosDBTimer = metrics.timer("data-service.kairosdb.timer");
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
+        this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -180,4 +182,6 @@ public class DataServiceMetrics {
     public void markProxyError() {
         proxyErrorMeter.mark();
     }
+
+    public void markEventLogError() { eventlogErrorMeter.mark(); }
 }

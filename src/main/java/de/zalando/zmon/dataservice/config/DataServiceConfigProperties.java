@@ -53,6 +53,11 @@ public class DataServiceConfigProperties {
     private int dataProxySocketTimeout = 500;
     private int dataProxyTimeout = 1000;
 
+    private int eventlogConnections = 50;
+    private int eventlogPoolSize = 50;
+    private int eventlogSocketTimeout = 500;
+    private int eventlogTimeout = 1000;
+
     private String proxyKairosdbUrl = "";
     private int proxyKairosdbConnections = 25;
     private int proxyKairosdbSockettimeout = 500;
@@ -421,5 +426,37 @@ public class DataServiceConfigProperties {
 
     public void setEventLogUrl(String eventLogUrl) {
         this.eventLogUrl = eventLogUrl;
+    }
+
+    public int getEventlogConnections() {
+        return eventlogConnections;
+    }
+
+    public void setEventlogConnections(int eventlogConnections) {
+        this.eventlogConnections = eventlogConnections;
+    }
+
+    public int getEventlogPoolSize() {
+        return eventlogPoolSize;
+    }
+
+    public void setEventlogPoolSize(int eventlogPoolSize) {
+        this.eventlogPoolSize = eventlogPoolSize;
+    }
+
+    public int getEventlogSocketTimeout() {
+        return eventlogSocketTimeout;
+    }
+
+    public void setEventlogSocketTimeout(int eventlogSocketTimeout) {
+        this.eventlogSocketTimeout = eventlogSocketTimeout;
+    }
+
+    public int getEventlogTimeout() {
+        return eventlogTimeout;
+    }
+
+    public void setEventlogTimeout(int eventlogTimeout) {
+        this.eventlogTimeout = eventlogTimeout;
     }
 }
