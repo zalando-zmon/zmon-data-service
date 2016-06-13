@@ -9,3 +9,6 @@ dataservice:
   log-check-data: true
   log-kairosdb-requests: true
   log-kairosdb-errors: true
+  version-config:
+    "zmon-worker":
+      "1.0": "cd100"

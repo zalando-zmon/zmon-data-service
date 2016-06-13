@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,7 +38,7 @@ public class DataServiceConfigProperties {
     private List<String> restMetricHosts = new ArrayList<>();
     private int restMetricPort = 8088;
 
-    private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
+    private Map<String, String> oauth2Scopes = new HashMap<>(0);
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
@@ -60,6 +61,8 @@ public class DataServiceConfigProperties {
     private int asyncPoolQueueSize = 5000;
 
     private int resultSizeWarning = 100;
+
+    private Map<String, Object> versionConfig = null;
 
     public int getResultSizeWarning() {
         return resultSizeWarning;
@@ -402,5 +405,13 @@ public class DataServiceConfigProperties {
 
     public void setKairosdbWriteUrls(List<String> kairosdbWriteUrls) {
         this.kairosdbWriteUrls = kairosdbWriteUrls;
+    }
+
+    public Map<String, Object> getVersionConfig() {
+        return versionConfig;
+    }
+
+    public void setVersionConfig(Map<String, Object>  versionConfig) {
+        this.versionConfig = versionConfig;
     }
 }

@@ -50,6 +50,8 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     List<WorkResultWriter> workResultWriter;
 
+    DataServiceConfigProperties config = new DataServiceConfigProperties();
+
     @Before
     public void setUp() {
 
@@ -63,7 +65,7 @@ public class DataServiceControllerTest extends AbstractControllerTest {
         proxyWriter = Mockito.mock(ProxyWriter.class);
 
         controller = new DataServiceController(storage, metrics, defaultObjectMapper, customObjectMapper,
-                workResultWriter, proxyWriter);
+                workResultWriter, proxyWriter, config);
     }
 
     @After
