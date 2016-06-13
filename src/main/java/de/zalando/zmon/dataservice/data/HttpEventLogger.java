@@ -94,7 +94,7 @@ public class HttpEventLogger {
             async.execute(request, new FutureCallback<Content>() {
 
                 public void failed(final Exception ex) {
-                    metrics.markProxyError();
+                    metrics.markEventLogError();
                 }
 
                 public void completed(final Content content) {
