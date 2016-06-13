@@ -38,7 +38,7 @@ public class DataServiceConfigProperties {
     private List<String> restMetricHosts = new ArrayList<>();
     private int restMetricPort = 8088;
 
-    private Map<String, String> oauth2Scopes = new HashMap<String, String>(0);
+    private Map<String, String> oauth2Scopes = new HashMap<>(0);
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
@@ -62,7 +62,7 @@ public class DataServiceConfigProperties {
 
     private int resultSizeWarning = 100;
 
-    private JsonNode versionConfig = null;
+    private Map<String, Object> versionConfig = null;
 
     public int getResultSizeWarning() {
         return resultSizeWarning;
@@ -407,11 +407,11 @@ public class DataServiceConfigProperties {
         this.kairosdbWriteUrls = kairosdbWriteUrls;
     }
 
-    public JsonNode getVersionConfig() {
+    public Map<String, Object> getVersionConfig() {
         return versionConfig;
     }
 
-    public void setVersionConfig(JsonNode versionConfig) {
+    public void setVersionConfig(Map<String, Object>  versionConfig) {
         this.versionConfig = versionConfig;
     }
 }

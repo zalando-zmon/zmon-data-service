@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class DataServiceController {
     }
 
     @RequestMapping(value = "/v1/appliance-versions", method = RequestMethod.GET)
-    public JsonNode getVersionConfig() {
+    public Map<String, Object> getVersionConfig() {
         return config.getVersionConfig();
     }
 
