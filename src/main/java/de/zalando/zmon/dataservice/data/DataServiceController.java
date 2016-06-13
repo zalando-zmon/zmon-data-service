@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +42,24 @@ public class DataServiceController {
 
     private final ProxyWriter proxyWriter;
 
+    private final DataServiceConfigProperties config;
+
     @Autowired
     public DataServiceController(RedisDataStore storage, DataServiceMetrics dataServiceMetrics,
                                  @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
-                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter) {
+                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter, DataServiceConfigProperties config) {
         this.storage = storage;
         this.metrics = dataServiceMetrics;
         this.mapper = defaultObjectMapper;
         this.valueMapper = customObjectMapper;
         this.workResultWriter = workResultWriter;
         this.proxyWriter = proxyWriter;
+        this.config = config;
+    }
+
+    @RequestMapping(value = "/v1/appliance-versions", method = RequestMethod.GET)
+    public JsonNode getVersionConfig() {
+        return config.getVersionConfig();
     }
 
     @RequestMapping(value = "/v1/data/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
