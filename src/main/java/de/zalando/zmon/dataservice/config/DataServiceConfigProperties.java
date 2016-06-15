@@ -69,6 +69,8 @@ public class DataServiceConfigProperties {
 
     private int resultSizeWarning = 100;
 
+    private Map<String, Object> versionConfig = null;
+
     public int getResultSizeWarning() {
         return resultSizeWarning;
     }
@@ -458,5 +460,13 @@ public class DataServiceConfigProperties {
 
     public void setEventlogUrl(String eventlogUrl) {
         this.eventlogUrl = eventlogUrl;
+    }
+
+    public Map<String, Object> getVersionConfig() {
+        return versionConfig;
+    }
+
+    public void setVersionConfig(Map<String, Object>  versionConfig) {
+        this.versionConfig = versionConfig;
     }
 }
