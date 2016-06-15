@@ -87,7 +87,7 @@ public class HttpEventLogger {
 
         try {
             Request request = Request.Post(forwardUrl + "/")
-                    .bodyString(mapper.writeValueAsString(new HttpEvent(new Date(), type, values)), ContentType.APPLICATION_JSON);
+                    .bodyString("[" + mapper.writeValueAsString(new HttpEvent(new Date(), type, values)) + "]", ContentType.APPLICATION_JSON);
 
             async.execute(request, new FutureCallback<Content>() {
 
