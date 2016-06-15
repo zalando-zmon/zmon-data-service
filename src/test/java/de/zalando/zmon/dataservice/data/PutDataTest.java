@@ -3,6 +3,7 @@ package de.zalando.zmon.dataservice.data;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -53,14 +54,14 @@ public class PutDataTest implements Resources {
 
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
         ds.before(wr);
         TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void putDataWithRedisTemplate() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
         ds.after(wr);
         TimeUnit.SECONDS.sleep(10);
     }

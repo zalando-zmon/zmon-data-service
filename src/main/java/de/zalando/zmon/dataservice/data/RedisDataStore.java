@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 
-import de.zalando.eventlog.EventLogger;
 import de.zalando.zmon.dataservice.ZMonEventType;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import redis.clients.jedis.Jedis;
@@ -53,7 +52,7 @@ public class RedisDataStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisDataStore.class);
 
-    private static final EventLogger EVENT_LOG = EventLogger.getLogger(RedisDataStore.class);
+    private final HttpEventLogger eventLogger;
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -61,11 +60,12 @@ public class RedisDataStore {
 
     @Autowired
     public RedisDataStore(JedisPool pool, @DefaultObjectMapper ObjectMapper mapper,
-            StringRedisTemplate stringRedisTemplate) {
+            StringRedisTemplate stringRedisTemplate, HttpEventLogger eventLogger) {
         this.pool = pool;
         this.mapper = mapper;
         this.stringRedisTemplate = stringRedisTemplate;
         this.checkAlertScript = initializeScript();
+        this.eventLogger = eventLogger;
     }
 
     private static RedisScript<Long> initializeScript() {
@@ -96,10 +96,14 @@ public class RedisDataStore {
     }
 
     public void createEvents(String entity, int checkId, String checkValue, AlertData ad) {
+        if (eventLogger == null) {
+            return;
+        }
+
         if (ad.active && ad.changed) {
-            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity);
         } else if (!ad.active && ad.changed) {
-            EVENT_LOG.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity);
         }
     }
 
