@@ -39,9 +39,6 @@ public class DataServiceConfigProperties {
 
     private Map<String, String> oauth2Scopes = new HashMap<>(0);
 
-    private boolean eventLogEnabled = false;
-    private String eventLogUrl = "http://localhost:8081/";
-
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
     private int kairosdbSockettimeout = 500;
@@ -52,6 +49,9 @@ public class DataServiceConfigProperties {
     private int dataProxyPoolSize = 50;
     private int dataProxySocketTimeout = 500;
     private int dataProxyTimeout = 1000;
+
+    private boolean eventlogEnabled = false;
+    private String eventlogUrl = "http://localhost:8081/";
 
     private int eventlogConnections = 50;
     private int eventlogPoolSize = 50;
@@ -412,22 +412,6 @@ public class DataServiceConfigProperties {
         this.kairosdbWriteUrls = kairosdbWriteUrls;
     }
 
-    public boolean isEventLogEnabled() {
-        return eventLogEnabled;
-    }
-
-    public void setEventLogEnabled(boolean eventLogEnabled) {
-        this.eventLogEnabled = eventLogEnabled;
-    }
-
-    public String getEventLogUrl() {
-        return eventLogUrl;
-    }
-
-    public void setEventLogUrl(String eventLogUrl) {
-        this.eventLogUrl = eventLogUrl;
-    }
-
     public int getEventlogConnections() {
         return eventlogConnections;
     }
@@ -458,5 +442,21 @@ public class DataServiceConfigProperties {
 
     public void setEventlogTimeout(int eventlogTimeout) {
         this.eventlogTimeout = eventlogTimeout;
+    }
+
+    public boolean isEventlogEnabled() {
+        return eventlogEnabled;
+    }
+
+    public void setEventlogEnabled(boolean eventlogEnabled) {
+        this.eventlogEnabled = eventlogEnabled;
+    }
+
+    public String getEventlogUrl() {
+        return eventlogUrl;
+    }
+
+    public void setEventlogUrl(String eventlogUrl) {
+        this.eventlogUrl = eventlogUrl;
     }
 }

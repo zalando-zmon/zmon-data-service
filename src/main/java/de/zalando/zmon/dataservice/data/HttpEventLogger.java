@@ -64,11 +64,11 @@ public class HttpEventLogger {
     @Autowired
     public HttpEventLogger(DataServiceMetrics metrics, DataServiceConfigProperties config) {
         this.metrics = metrics;
-        enabled = config.isEventLogEnabled();
+        enabled = config.isEventlogEnabled();
         mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         if(enabled) {
-            forwardUrl = config.getEventLogUrl() + "/api/v1";
+            forwardUrl = config.getEventlogUrl() + "/api/v1";
             log.info("EventLog enabled: {}", forwardUrl);
             executor = Executor.newInstance(ProxyWriter.getHttpClient(config.getEventlogSocketTimeout(), config.getEventlogTimeout(), config.getEventlogConnections()));
             ExecutorService threadPool = Executors.newFixedThreadPool(config.getEventlogPoolSize());
