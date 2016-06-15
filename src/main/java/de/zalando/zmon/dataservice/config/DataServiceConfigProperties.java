@@ -215,21 +215,21 @@ public class DataServiceConfigProperties {
 
     /**
      * Enables caching for information about a token.
-     * 
+     * <p>
      * Default: false
      */
     private boolean tokenInfoCacheEnabled = false;
 
     /**
      * Maximum size for the cache.
-     * 
+     * <p>
      * Default : 1000
      */
     private int tokenInfoCacheMaxSize = 1000;
 
     /**
      * How long these information will be stored in cache. Unit is MINUTES.
-     * 
+     * <p>
      * Default: 240
      */
     private int tokenInfoCacheTime = 240;

@@ -50,11 +50,10 @@ public class HttpEventLogger {
             this.typeId = type.getId();
             this.attributes = new TreeMap<>();
 
-            for(int i = 0; i<type.getFieldNames().size(); ++i) {
+            for (int i = 0; i < type.getFieldNames().size(); ++i) {
                 if (i < values.length) {
                     attributes.put(type.getFieldNames().get(i), values[i]);
-                }
-                else {
+                } else {
                     attributes.put(type.getFieldNames().get(i), null);
                 }
             }
@@ -67,14 +66,13 @@ public class HttpEventLogger {
         enabled = config.isEventlogEnabled();
         mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        if(enabled) {
+        if (enabled) {
             forwardUrl = config.getEventlogUrl() + "/api/v1";
             log.info("EventLog enabled: {}", forwardUrl);
             executor = Executor.newInstance(ProxyWriter.getHttpClient(config.getEventlogSocketTimeout(), config.getEventlogTimeout(), config.getEventlogConnections()));
             ExecutorService threadPool = Executors.newFixedThreadPool(config.getEventlogPoolSize());
             async = Async.newInstance().use(threadPool).use(executor);
-        }
-        else {
+        } else {
             log.info("EventLog disabled");
             forwardUrl = null;
             async = null;
@@ -83,7 +81,7 @@ public class HttpEventLogger {
     }
 
     public void log(EventType type, Object... values) {
-        if(!enabled) {
+        if (!enabled) {
             return;
         }
 
@@ -104,8 +102,7 @@ public class HttpEventLogger {
                 }
 
             });
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             log.error("EventLog write failed: {}", t.getMessage());
             metrics.markEventLogError();
         }
