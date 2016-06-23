@@ -24,8 +24,8 @@ public class ChecksController {
     	return checkService.allActiveCheckDefinitions(query);
     }
 
-    //TODO, this starts with 'rest'
-    @RequestMapping(value = "/rest/api/v1/checks/all-active-check-definitions")
+    // TODO: remove legacy "/rest" prefix
+    @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions", "/rest/api/v1/checks/all-active-check-definitions"})
     public String getChecksControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveCheckDefinitions(query);
     }
@@ -35,8 +35,8 @@ public class ChecksController {
     	return checkService.allActiveAlertDefinitions(query);
     }
 
-  //TODO, this starts with 'rest'
-    @RequestMapping(value = "/rest/api/v1/checks/all-active-alert-definitions")
+    // TODO: remove legacy "/rest" prefix
+    @RequestMapping(value = {"/api/v1/checks/all-active-alert-definitions", "/rest/api/v1/checks/all-active-alert-definitions"})
     public String getAlertsControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query) throws IOException, URISyntaxException {
     	return checkService.allActiveAlertDefinitions(query);
     }

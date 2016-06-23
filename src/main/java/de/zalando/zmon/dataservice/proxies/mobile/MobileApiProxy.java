@@ -58,7 +58,7 @@ public class MobileApiProxy {
     @RequestMapping(value = "alert", method = RequestMethod.GET)
     public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team) throws URISyntaxException, IOException {
 
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/api/v1/checks/all-active-alert-definitions").build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/checks/all-active-alert-definitions").build();
         final String r = Request.Get(uri).execute().returnContent().asString();
         JsonNode node = mapper.readTree(r);
         List<AlertHeader> alerts = new ArrayList<>();

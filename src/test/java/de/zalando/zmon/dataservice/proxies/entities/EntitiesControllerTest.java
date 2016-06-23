@@ -74,7 +74,7 @@ public class EntitiesControllerTest extends AbstractControllerTest {
 
     @Test
     public void getEntitiesRest() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/rest/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg");
