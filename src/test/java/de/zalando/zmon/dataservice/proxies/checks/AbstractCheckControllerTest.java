@@ -66,7 +66,7 @@ public abstract class AbstractCheckControllerTest extends AbstractControllerTest
 
 	@Test
 	public void restChecks() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/rest/api/v1/checks/all-active-check-definitions?query=htg"))
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-check-definitions?query=htg"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveCheckDefinitions("htg");
@@ -74,7 +74,7 @@ public abstract class AbstractCheckControllerTest extends AbstractControllerTest
 
 	@Test
 	public void restAlerts() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/rest/api/v1/checks/all-active-alert-definitions?query=htg"))
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-alert-definitions?query=htg"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveAlertDefinitions("htg");

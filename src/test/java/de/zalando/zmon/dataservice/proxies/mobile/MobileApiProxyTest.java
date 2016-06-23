@@ -47,7 +47,7 @@ public class MobileApiProxyTest extends AbstractControllerTest {
 
     @Before
     public void setUp() throws IOException {
-        wireMockRule.stubFor(get(urlPathEqualTo("/rest/api/v1/checks/all-active-alert-definitions")).willReturn(
+        wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/checks/all-active-alert-definitions")).willReturn(
                 aResponse().withStatus(200).withBody(resourceToString(jsonResource("allAlerts"))).withFixedDelay(200)));
         wireMockRule.stubFor(get(urlPathEqualTo("/rest/alertDetails"))
                 .willReturn(aResponse().withStatus(200).withBody("").withFixedDelay(200)));
