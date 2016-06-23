@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,15 +92,7 @@ public class DataServiceController {
     }
 
     protected void proxyData(String authHeader, String accountId, String checkId, String data) {
-        extractTokenFromHeader(authHeader).ifPresent(t -> proxyWriter.write(t, accountId, checkId, data));
-    }
-
-    public static Optional<String> extractTokenFromHeader(String header) {
-        try {
-            return Optional.ofNullable(header.substring(7)); // Bearer
-        } catch (IndexOutOfBoundsException e) {
-            return Optional.empty();
-        }
+        BearerToken.extractFromHeader(authHeader).ifPresent(t -> proxyWriter.write(t, accountId, checkId, data));
     }
 
     protected Optional<WorkerResult> extractAndFilter(String data, String accountId, int checkId) {

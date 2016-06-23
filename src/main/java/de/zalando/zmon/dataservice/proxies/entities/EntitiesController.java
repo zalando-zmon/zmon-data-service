@@ -1,6 +1,6 @@
 package de.zalando.zmon.dataservice.proxies.entities;
 
-import de.zalando.zmon.dataservice.data.DataServiceController;
+import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
+
+import static de.zalando.zmon.dataservice.oauth2.BearerToken.extractFromHeader;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -22,22 +25,19 @@ public class EntitiesController {
     }
 
     @RequestMapping(value = "/api/v1/entities", method = RequestMethod.PUT)
-    public String addEntities(@RequestBody(required = true) final String node, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) throws IOException, URISyntaxException {
-        Optional<String> token = DataServiceController.extractTokenFromHeader(authHeader);
-        return entitiesService.addEntities(token, node);
+    public String addEntities(@RequestBody(required = true) final String node, @RequestHeader(AUTHORIZATION) String authHeader) throws IOException, URISyntaxException {
+        return entitiesService.addEntities(extractFromHeader(authHeader), node);
     }
 
     @RequestMapping(value = "/api/v1/entities/{id}", method = RequestMethod.DELETE)
-    public String deleteEntity(@PathVariable(value = "id") String id, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) throws IOException, URISyntaxException {
-        Optional<String> token = DataServiceController.extractTokenFromHeader(authHeader);
-        return entitiesService.deleteEntity(token, id);
+    public String deleteEntity(@PathVariable(value = "id") String id, @RequestHeader(AUTHORIZATION) String authHeader) throws IOException, URISyntaxException {
+        return entitiesService.deleteEntity(extractFromHeader(authHeader), id);
     }
 
     // TODO: remove legacy "/rest" prefix
     @RequestMapping(value = {"/api/v1/entities", "/rest/api/v1/entities"})
-    public String getEntities(@RequestParam(value = "query", defaultValue = "{}") final String query, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader)
+    public String getEntities(@RequestParam(value = "query", defaultValue = "{}") final String query, @RequestHeader(AUTHORIZATION) String authHeader)
             throws IOException, URISyntaxException {
-        Optional<String> token = DataServiceController.extractTokenFromHeader(authHeader);
-        return entitiesService.getEntities(token, query);
+        return entitiesService.getEntities(extractFromHeader(authHeader), query);
     }
 }

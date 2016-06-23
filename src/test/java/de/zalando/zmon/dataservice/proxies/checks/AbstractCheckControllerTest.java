@@ -19,6 +19,8 @@ import de.zalando.zmon.dataservice.AbstractControllerTest;
 import de.zalando.zmon.dataservice.proxies.checks.ChecksController;
 import de.zalando.zmon.dataservice.proxies.checks.ChecksService;
 
+import java.util.Optional;
+
 
 public abstract class AbstractCheckControllerTest extends AbstractControllerTest {
 
@@ -44,39 +46,22 @@ public abstract class AbstractCheckControllerTest extends AbstractControllerTest
 		Mockito.reset(spy);
 	}
 
-	@Test
-	public void checks() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks?query=htg"))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-
-		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveCheckDefinitions("htg");
-	}
-
-	@Test
-	public void alerts() throws Exception {
-		configureWireMockForAlerts();
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/alerts?query=htg"))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-
-		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveAlertDefinitions("htg");
-	}
-
 	protected void configureWireMockForAlerts() {
 	}
 
 	@Test
 	public void restChecks() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-check-definitions?query=htg"))
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-check-definitions?query=htg").header("Authorization", "Bearer x"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
-		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveCheckDefinitions("htg");
+		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveCheckDefinitions(Optional.of("x"), "htg");
 	}
 
 	@Test
 	public void restAlerts() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-alert-definitions?query=htg"))
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/checks/all-active-alert-definitions?query=htg").header("Authorization", "Bearer x"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
-		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveAlertDefinitions("htg");
+		Mockito.verify(spy, VerificationModeFactory.atMost(1)).allActiveAlertDefinitions(Optional.of("x"), "htg");
 	}
 }
