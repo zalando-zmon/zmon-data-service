@@ -105,7 +105,7 @@ public class MobileApiProxyTest extends AbstractControllerTest {
         public DataServiceConfigProperties dataServiceConfigProperties() {
             DataServiceConfigProperties props = new DataServiceConfigProperties();
             props.setProxyController(true);
-            props.setProxyControllerBaseUrl("http://localhost:9998");
+            props.setProxyControllerUrl("http://localhost:9998/api/v1/");
             return props;
         }
 

@@ -30,7 +30,6 @@ public class DefaultEntitiesService extends ControllerProxy implements EntitiesS
         super(config);
         this.customObjectMapper = customObjectMapper;
         this.metrics = metrics;
-        log.info("Entity service proxy: {}", config.getProxyControllerBaseUrl());
     }
 
     @Override
