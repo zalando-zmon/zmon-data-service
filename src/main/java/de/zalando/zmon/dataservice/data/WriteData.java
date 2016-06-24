@@ -2,9 +2,6 @@ package de.zalando.zmon.dataservice.data;
 
 import java.util.Optional;
 
-import javax.annotation.concurrent.Immutable;
-
-@Immutable
 class WriteData {
 
     private final Optional<WorkerResult> workerResultOptional;

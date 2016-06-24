@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -110,7 +111,7 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     @Test
     public void extractToken() {
-        Optional<String> token = controller.extractTokenFromHeader("Bearer 123456789");
+        Optional<String> token = BearerToken.extractFromHeader("Bearer 123456789");
         Assertions.assertThat(token).isNotNull();
         Assertions.assertThat(token.isPresent()).isTrue();
         Assertions.assertThat(token.get()).isEqualTo("123456789");
