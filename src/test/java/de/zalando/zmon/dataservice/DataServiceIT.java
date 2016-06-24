@@ -82,4 +82,11 @@ public class DataServiceIT extends AbstractControllerTest {
         Executor.newInstance().execute(request).returnContent().toString();
     }
 
+    @Test
+    public void getEntities() throws IOException {
+        Request request = Request.Get("http://localhost:" + port + "/api/v1/entities");
+        request.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        Executor.newInstance().execute(request).returnContent().toString();
+    }
+
 }
