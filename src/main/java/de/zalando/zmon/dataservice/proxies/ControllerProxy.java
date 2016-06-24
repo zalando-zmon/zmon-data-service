@@ -15,16 +15,18 @@ import java.util.Optional;
 
 public class ControllerProxy {
     protected final DataServiceConfigProperties config;
+    protected final Executor executor;
 
     public ControllerProxy(DataServiceConfigProperties config) {
         this.config = config;
+        executor = getExecutor(config);
     }
 
     /**
      * @return HTTP executor to use only once (no connection pooling)
      */
-    protected Executor getExecutor() {
-        final int maxConnections = 1;
+    protected static Executor getExecutor(DataServiceConfigProperties config) {
+        final int maxConnections = 100;
         final RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(config.getProxyControllerSocketTimeout()).setConnectTimeout(config.getProxyControllerConnectTimeout()).build();
         final HttpClient httpClient = HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig).build();
         final Executor executor = Executor.newInstance(httpClient);
@@ -39,6 +41,6 @@ public class ControllerProxy {
         if (config.isProxyControllerOauth2()) {
             BearerToken.inject(request, token);
         }
-        return getExecutor().execute(request).returnContent().asString();
+        return executor.execute(request).returnContent().asString();
     }
 }
