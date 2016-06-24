@@ -12,6 +12,6 @@ public class BearerTokenTest {
     public void inject() {
         Request request = Mockito.mock(Request.class);
         BearerToken.inject(request, Optional.of("123"));
-        Mockito.verify(request).setHeader("Authorization", "Bearer 123");
+        Mockito.verify(request).addHeader("Authorization", "Bearer 123");
     }
 }
