@@ -29,7 +29,7 @@ public class BearerToken {
 
     public static Request inject(Request request, Optional<String> token) {
         if (token.isPresent()) {
-            return request.addHeader(AUTHORIZATION, "Bearer " + token);
+            return request.addHeader(AUTHORIZATION, "Bearer " + token.get());
         } else {
             return request;
         }
