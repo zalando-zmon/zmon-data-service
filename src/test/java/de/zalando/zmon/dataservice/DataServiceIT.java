@@ -1,18 +1,11 @@
 package de.zalando.zmon.dataservice;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.zalando.riptide.Actions.pass;
-import static org.zalando.riptide.Conditions.anyStatus;
-import static org.zalando.riptide.Conditions.on;
-import static org.zalando.riptide.Selectors.status;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
-
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.fluent.Executor;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,29 +16,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.RestTemplate;
-import org.zalando.riptide.PassThroughResponseErrorHandler;
-import org.zalando.riptide.Rest;
-import org.zalando.riptide.ThrowingConsumer;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import java.io.IOException;
 
-@SpringApplicationConfiguration(classes = { Application.class })
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.net.HttpURLConnection.HTTP_OK;
+
+@SpringApplicationConfiguration(classes = {Application.class})
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles("it")
 public class DataServiceIT extends AbstractControllerTest {
 
     private static final Logger log = LoggerFactory.getLogger(DataServiceIT.class);
+    private static final String BEARER_TOKEN = "Bearer 987654321";
 
     @Value("${local.server.port}")
     private int port;
@@ -61,43 +46,40 @@ public class DataServiceIT extends AbstractControllerTest {
     }
 
     @Test
-    public void startUp() throws InterruptedException {
-        log.info("Service up and running, start with requests ...");
-        TimeUnit.SECONDS.sleep(3);
+    public void getCheckDefinitions() throws IOException {
+        Request request = Request.Get("http://localhost:" + port + "/api/v1/checks/all-active-check-definitions");
+        try {
+            Executor.newInstance().execute(request).returnContent().toString();
+            Assertions.fail("expect UNAUTHORIZED");
+        } catch (HttpResponseException e) {
+            Assertions.assertThat(e.getStatusCode()).isEqualTo(401);
+        }
 
-        // try out RipTide
-        RestTemplate rest = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-        // seems not to work with SimpleClientHttpRequestFactory
-        // RestTemplate rest = new RestTemplate();
-
-        rest.setErrorHandler(new PassThroughResponseErrorHandler());
-        Rest r = Rest.create(rest);
-        r.execute(HttpMethod.GET, URI.create("http://localhost:" + port + "/api/v1/checks")).dispatch(status(),
-                on(UNAUTHORIZED).call(pass()), anyStatus().call(new ThrowingConsumer<ClientHttpResponse, Exception>() {
-                    @Override
-                    public void accept(ClientHttpResponse input) throws AssertionError {
-                        Assertions.fail("expect UNAUTHORIZED");
-                    }
-                }));
-
-        // ResponseEntity<String> response1 = rest.exchange("http://localhost:"
-        // + port + "/api/v1/checks", HttpMethod.GET, null, String.class);
-        // Assertions.assertThat(response1).isNotNull();
-        // Assertions.assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-
-        rest.getInterceptors().add(new ClientHttpRequestInterceptor() {
-
-            @Override
-            public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
-                    throws IOException {
-                request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer 987654321");
-                return execution.execute(request, body);
-            }
-        });
-
-        ResponseEntity<String> response2 = rest.exchange("http://localhost:" + port + "/api/v1/checks", HttpMethod.GET,
-                null, String.class);
-        Assertions.assertThat(response2).isNotNull();
-        Assertions.assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Request request2 = Request.Get("http://localhost:" + port + "/api/v1/checks/all-active-check-definitions");
+        request2.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        Executor.newInstance().execute(request2).returnContent().toString();
     }
+
+    @Test
+    public void getAlertDefinitions() throws IOException {
+        Request request = Request.Get("http://localhost:" + port + "/api/v1/checks/all-active-alert-definitions");
+        request.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        Executor.newInstance().execute(request).returnContent().toString();
+    }
+
+    @Test
+    public void putData() throws IOException {
+        Request request = Request.Put("http://localhost:" + port + "/api/v1/data/dc:123/456/").bodyString("{}", ContentType.APPLICATION_JSON);
+        request.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        Executor.newInstance().execute(request).returnContent().toString();
+    }
+
+    @Test
+    public void putTrialRun() throws IOException {
+        String trialRunBody = super.resourceToString(jsonResource("data/trialRun"));
+        Request request = Request.Put("http://localhost:" + port + "/api/v1/data/trial-run/").bodyString(trialRunBody, ContentType.APPLICATION_JSON);
+        request.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        Executor.newInstance().execute(request).returnContent().toString();
+    }
+
 }
