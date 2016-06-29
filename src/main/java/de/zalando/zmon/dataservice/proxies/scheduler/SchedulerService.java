@@ -9,4 +9,6 @@ public interface SchedulerService {
 
 	String instantEvaluations(String dc) throws IOException, URISyntaxException;
 
+	String downtimes(String dc) throws IOException, URISyntaxException;
+
 }

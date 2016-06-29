@@ -29,4 +29,9 @@ public class DataCenterController {
 		return schedulerService.instantEvaluations(dc);
 	}
 
+	@RequestMapping(value = "/downtimes/{dc}")
+	public String getDowntimes(@PathVariable final String dc) throws IOException, URISyntaxException {
+		return schedulerService.downtimes(dc);
+	}
+
 }

@@ -36,4 +36,11 @@ public class DefaultSchedulerService implements SchedulerService {
                 .build();
         return Request.Get(uri).execute().returnContent().asString();
     }
+
+    @Override
+    public String downtimes(String dc) throws IOException, URISyntaxException {
+        URI uri = new URIBuilder().setPath(config.getProxySchedulerUrl() + "/downtimes/" + dc + "/")
+                .build();
+        return Request.Get(uri).execute().returnContent().asString();
+    }
 }
