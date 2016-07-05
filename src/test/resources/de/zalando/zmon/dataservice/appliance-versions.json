@@ -1,0 +1,14 @@
+[{
+  "id": "zmon-appliance-config",
+  "type": "zmon-config",
+  "team": "zmon",
+  "data": {
+    "version-config": {
+      "redis": {
+        "1": {
+          "*": "registry.opensource.zalan.do/stups/redis:3.2.0-alpine"
+        }
+      }
+    }
+  }
+}]
