@@ -1,14 +1,11 @@
 package de.zalando.zmon.dataservice.proxies.entities;
 
-import de.zalando.zmon.dataservice.oauth2.BearerToken;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Optional;
 
 import static de.zalando.zmon.dataservice.oauth2.BearerToken.extractFromHeader;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;

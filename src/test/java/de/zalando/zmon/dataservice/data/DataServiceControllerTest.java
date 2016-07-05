@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import de.zalando.zmon.dataservice.ApplianceVersionService;
 import de.zalando.zmon.dataservice.oauth2.BearerToken;
+import de.zalando.zmon.dataservice.proxies.entities.EntitiesService;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.codahale.metrics.Timer;
@@ -26,6 +30,9 @@ import de.zalando.zmon.dataservice.components.CustomObjectMapper;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
+
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration
 public class DataServiceControllerTest extends AbstractControllerTest {
@@ -51,22 +58,28 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     List<WorkResultWriter> workResultWriter;
 
+    ApplianceVersionService applianceVersionService;
+
     DataServiceConfigProperties config = new DataServiceConfigProperties();
+
+    EntitiesService entitiesService;
 
     @Before
     public void setUp() {
 
         Timer timer = Mockito.mock(Timer.class);
         Context context = Mockito.mock(Context.class);
-        Mockito.when(timer.time()).thenReturn(context);
-        Mockito.when(metrics.getKairosDBTimer()).thenReturn(timer);
+        when(timer.time()).thenReturn(context);
+        when(metrics.getKairosDBTimer()).thenReturn(timer);
 
         storage = Mockito.mock(RedisDataStore.class);
         kairosStore = Mockito.mock(KairosDBStore.class);
         proxyWriter = Mockito.mock(ProxyWriter.class);
+        entitiesService = Mockito.mock(EntitiesService.class);
+        applianceVersionService = new ApplianceVersionService(entitiesService);
 
         controller = new DataServiceController(storage, metrics, defaultObjectMapper, customObjectMapper,
-                workResultWriter, proxyWriter, config);
+                workResultWriter, proxyWriter, config, applianceVersionService);
     }
 
     @After
@@ -121,6 +134,14 @@ public class DataServiceControllerTest extends AbstractControllerTest {
     public void writeToProxy() {
         controller.proxyData("Bearer 123456789", "123", "12345", "");
         Mockito.verify(proxyWriter, Mockito.times(1)).write("123456789", "123", "12345", "");
+    }
+
+    @Test
+    public void testConfigStuff() throws Exception {
+        when(entitiesService.getEntities(eq(Optional.of("12345")), eq("[{\"id\":\"zmon-appliance-config\"]"))).thenReturn("[{\"data\":{}}]");
+        ResponseEntity<JsonNode> node = controller.getVersionConfig("Bearer 12345");
+        Mockito.verify(entitiesService).getEntities(eq(Optional.of("12345")), eq("[{\"id\":\"zmon-appliance-config\"]"));
+        Assertions.assertThat(node.getBody()).isNotNull();
     }
 
     @Configuration

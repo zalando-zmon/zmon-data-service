@@ -89,4 +89,15 @@ public class DataServiceIT extends AbstractControllerTest {
         Executor.newInstance().execute(request).returnContent().toString();
     }
 
+    @Test
+    public void getConfigurationEntityFails() throws IOException {
+        Request request = Request.Get("http://localhost:" + port + "/api/v1/appliance-versions");
+        request.setHeader(HttpHeaders.AUTHORIZATION, BEARER_TOKEN);
+        try {
+            Executor.newInstance().execute(request).returnContent().toString();
+            Assertions.fail("Request should fail");
+        } catch (HttpResponseException e) {
+            Assertions.assertThat(e.getStatusCode()).isEqualTo(500);
+        }
+    }
 }

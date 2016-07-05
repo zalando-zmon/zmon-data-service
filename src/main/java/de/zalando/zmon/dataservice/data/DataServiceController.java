@@ -5,12 +5,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import de.zalando.zmon.dataservice.ApplianceVersionService;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -46,22 +49,29 @@ public class DataServiceController {
 
     private final DataServiceConfigProperties config;
 
+    private final ApplianceVersionService applianceVersionService;
+
     @Autowired
     public DataServiceController(RedisDataStore storage, DataServiceMetrics dataServiceMetrics,
                                  @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
-                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter, DataServiceConfigProperties config) {
+                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter, DataServiceConfigProperties config, ApplianceVersionService applianceVersionService) {
         this.storage = storage;
         this.metrics = dataServiceMetrics;
         this.mapper = defaultObjectMapper;
         this.valueMapper = customObjectMapper;
         this.workResultWriter = workResultWriter;
         this.proxyWriter = proxyWriter;
+        this.applianceVersionService = applianceVersionService;
         this.config = config;
     }
 
     @RequestMapping(value = "/v1/appliance-versions", method = RequestMethod.GET)
-    public Map<String, Object> getVersionConfig() {
-        return config.getVersionConfig();
+    public ResponseEntity<JsonNode> getVersionConfig(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        JsonNode node = applianceVersionService.getVersionConfig(BearerToken.extractFromHeader(authHeader));
+        if (null == node) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(node, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/v1/data/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
@@ -125,7 +135,7 @@ public class DataServiceController {
 
     @RequestMapping(value = "/v2/data/{account}/{checkid}/{region}/", method = RequestMethod.PUT, consumes = {"text/plain",
             "application/json"})
-    void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId, @PathVariable(value="region") String region,
+    void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId, @PathVariable(value = "region") String region,
                  @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
 
         proxyData(authHeader, accountId, String.valueOf(checkId), data);
