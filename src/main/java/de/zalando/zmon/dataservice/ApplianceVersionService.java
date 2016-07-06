@@ -40,11 +40,11 @@ public class ApplianceVersionService {
                 return null;
             }
 
-            if (!node.get(0).has("data")) {
+            if (!node.get(0).has("data") || !node.get(0).get("data").has("version-config")) {
                 return null;
             }
 
-            return node.get(0).get("data");
+            return node.get(0).get("data").get("version-config");
         } catch (IOException | URISyntaxException ex) {
             logger.error("Failed to get config entity: {}", ex.getMessage());
         }

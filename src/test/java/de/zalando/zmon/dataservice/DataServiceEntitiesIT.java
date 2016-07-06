@@ -73,6 +73,6 @@ public class DataServiceEntitiesIT extends AbstractControllerTest {
         Assertions.assertThat(rr.getStatusLine().getStatusCode()).isEqualTo(200);
 
         JsonNode node = mapper.readTree(body);
-        Assertions.assertThat(node.has("version-config")).isTrue();
+        Assertions.assertThat(node.has("redis")).isTrue();
     }
 }

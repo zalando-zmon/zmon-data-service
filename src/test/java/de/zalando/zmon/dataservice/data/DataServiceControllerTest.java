@@ -138,7 +138,7 @@ public class DataServiceControllerTest extends AbstractControllerTest {
 
     @Test
     public void testConfigStuff() throws Exception {
-        when(entitiesService.getEntities(eq(Optional.of("12345")), eq("[{\"id\":\"zmon-appliance-config\"}]"))).thenReturn("[{\"data\":{}}]");
+        when(entitiesService.getEntities(eq(Optional.of("12345")), eq("[{\"id\":\"zmon-appliance-config\"}]"))).thenReturn("[{\"data\":{\"version-config\":{}}}]");
         ResponseEntity<JsonNode> node = controller.getVersionConfig("Bearer 12345");
         Mockito.verify(entitiesService).getEntities(eq(Optional.of("12345")), eq("[{\"id\":\"zmon-appliance-config\"}]"));
         Assertions.assertThat(node.getBody()).isNotNull();
