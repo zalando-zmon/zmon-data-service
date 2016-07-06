@@ -58,7 +58,7 @@ public class MobileApiProxy {
     @RequestMapping(value = "alert", method = RequestMethod.GET)
     public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team) throws URISyntaxException, IOException {
 
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/checks/all-active-alert-definitions").build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerUrl() + "/checks/all-active-alert-definitions").build();
         final String r = Request.Get(uri).execute().returnContent().asString();
         JsonNode node = mapper.readTree(r);
         List<AlertHeader> alerts = new ArrayList<>();
@@ -85,32 +85,21 @@ public class MobileApiProxy {
 
     @RequestMapping(value = "alert/{alert_id}", method = RequestMethod.GET)
     public ResponseEntity<String> getAlertDetails(@PathVariable(value = "alert_id") int alertId) throws URISyntaxException, IOException {
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/alertDetails").addParameter("alert_id", "" + alertId).build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
-        return new ResponseEntity<>(r, HttpStatus.OK);
+        return new ResponseEntity<>("UNSUPPORTED", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @RequestMapping(value = "active-alerts", method = RequestMethod.GET)
     public ResponseEntity<String> getActiveAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team, @RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
-
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allAlerts").addParameter("team", team).build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
-        return new ResponseEntity<>(r, HttpStatus.OK);
+        return new ResponseEntity<>("UNSUPPORTED", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @RequestMapping(value = "status", method = RequestMethod.GET)
     public ResponseEntity<String> getZMONStatus() throws URISyntaxException, IOException {
-
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/status").build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
-        return new ResponseEntity<>(r, HttpStatus.OK);
+        return new ResponseEntity<>("UNSUPPORTED", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @RequestMapping(value = "all-teams", method = RequestMethod.GET)
     public ResponseEntity<String> getAllTeams() throws URISyntaxException, IOException {
-
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allTeams").build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
-        return new ResponseEntity<>(r, HttpStatus.OK);
+        return new ResponseEntity<>("UNSUPPORTED", HttpStatus.NOT_IMPLEMENTED);
     }
 }

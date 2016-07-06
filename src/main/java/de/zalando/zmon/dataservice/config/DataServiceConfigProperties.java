@@ -20,7 +20,6 @@ public class DataServiceConfigProperties {
 
     private boolean proxyController = false;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
-    private String proxyControllerBaseUrl = "http://localhost:8080/";
     private boolean proxyControllerOauth2 = false;
     private int proxyControllerConnectTimeout = 1000; // ms
     private int proxyControllerSocketTimeout = 500; // ms
@@ -292,14 +291,6 @@ public class DataServiceConfigProperties {
 
     public void setProxyControllerUrl(String proxyControllerUrl) {
         this.proxyControllerUrl = proxyControllerUrl;
-    }
-
-    public String getProxyControllerBaseUrl() {
-        return proxyControllerBaseUrl;
-    }
-
-    public void setProxyControllerBaseUrl(String proxyControllerBaseUrl) {
-        this.proxyControllerBaseUrl = proxyControllerBaseUrl;
     }
 
     public boolean isProxyScheduler() {
