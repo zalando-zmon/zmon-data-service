@@ -25,13 +25,15 @@ class ApplicationMetricsWriter implements WorkResultWriter {
     ApplicationMetricsWriter(AppMetricsClient applicationMetricsClient, DataServiceConfigProperties config) {
         this.applicationMetricsClient = applicationMetricsClient;
         this.config = config;
+
+        log.info("Check IDs for metrics: {}", config.getActuatorMetricChecks());
     }
 
     @Async
     @Override
     public void write(WriteData writeData) {
         log.debug("write application-metrics ...");
-        if (writeData.getWorkerResultOptional().isPresent() && config.getRestMetricHosts()!=null && config.getRestMetricHosts().size()>0) {
+        if (writeData.getWorkerResultOptional().isPresent() && config.getRestMetricHosts() != null && config.getRestMetricHosts().size() > 0) {
             try {
                 Map<Integer, List<CheckData>> partitions = writeData.getWorkerResultOptional().get().results.stream()
                         .filter(x -> config.getActuatorMetricChecks().contains(x.check_id)).filter(x -> !x.exception)
