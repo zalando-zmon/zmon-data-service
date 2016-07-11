@@ -6,7 +6,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
+import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +28,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by jmussler on 12/16/15.
@@ -56,10 +59,17 @@ public class MobileApiProxy {
     }
 
     @RequestMapping(value = "alert", method = RequestMethod.GET)
-    public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team) throws URISyntaxException, IOException {
+    public ResponseEntity<List<AlertHeader>> getAllAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team, HttpServletRequest request) throws URISyntaxException, IOException {
+
+        Optional<String> token = BearerToken.extract(request);
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/checks/all-active-alert-definitions").build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
+        Request proxyRequest = Request.Get(uri);
+        if (token.isPresent()) {
+            proxyRequest.addHeader("Authorization", "Bearer " + token.get());
+        }
+
+        final String r = proxyRequest.execute().returnContent().asString();
         JsonNode node = mapper.readTree(r);
         List<AlertHeader> alerts = new ArrayList<>();
         JsonNode alertDefinitions = ((ArrayNode) node.get("alert_definitions"));
@@ -84,33 +94,65 @@ public class MobileApiProxy {
     }
 
     @RequestMapping(value = "alert/{alert_id}", method = RequestMethod.GET)
-    public ResponseEntity<String> getAlertDetails(@PathVariable(value = "alert_id") int alertId) throws URISyntaxException, IOException {
+    public ResponseEntity<String> getAlertDetails(@PathVariable(value = "alert_id") int alertId, HttpServletRequest request) throws URISyntaxException, IOException {
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/alertDetails").addParameter("alert_id", "" + alertId).build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
+
+        Optional<String> token = BearerToken.extract(request);
+
+        Request proxyRequest = Request.Get(uri);
+        if (token.isPresent()) {
+            proxyRequest.addHeader("Authorization", "Bearer " + token.get());
+        }
+
+        final String r = proxyRequest.execute().returnContent().asString();
         return new ResponseEntity<>(r, HttpStatus.OK);
     }
 
     @RequestMapping(value = "active-alerts", method = RequestMethod.GET)
-    public ResponseEntity<String> getActiveAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team, @RequestHeader(value = "Authorization", required = false) String oauthHeader) throws URISyntaxException, IOException {
+    public ResponseEntity<String> getActiveAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team, HttpServletRequest request) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allAlerts").addParameter("team", team).build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
+
+        Optional<String> token = BearerToken.extract(request);
+
+        Request proxyRequest = Request.Get(uri);
+        if (token.isPresent()) {
+            proxyRequest.addHeader("Authorization", "Bearer " + token.get());
+        }
+
+        final String r = proxyRequest.execute().returnContent().asString();
         return new ResponseEntity<>(r, HttpStatus.OK);
     }
 
     @RequestMapping(value = "status", method = RequestMethod.GET)
-    public ResponseEntity<String> getZMONStatus() throws URISyntaxException, IOException {
+    public ResponseEntity<String> getZMONStatus(HttpServletRequest request) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/status").build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
+
+        Optional<String> token = BearerToken.extract(request);
+
+        Request proxyRequest = Request.Get(uri);
+        if (token.isPresent()) {
+            proxyRequest.addHeader("Authorization", "Bearer " + token.get());
+        }
+
+        final String r = proxyRequest.execute().returnContent().asString();
         return new ResponseEntity<>(r, HttpStatus.OK);
     }
 
     @RequestMapping(value = "all-teams", method = RequestMethod.GET)
-    public ResponseEntity<String> getAllTeams() throws URISyntaxException, IOException {
+    public ResponseEntity<String> getAllTeams(HttpServletRequest request) throws URISyntaxException, IOException {
 
         URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allTeams").build();
-        final String r = Request.Get(uri).execute().returnContent().asString();
+
+        Optional<String> token = BearerToken.extract(request);
+
+        Request proxyRequest = Request.Get(uri);
+        if (token.isPresent()) {
+            proxyRequest.addHeader("Authorization", "Bearer " + token.get());
+        }
+
+        final String r = proxyRequest.execute().returnContent().asString();
         return new ResponseEntity<>(r, HttpStatus.OK);
     }
 }

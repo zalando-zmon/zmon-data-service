@@ -6,14 +6,9 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 import de.zalando.zmon.dataservice.proxies.ControllerProxy;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.utils.URIBuilder;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import org.apache.http.impl.client.HttpClients;
 
 public class DefaultChecksService extends ControllerProxy implements ChecksService {
 
