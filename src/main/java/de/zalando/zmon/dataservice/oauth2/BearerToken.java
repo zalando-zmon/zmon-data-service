@@ -4,12 +4,17 @@ import org.apache.http.client.fluent.Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
 import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 public class BearerToken {
     public static Optional<String> extractFromHeader(String header) {
+        if (null == header) {
+            return Optional.empty();
+        }
+
         try {
             return Optional.ofNullable(header.substring(7)); // Bearer
         } catch (IndexOutOfBoundsException e) {
