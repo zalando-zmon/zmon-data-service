@@ -49,13 +49,13 @@ public class MobileApiProxyTest extends AbstractControllerTest {
     public void setUp() throws IOException {
         wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/checks/all-active-alert-definitions")).willReturn(
                 aResponse().withStatus(200).withBody(resourceToString(jsonResource("allAlerts"))).withFixedDelay(200)));
-        wireMockRule.stubFor(get(urlPathEqualTo("/rest/alertDetails"))
+        wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/status/alert/13/details"))
                 .willReturn(aResponse().withStatus(200).withBody("").withFixedDelay(200)));
-        wireMockRule.stubFor(get(urlPathEqualTo("/rest/allAlerts"))
+        wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/status/active-alerts"))
                 .willReturn(aResponse().withStatus(200).withBody("").withFixedDelay(200)));
-        wireMockRule.stubFor(get(urlPathEqualTo("/rest/status")).willReturn(aResponse().withStatus(200)
+        wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/status")).willReturn(aResponse().withStatus(200)
                 .withBody(resourceToString(jsonResource("zmonStatus"))).withFixedDelay(200)));
-        wireMockRule.stubFor(get(urlPathEqualTo("/rest/allTeams")).willReturn(
+        wireMockRule.stubFor(get(urlPathEqualTo("/api/v1/teams")).willReturn(
                 aResponse().withStatus(200).withBody(resourceToString(jsonResource("allTeams"))).withFixedDelay(200)));
 
         this.mockMvc = MockMvcBuilders.standaloneSetup(new MobileApiProxy(config, defaultObjectMapper))
