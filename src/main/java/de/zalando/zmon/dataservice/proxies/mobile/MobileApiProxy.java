@@ -95,7 +95,7 @@ public class MobileApiProxy {
 
     @RequestMapping(value = "alert/{alert_id}", method = RequestMethod.GET)
     public ResponseEntity<String> getAlertDetails(@PathVariable(value = "alert_id") int alertId, HttpServletRequest request) throws URISyntaxException, IOException {
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/alertDetails").addParameter("alert_id", "" + alertId).build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/status/alert/" + alertId + "/details").build();
 
         Optional<String> token = BearerToken.extract(request);
 
@@ -111,7 +111,7 @@ public class MobileApiProxy {
     @RequestMapping(value = "active-alerts", method = RequestMethod.GET)
     public ResponseEntity<String> getActiveAlerts(@RequestParam(value = "team", required = false, defaultValue = "*") String team, HttpServletRequest request) throws URISyntaxException, IOException {
 
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allAlerts").addParameter("team", team).build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/status/active-alerts").addParameter("team", team).build();
 
         Optional<String> token = BearerToken.extract(request);
 
@@ -127,7 +127,7 @@ public class MobileApiProxy {
     @RequestMapping(value = "status", method = RequestMethod.GET)
     public ResponseEntity<String> getZMONStatus(HttpServletRequest request) throws URISyntaxException, IOException {
 
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/status").build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/status").build();
 
         Optional<String> token = BearerToken.extract(request);
 
@@ -143,7 +143,7 @@ public class MobileApiProxy {
     @RequestMapping(value = "all-teams", method = RequestMethod.GET)
     public ResponseEntity<String> getAllTeams(HttpServletRequest request) throws URISyntaxException, IOException {
 
-        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/rest/allTeams").build();
+        URI uri = new URIBuilder().setPath(config.getProxyControllerBaseUrl() + "/api/v1/teams").build();
 
         Optional<String> token = BearerToken.extract(request);
 
