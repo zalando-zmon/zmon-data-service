@@ -87,7 +87,7 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = "/v1/data/{account}/{checkid}/", method = RequestMethod.PUT, consumes = {"text/plain",
+    @RequestMapping(value = {"/v1/data/{account}/{checkid}/", "/v1/data/{account}/{checkid}"}, method = RequestMethod.PUT, consumes = {"text/plain",
             "application/json"})
     void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId,
                  @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
@@ -133,7 +133,7 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = "/v2/data/{account}/{checkid}/{region}/", method = RequestMethod.PUT, consumes = {"text/plain",
+    @RequestMapping(value = {"/v2/data/{account}/{checkid}/{region}/", "/v2/data/{account}/{checkid}/{region}"}, method = RequestMethod.PUT, consumes = {"text/plain",
             "application/json"})
     void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId, @PathVariable(value = "region") String region,
                  @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
