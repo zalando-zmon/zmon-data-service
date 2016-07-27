@@ -1,5 +1,7 @@
 package de.zalando.zmon.dataservice.proxies.checks;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class NoOpChecksService implements ChecksService {
@@ -14,4 +16,13 @@ public class NoOpChecksService implements ChecksService {
 		return "";
 	}
 
+	@Override
+	public String allActiveCheckDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
+		return null;
+	}
+
+	@Override
+	public String allActiveAlertDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
+		return null;
+	}
 }

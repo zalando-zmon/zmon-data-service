@@ -43,4 +43,12 @@ public class ControllerProxy {
         }
         return executor.execute(request).returnContent().asString();
     }
+
+    protected String proxyForLastModifiedHeader(Request request, Optional<String> token) throws IOException {
+        if (config.isProxyControllerOauth2()) {
+            BearerToken.inject(request, token);
+        }
+
+        return executor.execute(request).returnResponse().getHeaders("Last-Modified")[0].getValue();
+    }
 }
