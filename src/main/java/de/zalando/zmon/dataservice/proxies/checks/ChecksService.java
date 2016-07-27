@@ -10,4 +10,7 @@ public interface ChecksService {
 
 	String allActiveCheckDefinitions(Optional<String> token, String query) throws URISyntaxException, IOException;
 
+	String allActiveAlertDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException;
+
+	String allActiveCheckDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException;
 }
