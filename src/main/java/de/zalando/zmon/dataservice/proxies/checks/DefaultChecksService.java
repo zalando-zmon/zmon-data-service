@@ -32,13 +32,13 @@ public class DefaultChecksService extends ControllerProxy implements ChecksServi
     @Override
     public String allActiveAlertDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
         URI uri = uri("/checks/all-active-alert-definitions").setParameter("query", query).build();
-        return proxy(Request.Head(uri), token);
+        return proxyForLastModifiedHeader(Request.Head(uri), token);
     }
 
     @Override
     public String allActiveCheckDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
         URI uri = uri("/checks/all-active-check-definitions").setParameter("query", query).build();
-        return proxy(Request.Head(uri), token);
+        return proxyForLastModifiedHeader(Request.Head(uri), token);
     }
 
 }

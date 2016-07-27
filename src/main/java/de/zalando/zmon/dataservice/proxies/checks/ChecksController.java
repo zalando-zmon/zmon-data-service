@@ -25,7 +25,7 @@ public class ChecksController {
     @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions", "/rest/api/v1/checks/all-active-check-definitions"}, method=RequestMethod.HEAD)
     public void getChecksControllerEPLastModified(@RequestParam(value = "query", defaultValue = "{}") final String query,
                                                   HttpServletRequest request,HttpServletResponse response) throws IOException, URISyntaxException {
-        response.setHeader("Last-Modified", checkService.allActiveAlertDefinitionsLastModified(BearerToken.extract(request), query));
+        response.setHeader("Last-Modified", checkService.allActiveCheckDefinitionsLastModified(BearerToken.extract(request), query));
     }
 
     // TODO: remove legacy "/rest" prefix
