@@ -102,6 +102,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
                     .disable()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.GET, "/api/**").access(config.getOauth2Scopes().get("getApi"))
+                    .antMatchers(HttpMethod.HEAD, "/api/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.GET, "/rest/**").access(config.getOauth2Scopes().get("getRest"))
                     .antMatchers(HttpMethod.GET, "/kairosdb-proxy/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.POST, "/kairosdb-proxy/**").access(config.getOauth2Scopes().get("getApi"))
