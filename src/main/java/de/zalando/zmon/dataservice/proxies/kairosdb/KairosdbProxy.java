@@ -90,11 +90,11 @@ public class KairosdbProxy {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        if (!metricName.startsWith("zmon.check.")) {
-            response.setContentType("application/json");
-            writer.write("{}");
-            return;
-        }
+//        if (!metricName.startsWith("zmon.check.")) {
+//            response.setContentType("application/json");
+//            writer.write("{}");
+//            return;
+//        }
 
         final String checkId = metricName.replace("zmon.check.", "");
 
