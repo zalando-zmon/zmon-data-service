@@ -72,7 +72,7 @@ public class MobileApiProxy {
         final String r = proxyRequest.execute().returnContent().asString();
         JsonNode node = mapper.readTree(r);
         List<AlertHeader> alerts = new ArrayList<>();
-        JsonNode alertDefinitions = ((ArrayNode) node.get("alert_definitions"));
+        JsonNode alertDefinitions = node.get("alert_definitions");
         if (alertDefinitions != null) {
             Iterator<JsonNode> i = alertDefinitions.iterator();
             while (i.hasNext()) {
