@@ -31,8 +31,7 @@ public class EntitiesController {
         return entitiesService.deleteEntity(extractFromHeader(authHeader), id);
     }
 
-    // TODO: remove legacy "/rest" prefix
-    @RequestMapping(value = {"/api/v1/entities", "/rest/api/v1/entities"})
+    @RequestMapping(value = {"/api/v1/entities"})
     public String getEntities(@RequestParam(value = "query", defaultValue = "{}") final String query, @RequestHeader(AUTHORIZATION) String authHeader)
             throws IOException, URISyntaxException {
         return entitiesService.getEntities(extractFromHeader(authHeader), query);

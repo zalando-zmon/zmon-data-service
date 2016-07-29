@@ -16,21 +16,8 @@ dataservice:
     - "http://localhost:8083"
   oauth2-scopes:
     getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
-    getRest: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
     putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
     deleteApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
-
-  version-config:
-    zmon-worker:
-      "1.0":
-        "*": "registry.opensource.zalan.do/stups/zmon-worker:cd143"
-        "*1": "registry.opensource.zalan.do/stups/zmon-worker:cd144"
-    zmon-scheduler:
-      "1.0":
-        "*": "registry.opensource.zalan.do/stups/zmon-scheduler:cd73"
-    zmon-aws-agent:
-      "1.0":
-        "*": "registry.opensource.zalan.do/stups/zmon-aws-agent:cd42"
 
 spring:
   redis:

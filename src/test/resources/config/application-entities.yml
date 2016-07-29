@@ -1,7 +1,4 @@
 dataservice:
   oauth2-token-info-url: http://localhost:10082/oauth2/tokeninfo
-  version-config:
-    "zmon-worker":
-      "1.0": "cd100"
   proxy_controller: true
   proxy_controller_url: http://localhost:10081/api/v1
