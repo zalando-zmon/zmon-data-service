@@ -82,7 +82,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
     public void configure(HttpSecurity http) throws Exception {
         LOG.info("Using the following oauth2 constraints:");
         LOG.info("    getApi: {}", config.getOauth2Scopes().get("getApi"));
-        LOG.info("    getRest: {}", config.getOauth2Scopes().get("getRest"));
         LOG.info("    putApi: {}", config.getOauth2Scopes().get("putApi"));
         LOG.info("    deleteApi: {}", config.getOauth2Scopes().get("deleteApi"));
 
@@ -103,7 +102,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Reso
                 .authorizeRequests()
                     .antMatchers(HttpMethod.GET, "/api/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.HEAD, "/api/**").access(config.getOauth2Scopes().get("getApi"))
-                    .antMatchers(HttpMethod.GET, "/rest/**").access(config.getOauth2Scopes().get("getRest"))
                     .antMatchers(HttpMethod.GET, "/kairosdb-proxy/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.POST, "/kairosdb-proxy/**").access(config.getOauth2Scopes().get("getApi"))
                     .antMatchers(HttpMethod.PUT, "/api/**").access(config.getOauth2Scopes().get("putApi"))

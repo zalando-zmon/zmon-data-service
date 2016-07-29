@@ -22,27 +22,25 @@ public class ChecksController {
         this.checkService = checksService;
     }
 
-    @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions", "/rest/api/v1/checks/all-active-check-definitions"}, method=RequestMethod.HEAD)
+    @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions"}, method=RequestMethod.HEAD)
     public void getChecksControllerEPLastModified(@RequestParam(value = "query", defaultValue = "{}") final String query,
                                                   HttpServletRequest request,HttpServletResponse response) throws IOException, URISyntaxException {
         response.setHeader("Last-Modified", checkService.allActiveCheckDefinitionsLastModified(BearerToken.extract(request), query));
     }
 
-    // TODO: remove legacy "/rest" prefix
-    @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions", "/rest/api/v1/checks/all-active-check-definitions"})
+    @RequestMapping(value = {"/api/v1/checks/all-active-check-definitions"})
     public String getChecksControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query,
                                         HttpServletRequest request) throws IOException, URISyntaxException {
         return checkService.allActiveCheckDefinitions(BearerToken.extract(request), query);
     }
 
-    @RequestMapping(value = {"/api/v1/checks/all-active-alert-definitions", "/rest/api/v1/checks/all-active-alert-definitions"}, method=RequestMethod.HEAD)
+    @RequestMapping(value = {"/api/v1/checks/all-active-alert-definitions"}, method=RequestMethod.HEAD)
     public void getAlertsControllerEPLastModified(@RequestParam(value = "query", defaultValue = "{}") final String query,
                                                   HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         response.setHeader("Last-Modified", checkService.allActiveAlertDefinitionsLastModified(BearerToken.extract(request), query));
     }
 
-    // TODO: remove legacy "/rest" prefix
-    @RequestMapping(value = {"/api/v1/checks/all-active-alert-definitions", "/rest/api/v1/checks/all-active-alert-definitions"})
+    @RequestMapping(value = {"/api/v1/checks/all-active-alert-definitions"})
     public String getAlertsControllerEP(@RequestParam(value = "query", defaultValue = "{}") final String query,
                                         HttpServletRequest request) throws IOException, URISyntaxException {
         return checkService.allActiveAlertDefinitions(BearerToken.extract(request), query);

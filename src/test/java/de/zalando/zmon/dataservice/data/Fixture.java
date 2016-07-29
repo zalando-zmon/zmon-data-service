@@ -40,7 +40,7 @@ class Fixture {
             CheckData cd = new CheckData();
             cd.check_id = i;
             cd.entity_id = "ENTITY_" + i;
-            cd.exception = i % 2 == 0 ? true : false;
+            cd.exception = i % 2 == 0;
             cd.run_time = i * 1.2;
             cd.time = "1234567";
             cd.worker = "worker_" + i;
@@ -69,13 +69,13 @@ class Fixture {
         Map<String, AlertData> result = Maps.newHashMap();
         for (int i = 0; i < 3; i++) {
             AlertData ad = new AlertData();
-            ad.active = i % 2 == 0 ? true : false;
+            ad.active = i % 2 == 0;
             ad.alert_id = i;
             ad.captures = buildCaptures();
-            ad.changed = i % 2 == 0 ? true : false;
+            ad.changed = i % 2 == 0;
             ad.downtimes = buildDownTimes();
-            ad.exception = i % 2 == 0 ? true : false;
-            ad.in_period = i % 2 == 0 ? true : false;
+            ad.exception = i % 2 == 0;
+            ad.in_period = i % 2 == 0;
             ad.start_time = "djadfjaadf";
             ad.start_time_ts = 1.2;
             result.put("ad_" + i, ad);
