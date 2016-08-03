@@ -121,7 +121,7 @@ public class RedisDataStore {
 
                         createEvents(cd.entity_id, cd.check_id, checkValue, alert);
 
-                        if (alert.active) {
+                        if (alert.active && alert.in_period) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
 
                             String value = buildValue(alert, cd);
