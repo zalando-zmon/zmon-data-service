@@ -55,14 +55,14 @@ public class PutDataTest implements Resources {
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
         RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
-        ds.before(wr);
+        ds.store(wr);
         TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void putDataWithRedisTemplate() throws InterruptedException {
         RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
-        ds.after(wr);
+        ds.store(wr);
         TimeUnit.SECONDS.sleep(10);
     }
 
