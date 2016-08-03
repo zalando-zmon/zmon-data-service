@@ -83,15 +83,10 @@ public class RedisDataStore {
          * TimeUnit.SECONDS);
          */
 
-        Jedis jedis = null;
-        try {
-            jedis = pool.getResource();
+        try (Jedis jedis = pool.getResource()){
             String key = "zmon:trial_run:" + requestId + ":results";
             jedis.hset(key, id, result);
             jedis.expire(key, 300);
-        } finally {
-            if (null != jedis)
-                jedis.close();
         }
     }
 
