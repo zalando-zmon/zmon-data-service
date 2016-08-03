@@ -83,15 +83,10 @@ public class RedisDataStore {
          * TimeUnit.SECONDS);
          */
 
-        Jedis jedis = null;
-        try {
-            jedis = pool.getResource();
+        try (Jedis jedis = pool.getResource()){
             String key = "zmon:trial_run:" + requestId + ":results";
             jedis.hset(key, id, result);
             jedis.expire(key, 300);
-        } finally {
-            if (null != jedis)
-                jedis.close();
         }
     }
 
@@ -108,15 +103,7 @@ public class RedisDataStore {
     }
 
     public void store(WorkerResult wr) {
-        before(wr);
-        // after(wr);
-    }
-
-    protected void before(WorkerResult wr) {
-        Jedis jedis = null;
-
-        try {
-            jedis = pool.getResource();
+        try (Jedis jedis = pool.getResource()){
 
             Pipeline p = jedis.pipelined();
 
@@ -134,7 +121,7 @@ public class RedisDataStore {
 
                         createEvents(cd.entity_id, cd.check_id, checkValue, alert);
 
-                        if (alert.active) {
+                        if (alert.active && alert.in_period) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
 
                             String value = buildValue(alert, cd);
@@ -157,111 +144,6 @@ public class RedisDataStore {
                 }
             }
             p.sync();
-        } finally {
-            try {
-                if (null != jedis) {
-                    jedis.close();
-                }
-            } catch (Exception ex) {
-                LOG.error("Redis return to pool failed", ex);
-            }
-        }
-    }
-
-    protected void after(WorkerResult wr) {
-        StoreWorkerResultCallback callback = new StoreWorkerResultCallback(wr);
-        stringRedisTemplate.executePipelined(callback);
-        LOG.debug("WorkerResult stored");
-        for (String key : callback.getKeysToCheck()) {
-            stringRedisTemplate.execute(checkAlertScript, Collections.singletonList("zmon:alerts:" + key), key);
-        }
-        LOG.debug("Script executed for all keys");
-    }
-
-    class StoreWorkerResultCallback implements SessionCallback<Object>, TypedRedisOperations {
-
-        private final WorkerResult wr;
-
-        private final List<String> keysToCheck = Lists.newArrayList();
-
-        StoreWorkerResultCallback(WorkerResult wr) {
-            Assert.notNull(wr, "'wr' should never be null");
-            this.wr = wr;
-        }
-
-        @Override
-        public <K, V> Object execute(RedisOperations<K, V> operations) throws DataAccessException {
-            for (CheckData cd : wr.results) {
-                HashOperations<String, String, String> hashOps = getHashOperations(operations);
-                ValueOperations<String, String> valueOps = getValueOperations(operations);
-                SetOperations<String, String> setOps = getSetOperations(operations);
-                setOps.add("zmon:checks", "" + cd.check_id);
-                setOps.add("zmon:checks:" + cd.check_id, cd.entity_id);
-                // p.sadd("zmon:checks", "" + cd.check_id);
-                // p.sadd("zmon:checks:" + cd.check_id, cd.entity_id);
-                String checkTs = "zmon:checks:" + cd.check_id + ":" + cd.entity_id;
-
-                String checkValue = writeValueAsString(cd.check_result).orElse(EMPTY_CHECK);
-                ListOperations<String, String> listOps = getListOperations(operations);
-                listOps.leftPush(checkTs, checkValue);
-                listOps.trim(checkTs, 0, 20);
-                // p.lpush(checkTs, checkValue);
-                // p.ltrim(checkTs, 0, 20);
-
-                if (null != cd.alerts) {
-                    for (AlertData alert : cd.alerts.values()) {
-
-                        createEvents(cd.entity_id, cd.check_id, checkValue, alert);
-
-                        if (alert.active) {
-                            setOps.add("zmon:alerts:" + alert.alert_id, cd.entity_id);
-                            // p.sadd("zmon:alerts:" + alert.alert_id,
-                            // cd.entity_id);
-
-                            String value = buildValue(alert, cd);
-
-                            valueOps.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
-                            // p.set("zmon:alerts:" + alert.alert_id + ":" +
-                            // cd.entity_id, value);
-
-                        } else {
-                            setOps.remove("zmon:alerts:" + alert.alert_id, cd.entity_id);
-                            // p.srem("zmon:alerts:" + alert.alert_id,
-                            // cd.entity_id);
-                            valueOps.getOperations().delete("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id);
-                            // p.del("zmon:alerts:" + alert.alert_id + ":" +
-                            // cd.entity_id);
-                        }
-
-                        String captures = writeValueAsString(alert.captures).orElse(CAPTURES_NOT_SERIALIZED);
-
-                        hashOps.put("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
-                        // p.hset("zmon:alerts:" + alert.alert_id + ":entities",
-                        // cd.entity_id, captures);
-
-                        // String key = "zmon:alerts:" + alert.alert_id;
-                        keysToCheck.add(String.valueOf(alert.alert_id));
-                        // keys.add(key);
-                        // TODO, not possible when pipelined()
-                        // getEvalOperations(operations).execute(checkAlertScript,
-                        // Collections.singletonList(key));
-
-                        // p.eval("if
-                        // table.getn(redis.call('smembers','zmon:alerts:" +
-                        // alert.alert_id
-                        // + "')) == 0 then return
-                        // redis.call('srem','zmon:alerts'," + alert.alert_id
-                        // + ") else return redis.call('sadd','zmon:alerts'," +
-                        // alert.alert_id + ") end");
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        List<String> getKeysToCheck() {
-            return Collections.unmodifiableList(keysToCheck);
         }
     }
 
