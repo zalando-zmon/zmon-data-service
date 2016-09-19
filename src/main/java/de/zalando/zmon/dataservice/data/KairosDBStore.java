@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -116,9 +117,12 @@ public class KairosDBStore {
         return metricName;
     }
 
+    private static final String REPLACE_CHAR = "_";
+    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=]");
+
     public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
-        tags.put("entity", entityId.replace("[", "_").replace("]", "_").replace(":", "_").replace("@", "_"));
+        tags.put("entity", entityId.replace("[", REPLACE_CHAR).replace("]", REPLACE_CHAR).replace(":", REPLACE_CHAR).replace("@", REPLACE_CHAR));
 
         for (String field : TAG_FIELDS) {
             if (entity.containsKey(field)) {
@@ -130,12 +134,12 @@ public class KairosDBStore {
         }
 
         if (null != key && !"".equals(key)) {
-            tags.put("key", key.replace(":", "_").replace("@", "_").replace("?","_").replace("=","_"));
+            tags.put("key", KAIROSDB_INVALID_TAG_CHARS.matcher(key).replaceAll(REPLACE_CHAR));
         }
 
         String metricName = extractMetricName(key);
         if (null != metricName) {
-            tags.put("metric", metricName.replace(":", "_").replace("@", "_").replace("?","_").replace("=","_"));
+            tags.put("metric", KAIROSDB_INVALID_TAG_CHARS.matcher(metricName).replaceAll(REPLACE_CHAR));
         }
 
         return tags;
@@ -208,11 +212,10 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for(String url : config.getKairosdbWriteUrls()) {
+            for (String url : config.getKairosdbWriteUrls()) {
                 try {
                     executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-                }
-                catch(IOException ex) {
+                } catch (IOException ex) {
                     if (config.isLogKairosdbErrors()) {
                         LOG.error("KairosDB write failed url={}", url, ex);
                     }

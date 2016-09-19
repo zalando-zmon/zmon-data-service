@@ -15,7 +15,6 @@ public class KairosDBTest {
 
     @Test
     public void testReplace() {
-        ObjectMapper mapper = new ObjectMapper();
         Map<String, String> entity = new HashMap<>();
         entity.put("id", "host01");
         entity.put("stack_name", "data-service");
