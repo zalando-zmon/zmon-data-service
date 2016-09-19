@@ -118,11 +118,11 @@ public class KairosDBStore {
     }
 
     private static final String REPLACE_CHAR = "_";
-    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=]");
+    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
-        tags.put("entity", entityId.replace("[", REPLACE_CHAR).replace("]", REPLACE_CHAR).replace(":", REPLACE_CHAR).replace("@", REPLACE_CHAR));
+        tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
 
         for (String field : TAG_FIELDS) {
             if (entity.containsKey(field)) {
