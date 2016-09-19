@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -116,6 +117,34 @@ public class KairosDBStore {
         return metricName;
     }
 
+    private static final String REPLACE_CHAR = "_";
+    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
+
+    public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
+        Map<String, String> tags = new HashMap<>();
+        tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
+
+        for (String field : TAG_FIELDS) {
+            if (entity.containsKey(field)) {
+                String fieldValue = entity.get(field);
+                if (null != fieldValue && !"".equals(fieldValue)) {
+                    tags.put(field, entity.get(field));
+                }
+            }
+        }
+
+        if (null != key && !"".equals(key)) {
+            tags.put("key", KAIROSDB_INVALID_TAG_CHARS.matcher(key).replaceAll(REPLACE_CHAR));
+        }
+
+        String metricName = extractMetricName(key);
+        if (null != metricName) {
+            tags.put("metric", KAIROSDB_INVALID_TAG_CHARS.matcher(metricName).replaceAll(REPLACE_CHAR));
+        }
+
+        return tags;
+    }
+
     public void store(WorkerResult wr) {
         if (!config.isKairosdbEnabled()) {
             return;
@@ -141,25 +170,8 @@ public class KairosDBStore {
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
-                    p.tags.put("entity", cd.entity_id.replace("[", "_").replace("]", "_").replace(":", "_").replace("@", "_"));
 
-                    for (String field : TAG_FIELDS) {
-                        if (cd.entity.containsKey(field)) {
-                            String fieldValue = cd.entity.get(field);
-                            if (null != fieldValue && !"".equals(fieldValue)) {
-                                p.tags.put(field, cd.entity.get(field));
-                            }
-                        }
-                    }
-
-                    if (null != e.getKey() && !"".equals(e.getKey())) {
-                        p.tags.put("key", e.getKey().replace(":", "_").replace("@", "_"));
-                    }
-
-                    String metricName = extractMetricName(e.getKey());
-                    if (null != metricName) {
-                        p.tags.put("metric", metricName.replace(":", "_").replace("@", "_"));
-                    }
+                    p.tags.putAll(getTags(e.getKey(), cd.entity_id, cd.entity));
 
                     // handle zmon actuator metrics and extract the http status code into its own field
                     // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
@@ -200,11 +212,10 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for(String url : config.getKairosdbWriteUrls()) {
+            for (String url : config.getKairosdbWriteUrls()) {
                 try {
                     executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-                }
-                catch(IOException ex) {
+                } catch (IOException ex) {
                     if (config.isLogKairosdbErrors()) {
                         LOG.error("KairosDB write failed url={}", url, ex);
                     }
