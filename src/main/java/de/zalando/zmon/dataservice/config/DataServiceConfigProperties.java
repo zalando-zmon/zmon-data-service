@@ -16,7 +16,7 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
-    private List<String> kairosdbWriteUrls;
+    private List<List<String>> kairosdbWriteUrls;
 
     private boolean proxyController = false;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
@@ -406,11 +406,11 @@ public class DataServiceConfigProperties {
         this.tokenInfoCacheEnabled = tokenInfoCacheEnabled;
     }
 
-    public List<String> getKairosdbWriteUrls() {
+    public List<List<String>> getKairosdbWriteUrls() {
         return kairosdbWriteUrls;
     }
 
-    public void setKairosdbWriteUrls(List<String> kairosdbWriteUrls) {
+    public void setKairosdbWriteUrls(List<List<String>> kairosdbWriteUrls) {
         this.kairosdbWriteUrls = kairosdbWriteUrls;
     }
 

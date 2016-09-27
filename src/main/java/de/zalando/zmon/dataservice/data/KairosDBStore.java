@@ -212,7 +212,11 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for (String url : config.getKairosdbWriteUrls()) {
+            for (List<String> urls : config.getKairosdbWriteUrls()) {
+                // api is per check id, but for now we take the first one
+                final int index = wr.results.get(0).check_id % urls.size();
+                final String url = urls.get(index);
+
                 try {
                     executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
                 } catch (IOException ex) {

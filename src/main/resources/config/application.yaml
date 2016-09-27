@@ -13,7 +13,7 @@ dataservice:
   redis-port: 6379
   oauth2-token-info-url: ${TOKENINFO_URL:http://localhost:10080/oauth2/tokeninfo}
   kairosdb-write-urls:
-    - "http://localhost:8083"
+    - ["http://localhost:8083"]
   oauth2-scopes:
     getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
     putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
