@@ -58,6 +58,7 @@ public class DataServiceMetrics {
 
     private final Meter trialRunDataCount;
     private final Meter trialRunDataError;
+    private final Meter kairosDbDataPointsCount;
 
     private final Timer kairosDBTimer;
 
@@ -77,6 +78,7 @@ public class DataServiceMetrics {
         this.kairosDBTimer = metrics.timer("data-service.kairosdb.timer");
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
         this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
+        this.kairosDbDataPointsCount = metrics.meter("data-service.kairosdb-points.written");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -184,4 +186,8 @@ public class DataServiceMetrics {
     }
 
     public void markEventLogError() { eventlogErrorMeter.mark(); }
+
+    public void incKairosDBDataPoints(long c) {
+        kairosDbDataPointsCount.mark(c);
+    }
 }

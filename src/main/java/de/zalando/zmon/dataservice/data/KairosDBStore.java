@@ -207,6 +207,8 @@ public class KairosDBStore {
                 }
             }
 
+            metrics.incKairosDBDataPoints(points.size());
+
             String query = mapper.writeValueAsString(points);
             if (config.isLogKairosdbRequests()) {
                 LOG.info("KairosDB Query: {}", query);
