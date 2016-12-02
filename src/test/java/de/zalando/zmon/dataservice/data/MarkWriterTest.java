@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.data;
 
 import java.util.Optional;
 
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,10 +12,13 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 
 public class MarkWriterTest {
     private DataServiceMetrics metrics;
+    private DataServiceConfigProperties properties;
 
     @Before
     public void setUp() {
         metrics = Mockito.mock(DataServiceMetrics.class);
+        properties = new DataServiceConfigProperties();
+        properties.setTrackCheckRate(true);
     }
 
     @After
@@ -24,14 +28,14 @@ public class MarkWriterTest {
 
     @Test
     public void markWhenOptionalIsEmpty() {
-        MarkWriter writer = new MarkWriter(metrics);
+        MarkWriter writer = new MarkWriter(properties, metrics);
         writer.write(Fixture.writeData(Optional.empty()));
         verify();
     }
 
     @Test
     public void markWhenOptionalIsNotEmpty() {
-        MarkWriter writer = new MarkWriter(metrics);
+        MarkWriter writer = new MarkWriter(properties, metrics);
         WorkerResult wr = Mockito.mock(WorkerResult.class);
         writer.write(Fixture.writeData(Optional.ofNullable(wr)));
         verify();
