@@ -32,6 +32,8 @@ public class DataServiceConfigProperties {
     private boolean logKairosdbRequests = false;
     private boolean logKairosdbErrors = false;
 
+    private boolean trackCheckRate = false;
+
     private List<Integer> actuatorMetricChecks = new ArrayList<>();
 
     private List<String> restMetricHosts = new ArrayList<>();
@@ -70,6 +72,14 @@ public class DataServiceConfigProperties {
     private int resultSizeWarning = 100;
 
     private Map<String, Object> versionConfig = null;
+
+    public boolean isTrackCheckRate() {
+        return trackCheckRate;
+    }
+
+    public void setTrackCheckRate(boolean trackCheckRate) {
+        this.trackCheckRate = trackCheckRate;
+    }
 
     public int getResultSizeWarning() {
         return resultSizeWarning;
