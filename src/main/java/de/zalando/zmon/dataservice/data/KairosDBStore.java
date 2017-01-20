@@ -44,7 +44,8 @@ public class KairosDBStore {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
 
-    private final static Set<String> TAG_FIELDS = new HashSet<>(Arrays.asList("application_id", "application_version", "stack_name", "stack_version"));
+    private final static Set<String> TAG_FIELDS = new HashSet<>(
+        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
