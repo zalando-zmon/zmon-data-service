@@ -7,6 +7,9 @@ endpoints:
 
 server:
   port: 8086
+  compression:
+    enabled: true
+    mime-types: "application/json,application/xml,text/html,text/xml,text/plain,text/css,application/javascript"
 
 dataservice:
   redis-host: localhost
