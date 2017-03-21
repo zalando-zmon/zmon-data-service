@@ -26,6 +26,9 @@ public class CachingCheckService implements ChecksService {
     private long checkLastModified = 0;
     private long alertsLastModified = 0;
 
+    private String checkLastModifiedString = "";
+    private String alertLastModifiedString = "";
+
     private final ChecksService service;
     private final TokenWrapper wrapper;
     private final DataServiceConfigProperties config;
@@ -47,6 +50,18 @@ public class CachingCheckService implements ChecksService {
         }
     }
 
+    protected static long getTimestamp(String headerValue) {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        df.setTimeZone(tz);
+
+        try {
+            return df.parse(headerValue).getTime();
+        } catch (ParseException e) {
+            return 0;
+        }
+    }
+
     protected static boolean doRefresh(String headerValue, long currentMaxLastModified, String lastData) {
         if (lastData == null) return true;
 
@@ -65,11 +80,13 @@ public class CachingCheckService implements ChecksService {
     @Scheduled(fixedRate = 60000)
     public void refreshData() {
         try {
-            String currentCheckLastModified = service.allActiveCheckDefinitionsLastModified(Optional.of(wrapper.get()), "");
+            String nextCheckLastModified = service.allActiveCheckDefinitionsLastModified(Optional.of(wrapper.get()), "");
 
-            if(doRefresh(currentCheckLastModified, checkLastModified, currentChecks)) {
+            if(doRefresh(nextCheckLastModified, checkLastModified, currentChecks)) {
                 currentChecks = service.allActiveCheckDefinitions(Optional.of(wrapper.get()), "");
-                checkLastModified = Long.parseLong(currentCheckLastModified);
+
+                checkLastModified = getTimestamp(nextCheckLastModified);
+                checkLastModifiedString = nextCheckLastModified;
             }
         }
         catch(Throwable t) {
@@ -77,11 +94,12 @@ public class CachingCheckService implements ChecksService {
         }
 
         try {
-            String currentAlertLastModified = service.allActiveAlertDefinitionsLastModified(Optional.of(wrapper.get()), "");
+            String nextAlertLastModified = service.allActiveAlertDefinitionsLastModified(Optional.of(wrapper.get()), "");
 
-            if(doRefresh(currentAlertLastModified, alertsLastModified, currentAlerts)) {
+            if(doRefresh(nextAlertLastModified, alertsLastModified, currentAlerts)) {
                 currentAlerts = service.allActiveAlertDefinitions(Optional.of(wrapper.get()), "");
-                alertsLastModified = Long.parseLong(currentAlertLastModified);
+                alertsLastModified = getTimestamp(nextAlertLastModified);
+                alertLastModifiedString = nextAlertLastModified;
             }
         }
         catch(Throwable t) {
@@ -101,11 +119,11 @@ public class CachingCheckService implements ChecksService {
 
     @Override
     public String allActiveAlertDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
-        return "" + alertsLastModified;
+        return alertLastModifiedString;
     }
 
     @Override
     public String allActiveCheckDefinitionsLastModified(Optional<String> token, String query) throws URISyntaxException, IOException {
-        return "" + checkLastModified;
+        return checkLastModifiedString;
     }
 }
