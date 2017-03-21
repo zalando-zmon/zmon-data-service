@@ -19,6 +19,7 @@ public class DataServiceConfigProperties {
     private List<List<String>> kairosdbWriteUrls;
 
     private boolean proxyController = false;
+    private boolean proxyControllerCache = true;
     private String proxyControllerUrl = "http://localhost:8080/api/v1/";
     private String proxyControllerBaseUrl = "http://localhost:8080/";
     private boolean proxyControllerOauth2 = false;
@@ -247,6 +248,10 @@ public class DataServiceConfigProperties {
     private int tokenInfoCacheTime = 240;
 
     private String oauth2TokenInfoUrl;
+
+    String oauth2AccessTokenUrl = null;
+
+    String oauth2StaticToken = "";
 
     public String getRedisHost() {
         return redisHost;
@@ -479,4 +484,29 @@ public class DataServiceConfigProperties {
     public void setVersionConfig(Map<String, Object>  versionConfig) {
         this.versionConfig = versionConfig;
     }
+
+    public boolean isProxyControllerCache() {
+        return proxyControllerCache;
+    }
+
+    public void setProxyControllerCache(boolean proxyControllerCache) {
+        this.proxyControllerCache = proxyControllerCache;
+    }
+
+    public String getOauth2AccessTokenUrl() {
+        return oauth2AccessTokenUrl;
+    }
+
+    public void setOauth2AccessTokenUrl(String oauth2AccessTokenUrl) {
+        this.oauth2AccessTokenUrl = oauth2AccessTokenUrl;
+    }
+
+    public String getOauth2StaticToken() {
+        return oauth2StaticToken;
+    }
+
+    public void setOauth2StaticToken(String oauth2StaticToken) {
+        this.oauth2StaticToken = oauth2StaticToken;
+    }
 }
+
