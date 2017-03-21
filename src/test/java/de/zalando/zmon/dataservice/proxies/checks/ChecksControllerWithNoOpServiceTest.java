@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice.proxies.checks;
 
+import de.zalando.zmon.dataservice.TokenWrapper;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,11 @@ public class ChecksControllerWithNoOpServiceTest extends AbstractCheckController
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
             return Mockito.mock(DataServiceMetrics.class);
+        }
+
+        @Bean
+        public TokenWrapper getTokenWrapper() {
+            return new TokenWrapper("ABC");
         }
     }
 }

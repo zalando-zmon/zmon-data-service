@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
+import de.zalando.zmon.dataservice.TokenWrapper;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,11 @@ public class ChecksControllerWithDefaultCheckServiceTest extends AbstractCheckCo
             props.setProxyController(true);
             props.setProxyControllerUrl("http://localhost:9999");
             return props;
+        }
+
+        @Bean
+        public TokenWrapper getTokenWrapper() {
+            return new TokenWrapper("ABC");
         }
 
         @Bean
