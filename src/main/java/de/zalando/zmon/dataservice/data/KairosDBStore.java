@@ -192,6 +192,9 @@ public class KairosDBStore {
                             if (keyParts.length >= 4) {
                                 StringBuilder b = new StringBuilder();
                                 for(int i = 0; i < keyParts.length - 3; ++i) {
+                                    if (i > 0) {
+                                        b.append(".");
+                                    }
                                     b.append(keyParts[i]);
                                 }
 
