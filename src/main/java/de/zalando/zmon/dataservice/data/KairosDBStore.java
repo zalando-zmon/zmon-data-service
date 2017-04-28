@@ -188,6 +188,18 @@ public class KairosDBStore {
                             final String statusCode = keyParts[keyParts.length - 2];
                             p.tags.put("sc", statusCode);
                             p.tags.put("sg", statusCode.substring(0, 1));
+
+                            if (keyParts.length >= 4) {
+                                StringBuilder b = new StringBuilder();
+                                for(int i = 0; i < keyParts.length - 3; ++i) {
+                                    if (i > 0) {
+                                        b.append(".");
+                                    }
+                                    b.append(keyParts[i]);
+                                }
+
+                                p.tags.put("path", b.toString());
+                            }
                         }
                     }
 
