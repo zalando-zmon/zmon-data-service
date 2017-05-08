@@ -137,9 +137,12 @@ public class RedisDataStore {
 
                         p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
 
-                        p.eval("if table.getn(redis.call('smembers','zmon:alerts:" + alert.alert_id
-                                + "')) == 0 then return redis.call('srem','zmon:alerts'," + alert.alert_id
-                                + ") else return redis.call('sadd','zmon:alerts'," + alert.alert_id + ") end");
+                        p.eval("if table.getn(redis.call('smembers','zmon:alerts:" + alert.alert_id + "')) == 0 then " +
+                                    "redis.call('srem','zmon:alert-acks', " + alert.alert_id + "); " +
+                                    "return redis.call('srem','zmon:alerts'," + alert.alert_id + ") " +
+                                "else " +
+                                    "return redis.call('sadd','zmon:alerts'," + alert.alert_id + ") " +
+                                "end");
                     }
                 }
             }
