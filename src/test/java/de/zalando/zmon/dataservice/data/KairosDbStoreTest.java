@@ -3,6 +3,9 @@ package de.zalando.zmon.dataservice.data;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +48,16 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     public void writeWorkerResult() {
         KairosDBStore kairosDb = new KairosDBStore(config, metrics);
         kairosDb.store(Fixture.buildWorkerResult());
-        Mockito.verify(metrics, Mockito.never()).markKairosError();
+        verify(metrics, never()).markKairosError();
+    }
+
+    @Test
+    public void testInvalidWorkerResult() {
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics);
+        for(WorkerResult wr: new WorkerResult[]{null, new WorkerResult()}) {
+            kairosDb.store(wr);
+            verify(metrics, never()).incKairosDBDataPoints(anyLong());
+        }
     }
 
     @Configuration

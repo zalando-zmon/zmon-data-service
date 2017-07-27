@@ -1,6 +1,6 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -9,5 +9,13 @@ import java.util.List;
 public class WorkerResult {
     public String account;
     public String team;
-    public List<CheckData> results = new ArrayList<CheckData>(0);
+    public List<CheckData> results = new LinkedList<>();
+
+    @Override
+    public String toString() {
+        return "WorkerResult{" +
+                "account='" + account + '\'' +
+                ", team='" + team + '\'' +
+                ", " + (results == null || results.isEmpty() ? "no results" : results.size() + " result(s)") + "}";
+    }
 }
