@@ -69,12 +69,10 @@ public class PutDataTest implements Resources {
     @Configuration
     @Import({ RedisConfig.class, RedisAutoConfiguration.class })
     static class TestConfiguration {
-
         @Bean
         public DataServiceConfigProperties dataServiceConfigProperties() {
             DataServiceConfigProperties props = new DataServiceConfigProperties();
-
-            props.setRedisPort(6379);
+            props.setRedisPort(redisServerRule.getPort());
             return props;
         }
     }

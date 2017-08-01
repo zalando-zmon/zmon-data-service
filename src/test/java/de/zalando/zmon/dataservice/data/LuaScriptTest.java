@@ -1,12 +1,13 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.util.Collections;
-
+import de.zalando.zmon.dataservice.RedisServerRule;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
@@ -18,7 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
-import de.zalando.zmon.dataservice.RedisServerRule;
+import java.util.Collections;
 
 @ContextConfiguration
 public class LuaScriptTest implements TypedRedisOperations, TypedRedisTemplate {
@@ -80,8 +81,14 @@ public class LuaScriptTest implements TypedRedisOperations, TypedRedisTemplate {
     }
 
     @Configuration
-    @Import({ RedisAutoConfiguration.class })
+    @Import({ RedisConfig.class, RedisAutoConfiguration.class })
     static class TestConfiguration {
+        @Bean
+        public DataServiceConfigProperties dataServiceConfigProperties() {
+            DataServiceConfigProperties props = new DataServiceConfigProperties();
+            props.setRedisPort(redisServerRule.getPort());
+            return props;
+        }
     }
 
 }
