@@ -1,17 +1,14 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.DecimalNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
@@ -23,16 +20,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-
-import de.zalando.zmon.dataservice.DataServiceMetrics;
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Created by jmussler on 5/8/15.
@@ -80,7 +78,7 @@ public class KairosDBStore {
 
     private static class DataPoint {
         public String name;
-        public List<ArrayNode> datapoints = new ArrayList<>(1);
+        public List<ArrayNode> datapoints = new LinkedList<>();
         public Map<String, String> tags = new HashMap<>();
     }
 
@@ -146,13 +144,18 @@ public class KairosDBStore {
         return tags;
     }
 
-    public void store(WorkerResult wr) {
+    void store(WorkerResult wr) {
         if (!config.isKairosdbEnabled()) {
             return;
         }
 
+        if(wr == null || wr.results == null || wr.results.isEmpty()) {
+            LOG.warn("Received a request with invalid results: {}", wr);
+            return;
+        }
+
         try {
-            List<DataPoint> points = new ArrayList<>();
+            List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
                 final Map<String, NumericNode> values = new HashMap<>();
                 final String timeSeries = "zmon.check." + cd.check_id;

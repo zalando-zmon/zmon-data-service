@@ -1,14 +1,9 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.util.Collections;
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -18,19 +13,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
-import de.zalando.zmon.dataservice.RedisServerRule;
+import java.util.Collections;
 
-@ContextConfiguration
-public class LuaScriptTest implements TypedRedisOperations, TypedRedisTemplate {
+@ContextConfiguration(classes=TestConfiguration.class)
+public class LuaScriptTest extends RedistTestSupport implements TypedRedisOperations, TypedRedisTemplate {
 
     @Rule
     public SpringMethodRule methodRule = new SpringMethodRule();
 
     @ClassRule
     public static final SpringClassRule clazzRule = new SpringClassRule();
-
-    @ClassRule
-    public static final RedisServerRule redisServerRule = new RedisServerRule();
 
     @Autowired
     private RedisTemplate<Object, Object> redisTemplate;
@@ -77,11 +69,6 @@ public class LuaScriptTest implements TypedRedisOperations, TypedRedisTemplate {
         DefaultScriptExecutor<String> executor = new DefaultScriptExecutor<>(stringTemplate);
         Long result = executor.execute(redisScript, Collections.singletonList("zmon:alerts:1"), "1");
         System.out.println(result);
-    }
-
-    @Configuration
-    @Import({ RedisAutoConfiguration.class })
-    static class TestConfiguration {
     }
 
 }

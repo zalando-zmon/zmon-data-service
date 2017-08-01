@@ -9,7 +9,7 @@ before_script:
   - pip install --user codecov
 
 script:
-    - mvn install
+  - mvn clean verify
 
 after_success:
   - codecov
