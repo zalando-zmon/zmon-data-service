@@ -3,6 +3,8 @@ package de.zalando.zmon.dataservice;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.JaegerConfig;
 import de.zalando.zmon.dataservice.config.LightStepConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,7 +26,10 @@ import java.net.MalformedURLException;
 public class Application {
 
     @Autowired
-    DataServiceConfigProperties config;
+    private DataServiceConfigProperties config;
+
+    private final Logger logger = LoggerFactory.getLogger(Application.class);
+
     @Bean
     public Tracer tracer() {
         Tracer tracer = NoopTracerFactory.create();
@@ -34,7 +39,7 @@ public class Application {
             try {
                 tracer = new LightStepConfig(config).getTracer();
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                 logger.error("Lightstep host/port configuration incorrect. LightStep host used:" + config.getLightStepHost() + " LightStep port used:" + config.getLightStepPort(), e.getMessage());
             }
         } else if ("instana".equals(config.getTracingProvider().toLowerCase())) {
             tracer = InstanaTracerFactory.create();
