@@ -20,7 +20,7 @@ public class JaegerConfig implements OpenTracerConfig {
         return tracer;
     }
 
-    public JaegerConfig(DataServiceConfigProperties config){
+    public JaegerConfig(OpenTracingConfigProperties config){
         this.jaegerHost = config.getJaegerHost();
         this.jaegerPort = config.getJaegerPort();
         this.logSpans = config.isJaegerLogSpans();

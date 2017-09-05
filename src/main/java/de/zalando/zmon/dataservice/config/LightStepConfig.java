@@ -33,7 +33,7 @@ public class LightStepConfig implements OpenTracerConfig {
         return new JRETracer(opts);
     }
 
-    public LightStepConfig(DataServiceConfigProperties config)  {
+    public LightStepConfig(OpenTracingConfigProperties config)  {
         this.lightStepHost = config.getLightStepHost();
         this.lightStepPort = config.getLightStepPort();
         this.lightStepAccessToken = config.getLightStepAccessToken();

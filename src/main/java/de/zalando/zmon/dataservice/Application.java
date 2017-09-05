@@ -1,8 +1,6 @@
 package de.zalando.zmon.dataservice;
 
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import de.zalando.zmon.dataservice.config.JaegerConfig;
-import de.zalando.zmon.dataservice.config.LightStepConfig;
+import de.zalando.zmon.dataservice.config.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +28,18 @@ public class Application {
     private static final String INSTANA = "instana";
 
     @Autowired
-    private DataServiceConfigProperties config;
+    private OpenTracingConfigProperties openTracingConfig;
 
     private final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Bean
     public Tracer tracer() {
         Tracer tracer = NoopTracerFactory.create();
-        if (JAEGER.equalsIgnoreCase(config.getTracingProvider().toLowerCase())){
-            tracer = new JaegerConfig(config).generateTracer();
-        } else if (LIGHTSTEP.equalsIgnoreCase(config.getTracingProvider().toLowerCase())){
-                tracer = new LightStepConfig(config).generateTracer();
-        } else if (INSTANA.equalsIgnoreCase(config.getTracingProvider().toLowerCase())) {
+        if (JAEGER.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
+            tracer = new JaegerConfig(openTracingConfig).generateTracer();
+        } else if (LIGHTSTEP.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
+                tracer = new LightStepConfig(openTracingConfig).generateTracer();
+        } else if (INSTANA.equalsIgnoreCase(openTracingConfig.getTracingProvider())) {
             tracer = InstanaTracerFactory.create();
         }
         return tracer;
