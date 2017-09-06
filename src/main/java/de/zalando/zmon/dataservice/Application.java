@@ -4,6 +4,7 @@ import de.zalando.zmon.dataservice.config.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,23 +24,18 @@ import com.instana.opentracing.InstanaTracerFactory;
 @EnableConfigurationProperties
 public class Application {
 
-    private static final String JAEGER = "jaeger";
-    private static final String LIGHTSTEP = "lightstep";
-    private static final String INSTANA = "instana";
-
     @Autowired
     private OpenTracingConfigProperties openTracingConfig;
-
-    private final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Bean
     public Tracer tracer() {
         Tracer tracer = NoopTracerFactory.create();
-        if (JAEGER.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
+        if (OpenTracingProvider.JAEGER.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
             tracer = new JaegerConfig(openTracingConfig).generateTracer();
-        } else if (LIGHTSTEP.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
-                tracer = new LightStepConfig(openTracingConfig).generateTracer();
-        } else if (INSTANA.equalsIgnoreCase(openTracingConfig.getTracingProvider())) {
+        } else if (OpenTracingProvider.LIGHTSTEP.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
+            //TODO: Enable lightstep tracing only when lightstep infra is available after proper testing
+            //tracer = new LightStepConfig(openTracingConfig).generateTracer();
+        } else if (OpenTracingProvider.INSTANA.equalsIgnoreCase(openTracingConfig.getTracingProvider())) {
             tracer = InstanaTracerFactory.create();
         }
         return tracer;

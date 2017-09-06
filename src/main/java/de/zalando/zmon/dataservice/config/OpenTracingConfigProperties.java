@@ -7,18 +7,37 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "opentracing")
 public class OpenTracingConfigProperties {
 
-    private String tracingProvider = "jaeger";
+    private String tracingProvider = "noop";
     private String openTracingServiceName = "zmon-data-service";
 
     private String jaegerHost = "localhost";
     private int jaegerPort = 5775;
     private boolean jaegerLogSpans = true;
-    private int jaegerFlushIntervalMs = 10;
+    private int jaegerFlushIntervalMs = 5000;
     private int jaegerMaxQueueSize= 100;
+    private String jaegerSamplerType="probabilistic";
+    private int jaegerSamplingRate=1;
 
     private String lightStepHost = "localhost";
     private int lightStepPort = 80;
     private String lightStepAccessToken = "";
+
+
+    public String getJaegerSamplerType() {
+        return jaegerSamplerType;
+    }
+
+    public void setJaegerSamplerType(String jaegerSamplerType) {
+        this.jaegerSamplerType = jaegerSamplerType;
+    }
+
+    public int getJaegerSamplingRate() {
+        return jaegerSamplingRate;
+    }
+
+    public void setJaegerSamplingRate(int jaegerSamplingRate) {
+        this.jaegerSamplingRate = jaegerSamplingRate;
+    }
 
     public String getJaegerHost() {
         return jaegerHost;
