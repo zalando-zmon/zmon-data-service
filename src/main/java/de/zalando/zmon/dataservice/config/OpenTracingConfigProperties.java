@@ -1,6 +1,6 @@
 package de.zalando.zmon.dataservice.config;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenTracingConfigProperties {
 
     private String tracingProvider = "noop";
-    private String openTracingServiceName = "zmon-data-service";
+    private String serviceName = "zmon-data-service";
 
     private String jaegerHost = "localhost";
     private int jaegerPort = 5775;
@@ -111,11 +111,11 @@ public class OpenTracingConfigProperties {
         this.tracingProvider = tracingProvider;
     }
 
-    public String getOpenTracingServiceName() {
-        return openTracingServiceName;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setOpenTracingServiceName(String openTracingServiceName) {
-        this.openTracingServiceName = openTracingServiceName;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 }

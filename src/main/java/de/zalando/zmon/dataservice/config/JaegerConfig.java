@@ -4,9 +4,6 @@ import com.uber.jaeger.Configuration;
 import com.uber.jaeger.samplers.*;
 import io.opentracing.Tracer;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class JaegerConfig implements OpenTracerConfig {
 
     private String jaegerHost = "localhost";
@@ -31,7 +28,7 @@ public class JaegerConfig implements OpenTracerConfig {
         this.logSpans = config.isJaegerLogSpans();
         this.flushIntervalMs = config.getJaegerFlushIntervalMs();
         this.maxQueueSize = config.getJaegerMaxQueueSize();
-        this.serviceName = config.getOpenTracingServiceName();
+        this.serviceName = config.getServiceName();
         switch (config.getJaegerSamplerType().toLowerCase()){
             case ConstSampler.TYPE:
                 this.samplerType = ConstSampler.TYPE;

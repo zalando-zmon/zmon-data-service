@@ -37,6 +37,6 @@ public class LightStepConfig implements OpenTracerConfig {
         this.lightStepHost = config.getLightStepHost();
         this.lightStepPort = config.getLightStepPort();
         this.lightStepAccessToken = config.getLightStepAccessToken();
-        this.serviceName = config.getOpenTracingServiceName();
+        this.serviceName = config.getServiceName();
     }
 }
