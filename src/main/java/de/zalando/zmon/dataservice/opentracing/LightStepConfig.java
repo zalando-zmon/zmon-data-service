@@ -1,5 +1,6 @@
-package de.zalando.zmon.dataservice.config;
+package de.zalando.zmon.dataservice.opentracing;
 
+import de.zalando.zmon.dataservice.config.OpenTracingConfigProperties;
 import io.opentracing.Tracer;
 import com.lightstep.tracer.jre.JRETracer;
 import com.lightstep.tracer.shared.Options;
@@ -9,14 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 
-public class LightStepConfig implements OpenTracerConfig {
+public class LightStepConfig implements OpenTracing {
 
     private String lightStepHost = "localhost";
     private int lightStepPort = 80;
     private String lightStepAccessToken = "";
     private String serviceName;
 
-    private final Logger logger = LoggerFactory.getLogger(OpenTracerConfig.class);
+    private final Logger logger = LoggerFactory.getLogger(LightStepConfig.class);
 
     public Tracer generateTracer() {
         Options opts = null;

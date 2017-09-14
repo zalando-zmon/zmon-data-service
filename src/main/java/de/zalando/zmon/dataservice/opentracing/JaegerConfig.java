@@ -1,10 +1,12 @@
-package de.zalando.zmon.dataservice.config;
+package de.zalando.zmon.dataservice.opentracing;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.samplers.*;
+import de.zalando.zmon.dataservice.config.OpenTracingConfigProperties;
 import io.opentracing.Tracer;
 
-public class JaegerConfig implements OpenTracerConfig {
+public class JaegerConfig implements OpenTracing {
 
     private String jaegerHost = "localhost";
     private int jaegerPort = 5775;
@@ -29,16 +31,26 @@ public class JaegerConfig implements OpenTracerConfig {
         this.flushIntervalMs = config.getJaegerFlushIntervalMs();
         this.maxQueueSize = config.getJaegerMaxQueueSize();
         this.serviceName = config.getServiceName();
-        switch (config.getJaegerSamplerType().toLowerCase()){
-            case ConstSampler.TYPE:
-                this.samplerType = ConstSampler.TYPE;
-            case RateLimitingSampler.TYPE:
-                this.samplerType = RateLimitingSampler.TYPE;
-            case RemoteControlledSampler.TYPE:
-                this.samplerType = RemoteControlledSampler.TYPE;
-            default:
-                this.samplerType = ProbabilisticSampler.TYPE;
-        }
+        this.samplerType=resolveSamplerType(config.getJaegerSamplerType());
         this.samplingRate=config.getJaegerSamplingRate();
+    }
+
+    @VisibleForTesting
+    String resolveSamplerType(String configSamplerType) {
+        String samplerType = this.samplerType;
+        if (configSamplerType!= null) {
+            switch (configSamplerType.toLowerCase()) {
+                case ConstSampler.TYPE:
+                    samplerType = ConstSampler.TYPE;
+                    break;
+                case RateLimitingSampler.TYPE:
+                    samplerType = RateLimitingSampler.TYPE;
+                    break;
+                case RemoteControlledSampler.TYPE:
+                    samplerType = RemoteControlledSampler.TYPE;
+                    break;
+            }
+        }
+        return samplerType;
     }
 }

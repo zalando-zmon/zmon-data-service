@@ -1,4 +1,4 @@
-package de.zalando.zmon.dataservice.config;
+package de.zalando.zmon.dataservice.opentracing;
 
 public final class OpenTracingProvider {
     public static final String JAEGER = "jaeger";

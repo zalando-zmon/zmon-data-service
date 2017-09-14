@@ -23,24 +23,6 @@ import com.instana.opentracing.InstanaTracerFactory;
 @EnableScheduling
 @EnableConfigurationProperties
 public class Application {
-
-    @Autowired
-    private OpenTracingConfigProperties openTracingConfig;
-
-    @Bean
-    public Tracer tracer() {
-        Tracer tracer = NoopTracerFactory.create();
-        if (OpenTracingProvider.JAEGER.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
-            tracer = new JaegerConfig(openTracingConfig).generateTracer();
-        } else if (OpenTracingProvider.LIGHTSTEP.equalsIgnoreCase(openTracingConfig.getTracingProvider())){
-            //TODO: Enable lightstep tracing only when lightstep infra is available after proper testing
-            //tracer = new LightStepConfig(openTracingConfig).generateTracer();
-        } else if (OpenTracingProvider.INSTANA.equalsIgnoreCase(openTracingConfig.getTracingProvider())) {
-            tracer = InstanaTracerFactory.create();
-        }
-        return tracer;
-    }
-
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class, args);
     }
