@@ -23,21 +23,27 @@ public class JaegerConfigTest {
     public void shouldReturnProbSampler(){
         when(openTracingConfig.getJaegerSamplerType()).thenReturn("probabilistic", "Probabilistic", "PROBABILISTIC");
         JaegerConfig config = new JaegerConfig(openTracingConfig);
-        assertEquals(ProbabilisticSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        for (int i=0; i<3; i++) {
+            assertEquals(ProbabilisticSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        }
     }
 
     @Test
     public void shouldReturnConstSampler(){
         when(openTracingConfig.getJaegerSamplerType()).thenReturn("const", "Const", "CONST");
         JaegerConfig config = new JaegerConfig(openTracingConfig);
-        assertEquals(ConstSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        for (int i=0; i<3; i++) {
+            assertEquals(ConstSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        }
     }
 
     @Test
     public void shouldReturnRateLimitSampler(){
         when(openTracingConfig.getJaegerSamplerType()).thenReturn("ratelimiting", "Ratelimiting", "RATELIMITING");
         JaegerConfig config = new JaegerConfig(openTracingConfig);
-        assertEquals(RateLimitingSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        for (int i=0; i<3; i++) {
+            assertEquals(RateLimitingSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        }
     }
 
     @Test
@@ -45,7 +51,9 @@ public class JaegerConfigTest {
 
         when(openTracingConfig.getJaegerSamplerType()).thenReturn("remote", "Remote", "REMOTE");
         JaegerConfig config = new JaegerConfig(openTracingConfig);
-        assertEquals(RemoteControlledSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        for (int i=0; i<3; i++) {
+            assertEquals(RemoteControlledSampler.TYPE, config.resolveSamplerType(openTracingConfig.getJaegerSamplerType()));
+        }
     }
 
 }

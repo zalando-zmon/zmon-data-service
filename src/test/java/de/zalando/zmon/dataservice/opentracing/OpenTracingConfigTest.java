@@ -26,8 +26,11 @@ public class OpenTracingConfigTest {
 
     @Test
     public void shouldReturnNoopTracer() throws Exception {
-        Tracer tracer = config.tracer();
-        assertThat(tracer, instanceOf(NoopTracer.class));
+        when(openTracingConfig.getTracingProvider()).thenReturn("noop", "", "abc", null);
+        for (int i=0; i<3; i++) {
+            Tracer tracer = config.tracer();
+            assertThat(tracer, instanceOf(NoopTracer.class));
+        }
     }
 
     @Before
@@ -40,15 +43,19 @@ public class OpenTracingConfigTest {
         when(openTracingConfig.getTracingProvider()).thenReturn("JAEGER", "jaeger", "Jaeger");
         when(openTracingConfig.getJaegerMaxQueueSize()).thenReturn(100);
         when(openTracingConfig.getJaegerFlushIntervalMs()).thenReturn(1);
-        Tracer tracer = config.tracer();
-        assertThat(tracer, instanceOf(com.uber.jaeger.Tracer.class));
+        for (int i=0; i<3; i++) {
+            Tracer tracer = config.tracer();
+            assertThat(tracer, instanceOf(com.uber.jaeger.Tracer.class));
+        }
     }
 
     @Test
     public void shouldReturnInstanaTracer(){
         when(openTracingConfig.getTracingProvider()).thenReturn("INSTANA", "instana", "Instana");
-        Tracer tracer = config.tracer();
-        assertThat(tracer, instanceOf(com.instana.opentracing.InstanaTracer.class));
+        for (int i=0; i<3; i++) {
+            Tracer tracer = config.tracer();
+            assertThat(tracer, instanceOf(com.instana.opentracing.InstanaTracer.class));
+        }
     }
 
     @Test
@@ -57,7 +64,9 @@ public class OpenTracingConfigTest {
         when(openTracingConfig.getLightStepHost()).thenReturn("localhost");
         when(openTracingConfig.getLightStepPort()).thenReturn(80);
         when(openTracingConfig.getLightStepAccessToken()).thenReturn("sacacd");
-        Tracer tracer = config.tracer();
-        assertThat(tracer, instanceOf(com.lightstep.tracer.jre.JRETracer.class));
+        for (int i=0; i<3; i++) {
+            Tracer tracer = config.tracer();
+            assertThat(tracer, instanceOf(com.lightstep.tracer.jre.JRETracer.class));
+        }
     }
 }

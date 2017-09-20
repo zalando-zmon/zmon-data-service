@@ -1,10 +1,13 @@
 package de.zalando.zmon.dataservice.opentracing;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.samplers.*;
 import de.zalando.zmon.dataservice.config.OpenTracingConfigProperties;
 import io.opentracing.Tracer;
+
+import java.util.Set;
 
 public class JaegerConfig implements OpenTracing {
 
@@ -15,6 +18,11 @@ public class JaegerConfig implements OpenTracing {
     private int maxQueueSize = 100;
     private String serviceName;
     private String samplerType=ProbabilisticSampler.TYPE;
+    private final static Set<String> AVAILABLE_SAMPLERS = ImmutableSet.of(
+            ConstSampler.TYPE,
+            RateLimitingSampler.TYPE,
+            RemoteControlledSampler.TYPE,
+            ProbabilisticSampler.TYPE);
     private int samplingRate=1;
 
     public Tracer generateTracer(){
@@ -37,20 +45,9 @@ public class JaegerConfig implements OpenTracing {
 
     @VisibleForTesting
     String resolveSamplerType(String configSamplerType) {
-        String samplerType = this.samplerType;
-        if (configSamplerType!= null) {
-            switch (configSamplerType.toLowerCase()) {
-                case ConstSampler.TYPE:
-                    samplerType = ConstSampler.TYPE;
-                    break;
-                case RateLimitingSampler.TYPE:
-                    samplerType = RateLimitingSampler.TYPE;
-                    break;
-                case RemoteControlledSampler.TYPE:
-                    samplerType = RemoteControlledSampler.TYPE;
-                    break;
-            }
-        }
-        return samplerType;
+        return AVAILABLE_SAMPLERS.stream()
+                .filter(s -> configSamplerType != null && configSamplerType.equalsIgnoreCase(s))
+                .findFirst()
+                .orElse(ProbabilisticSampler.TYPE);
     }
 }
