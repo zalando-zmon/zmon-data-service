@@ -1,13 +1,12 @@
 package de.zalando.zmon.dataservice.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "dataservice")
@@ -74,17 +73,6 @@ public class DataServiceConfigProperties {
     private int resultSizeWarning = 100;
 
     private Map<String, Object> versionConfig = null;
-
-    @NestedConfigurationProperty
-    private OpenTracingConfigProperties openTracingProperties;
-
-    public OpenTracingConfigProperties getOpenTracingProperties() {
-        return openTracingProperties;
-    }
-
-    public void setOpenTracingProperties(OpenTracingConfigProperties openTracingProperties) {
-        this.openTracingProperties = openTracingProperties;
-    }
 
     public boolean isTrackCheckRate() {
         return trackCheckRate;
