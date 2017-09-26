@@ -120,6 +120,13 @@
             <artifactId>tokens</artifactId>
             <version>0.11.0-beta-2</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-spring-web-autoconfigure</artifactId>
+            <version>0.0.10</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -130,6 +137,7 @@
                 <version>${spring.version}</version>
                 <configuration>
                     <mainClass>de.zalando.zmon.dataservice.Application</mainClass>
+                    <layout>ZIP</layout>
                 </configuration>
                 <executions>
                     <execution>
