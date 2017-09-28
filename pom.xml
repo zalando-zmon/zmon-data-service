@@ -137,6 +137,7 @@
                 <version>${spring.version}</version>
                 <configuration>
                     <mainClass>de.zalando.zmon.dataservice.Application</mainClass>
+                    <layout>ZIP</layout>
                 </configuration>
                 <executions>
                     <execution>
