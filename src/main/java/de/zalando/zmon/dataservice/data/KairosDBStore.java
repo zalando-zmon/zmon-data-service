@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.config.kairosdb.KairosDbReplicaConfiguration;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
@@ -230,10 +231,17 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for (List<String> urls : config.getKairosdbWriteUrls()) {
-                // api is per check id, but for now we take the first one
-                final int index = wr.results.get(0).check_id % urls.size();
-                final String url = urls.get(index);
+            for (final KairosDbReplicaConfiguration replica: config.getStorage().getShardedReplicas()) {
+                String url;
+                final List<String> partitions = replica.getShards();
+                final int partitionCount = partitions.size();
+                if(partitionCount > 0) {
+                    // api is per check id, but for now we take the first one
+                    final int index = wr.results.get(0).check_id % partitionCount;
+                    url = partitions.get(index);
+                } else {
+                    url = partitions.get(0);
+                }
 
                 try {
                     executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();

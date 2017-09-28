@@ -5,8 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import de.zalando.zmon.dataservice.config.kairosdb.KairosDbReplicaConfiguration;
+import de.zalando.zmon.dataservice.config.kairosdb.KairosDbStorageConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 @ConfigurationProperties(prefix = "dataservice")
@@ -16,7 +23,7 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
-    private List<List<String>> kairosdbWriteUrls;
+    private List<List<String>> kairosdbWriteUrls = Lists.newLinkedList();
 
     private boolean proxyController = false;
     private boolean proxyControllerCache = true;
@@ -421,7 +428,7 @@ public class DataServiceConfigProperties {
         this.tokenInfoCacheEnabled = tokenInfoCacheEnabled;
     }
 
-    public List<List<String>> getKairosdbWriteUrls() {
+    List<List<String>> getKairosdbWriteUrls() {
         return kairosdbWriteUrls;
     }
 
@@ -507,6 +514,46 @@ public class DataServiceConfigProperties {
 
     public void setOauth2StaticToken(String oauth2StaticToken) {
         this.oauth2StaticToken = oauth2StaticToken;
+    }
+
+    @NestedConfigurationProperty
+    private KairosDbStorageConfiguration storage = new KairosDbStorageConfiguration();
+
+    public KairosDbStorageConfiguration getStorage() {
+        return storage;
+    }
+
+    public void setStorage(final KairosDbStorageConfiguration storage) {
+        this.storage = storage;
+    }
+
+    @PostConstruct
+    public void migrateKairosDbStorageConfig() {
+        if(storage.getReplicas().isEmpty()) {
+            final ImmutableList.Builder<KairosDbReplicaConfiguration> shardedReplicasBuilder = ImmutableList.builder();
+            final ImmutableList.Builder<String> simpleReplicaList = ImmutableList.builder();
+
+            for (final List<String> kairosDbPartitions : kairosdbWriteUrls) {
+                if(kairosDbPartitions.size() == 1) {
+                    simpleReplicaList.add(kairosDbPartitions.get(0));
+                } else {
+                    final KairosDbReplicaConfiguration shardedReplica = new KairosDbReplicaConfiguration();
+                    shardedReplica.setShards(ImmutableList.copyOf(kairosDbPartitions));
+                    shardedReplicasBuilder.add(shardedReplica);
+                }
+            }
+            final List<KairosDbReplicaConfiguration> shardedReplicas = shardedReplicasBuilder.build();
+            final List<String> replicas = simpleReplicaList.build();
+            if(!replicas.isEmpty()) {
+                storage.setReplicas(replicas);
+            } else {
+                storage.setShardedReplicas(shardedReplicas);
+            }
+        }
+
+        if(storage.getShardedReplicas().isEmpty() && storage.getReplicas().isEmpty()) {
+            throw new IllegalStateException("Invalid configuration. No KairosDB replicas configured");
+        }
     }
 }
 
