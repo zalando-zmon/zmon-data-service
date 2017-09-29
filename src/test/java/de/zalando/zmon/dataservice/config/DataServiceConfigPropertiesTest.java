@@ -111,4 +111,11 @@ public class DataServiceConfigPropertiesTest {
         final DataServiceConfigProperties props = new DataServiceConfigProperties();
         props.migrateKairosDbStorageConfig();
     }
+
+    @Test
+    public void testKairosDbDisabled() {
+        final DataServiceConfigProperties props = new DataServiceConfigProperties();
+        props.setKairosdbEnabled(false);
+        props.migrateKairosDbStorageConfig();
+    }
 }
