@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import de.zalando.zmon.dataservice.config.kairosdb.KairosDbReplicaConfiguration;
+import de.zalando.zmon.dataservice.config.kairosdb.ReplicaIterator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
@@ -94,20 +94,24 @@ public class KairosDBStore {
         this.config = config;
         this.resultSizeWarning = config.getResultSizeWarning();
 
-
         if (config.isKairosdbEnabled()) {
-            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
+            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}",
+                    config.getKairosdbConnections(),
+                    config.getKairosdbSockettimeout(),
+                    config.getKairosdbTimeout());
 
-            executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
+            final HttpClient httpClient = getHttpClient(config.getKairosdbSockettimeout(),
+                    config.getKairosdbTimeout(),
+                    config.getKairosdbConnections());
+            executor = Executor.newInstance(httpClient);
         } else {
             LOG.info("KairosDB is disabled.");
-
             executor = null;
         }
 
     }
 
-    public static String extractMetricName(String key) {
+    private static String extractMetricName(String key) {
         if (null == key || "".equals(key)) return null;
         String[] keyParts = key.split("\\.");
         String metricName = keyParts[keyParts.length - 1];
@@ -231,32 +235,30 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for (final KairosDbReplicaConfiguration replica: config.getStorage().getShardedReplicas()) {
-                String url;
-                final List<String> partitions = replica.getShards();
-                final int partitionCount = partitions.size();
-                if(partitionCount > 0) {
-                    // api is per check id, but for now we take the first one
-                    final int index = wr.results.get(0).check_id % partitionCount;
-                    url = partitions.get(index);
-                } else {
-                    url = partitions.get(0);
-                }
-
-                try {
-                    executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-                } catch (IOException ex) {
-                    if (config.isLogKairosdbErrors()) {
-                        LOG.error("KairosDB write failed url={}", url, ex);
-                    }
-                    metrics.markKairosHostError();
-                }
+            final ReplicaIterator it = config.getStorage().replicaIterator();
+            while(it.hasNext()) {
+                final String url = it.next(wr.results.get(0).check_id);
+                pushData(query, url);
             }
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write path failed", ex);
             }
             metrics.markKairosError();
+        }
+    }
+
+    private void pushData(final String query, final String url) {
+        try {
+            executor.execute(Request.Post(url + "/api/v1/datapoints")
+                    .bodyString(query, ContentType.APPLICATION_JSON))
+                    .returnContent()
+                    .asString();
+        } catch (IOException ex) {
+            if (config.isLogKairosdbErrors()) {
+                LOG.error("KairosDB write failed url={}", url, ex);
+            }
+            metrics.markKairosHostError();
         }
     }
 }

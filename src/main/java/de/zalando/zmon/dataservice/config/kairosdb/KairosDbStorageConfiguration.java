@@ -24,4 +24,9 @@ public class KairosDbStorageConfiguration {
     public void setReplicas(final List<String> replicas) {
         this.replicas = replicas;
     }
+
+    public ReplicaIterator replicaIterator() {
+        return new ReplicaIterator(this);
+    }
+
 }
