@@ -4,9 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +43,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     @Before
     public void setUp() {
         wireMockRule.stubFor(post(urlPathEqualTo("/api/v1/datapoints"))
-                .willReturn(aResponse().withStatus(200).withBody("{}").withFixedDelay(200)));
+                .willReturn(aResponse().withStatus(200).withBody("{}")));
     }
 
     @Test
@@ -66,9 +68,8 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         @Bean
         public DataServiceConfigProperties dataServiceConfigProperties() {
             DataServiceConfigProperties props = new DataServiceConfigProperties();
-            List<String> kairosdbHosts = new ArrayList<>(1);
-            kairosdbHosts.add("http://localhost:10081");
-            props.setKairosdbWriteUrls(Arrays.asList(kairosdbHosts));
+            List<String> kairosdbHosts = ImmutableList.of("http://localhost:10081");
+            props.setKairosdbWriteUrls(ImmutableList.of(kairosdbHosts));
             props.setLogKairosdbRequests(true);
             props.setLogKairosdbErrors(true);
             return props;
@@ -76,7 +77,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
-            return Mockito.mock(DataServiceMetrics.class);
+            return mock(DataServiceMetrics.class);
         }
     }
 

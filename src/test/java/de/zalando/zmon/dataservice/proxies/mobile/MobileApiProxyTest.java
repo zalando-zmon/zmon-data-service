@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 import java.io.IOException;
 
+import de.zalando.zmon.dataservice.data.TestingProperties;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -31,6 +33,7 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
 
 @ContextConfiguration
+@DirtiesContext
 public class MobileApiProxyTest extends AbstractControllerTest {
 
     @Rule
@@ -98,16 +101,12 @@ public class MobileApiProxyTest extends AbstractControllerTest {
     }
 
     @Configuration
-    @Import({ ObjectMapperConfig.class })
+    @Import({ ObjectMapperConfig.class, TestingProperties.class })
     static class TestConfig {
 
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
+        public TestConfig(DataServiceConfigProperties props) {
             props.setProxyController(true);
             props.setProxyControllerBaseUrl("http://localhost:9998");
-            return props;
         }
-
     }
 }

@@ -551,7 +551,7 @@ public class DataServiceConfigProperties {
             }
         }
 
-        if(storage.getShardedReplicas().isEmpty() && storage.getReplicas().isEmpty()) {
+        if(storage.getShardedReplicas().isEmpty() && storage.getReplicas().isEmpty() && isKairosdbEnabled()) {
             throw new IllegalStateException("Invalid configuration. No KairosDB replicas configured");
         }
     }

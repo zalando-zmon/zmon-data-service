@@ -5,10 +5,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import de.zalando.zmon.dataservice.data.TestingProperties;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -97,20 +99,17 @@ public class EntitiesControllerTest extends AbstractControllerTest {
     }
 
     @Configuration
-    @Import({ EntitiesConfig.class, ObjectMapperConfig.class })
+    @Import({ EntitiesConfig.class, ObjectMapperConfig.class, TestingProperties.class })
     static class TestConfig {
 
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
+        public TestConfig(DataServiceConfigProperties props) {
             props.setProxyController(true);
             props.setProxyControllerUrl("http://localhost:9998");
-            return props;
         }
 
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
-            return Mockito.mock(DataServiceMetrics.class);
+            return mock(DataServiceMetrics.class);
         }
     }
 

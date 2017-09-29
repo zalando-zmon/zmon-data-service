@@ -5,11 +5,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 import de.zalando.zmon.dataservice.TokenWrapper;
+import de.zalando.zmon.dataservice.data.TestingProperties;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
@@ -22,6 +24,7 @@ import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
  *
  */
 @ContextConfiguration
+@DirtiesContext
 public class ChecksControllerWithDefaultCheckServiceTest extends AbstractCheckControllerTest {
 
     @Before
@@ -33,15 +36,12 @@ public class ChecksControllerWithDefaultCheckServiceTest extends AbstractCheckCo
     }
 
     @Configuration
-    @Import({ ChecksConfig.class, ObjectMapperConfig.class })
+    @Import({ ChecksConfig.class, ObjectMapperConfig.class, TestingProperties.class })
     static class TestConfig {
 
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
+        public TestConfig(DataServiceConfigProperties props) {
             props.setProxyController(true);
             props.setProxyControllerUrl("http://localhost:9999");
-            return props;
         }
 
         @Bean

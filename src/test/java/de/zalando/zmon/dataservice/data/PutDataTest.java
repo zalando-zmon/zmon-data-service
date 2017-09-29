@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @ContextConfiguration
+@DirtiesContext
 public class PutDataTest extends RedistTestSupport implements Resources {
 
     @Rule
@@ -48,24 +50,19 @@ public class PutDataTest extends RedistTestSupport implements Resources {
     public void putDataWithJedisPool() throws InterruptedException {
         RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
         ds.store(wr);
-        TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void putDataWithRedisTemplate() throws InterruptedException {
         RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
         ds.store(wr);
-        TimeUnit.SECONDS.sleep(10);
     }
 
     @Configuration
-    @Import({ RedisConfig.class, TestConfiguration.class })
+    @Import({ RedisConfig.class, TestConfiguration.class, TestingProperties.class })
     static class Config {
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
-            props.setRedisPort(REDIS_SERVER.getPort());
-            return props;
+        public Config(DataServiceConfigProperties properties) {
+            properties.setRedisPort(REDIS_SERVER.getPort());
         }
     }
 

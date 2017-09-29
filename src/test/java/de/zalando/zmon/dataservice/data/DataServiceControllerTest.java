@@ -32,6 +32,8 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration
@@ -67,24 +69,23 @@ public class DataServiceControllerTest extends AbstractControllerTest {
     @Before
     public void setUp() {
 
-        Timer timer = Mockito.mock(Timer.class);
-        Context context = Mockito.mock(Context.class);
+        Timer timer = mock(Timer.class);
+        Context context = mock(Context.class);
         when(timer.time()).thenReturn(context);
         when(metrics.getKairosDBTimer()).thenReturn(timer);
 
-        storage = Mockito.mock(RedisDataStore.class);
-        kairosStore = Mockito.mock(KairosDBStore.class);
-        proxyWriter = Mockito.mock(ProxyWriter.class);
-        entitiesService = Mockito.mock(EntitiesService.class);
+        storage = mock(RedisDataStore.class);
+        kairosStore = mock(KairosDBStore.class);
+        proxyWriter = mock(ProxyWriter.class);
+        entitiesService = mock(EntitiesService.class);
         applianceVersionService = new ApplianceVersionService(entitiesService);
-
         controller = new DataServiceController(storage, metrics, defaultObjectMapper, customObjectMapper,
                 workResultWriter, proxyWriter, config, applianceVersionService);
     }
 
     @After
     public void cleanMocks() {
-        Mockito.reset(storage, kairosStore, metrics);
+        reset(storage, kairosStore, metrics);
     }
 
     @Test
@@ -145,17 +146,11 @@ public class DataServiceControllerTest extends AbstractControllerTest {
     }
 
     @Configuration
-    @Import({ ObjectMapperConfig.class })
+    @Import({ ObjectMapperConfig.class, TestingProperties.class })
     static class TestConfig {
-
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            return new DataServiceConfigProperties();
-        }
-
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
-            return Mockito.mock(DataServiceMetrics.class);
+            return mock(DataServiceMetrics.class);
         }
     }
 }

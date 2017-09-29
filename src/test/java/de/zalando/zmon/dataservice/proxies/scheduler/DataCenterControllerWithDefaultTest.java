@@ -3,7 +3,9 @@ package de.zalando.zmon.dataservice.proxies.scheduler;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.mockito.Mockito.mock;
 
+import de.zalando.zmon.dataservice.data.TestingProperties;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -27,20 +29,17 @@ public class DataCenterControllerWithDefaultTest extends AbstractDataCenterContr
     }
 
     @Configuration
-    @Import({ SchedulerConfig.class, ObjectMapperConfig.class })
+    @Import({ SchedulerConfig.class, ObjectMapperConfig.class, TestingProperties.class })
     static class TestConfig {
 
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
+        public TestConfig(DataServiceConfigProperties props) {
             props.setProxyScheduler(true);
             props.setProxySchedulerUrl("http://localhost:9999");
-            return props;
         }
 
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
-            return Mockito.mock(DataServiceMetrics.class);
+            return mock(DataServiceMetrics.class);
         }
     }
 }
