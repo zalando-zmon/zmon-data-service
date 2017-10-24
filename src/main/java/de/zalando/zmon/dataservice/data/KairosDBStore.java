@@ -90,10 +90,10 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, RedisDataPointsStore redisStore) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, RedisDataPointsStore redisDataPointsStore) {
         this.metrics = metrics;
         this.config = config;
-        this.redisStore = redisStore;
+        this.redisStore = redisDataPointsStore;
         this.resultSizeWarning = config.getResultSizeWarning();
 
 
