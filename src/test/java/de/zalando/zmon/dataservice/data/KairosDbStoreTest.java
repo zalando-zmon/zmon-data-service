@@ -33,6 +33,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     public final WireMockRule wireMockRule = new WireMockRule(10081);
 
     @Autowired
+    private RedisDataPointsStore redisDataPointsStore;
+
+    @Autowired
     private DataServiceConfigProperties config;
 
     @Autowired
@@ -46,14 +49,14 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void writeWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, redisDataPointsStore);
         kairosDb.store(Fixture.buildWorkerResult());
         verify(metrics, never()).markKairosError();
     }
 
     @Test
     public void testInvalidWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, redisDataPointsStore);
         for(WorkerResult wr: new WorkerResult[]{null, new WorkerResult()}) {
             kairosDb.store(wr);
             verify(metrics, never()).incKairosDBDataPoints(anyLong());
@@ -78,6 +81,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         public DataServiceMetrics dataServiceMetrics() {
             return Mockito.mock(DataServiceMetrics.class);
         }
+
+        @Bean
+        public RedisDataPointsStore redisDataPointsStore() {return Mockito.mock(RedisDataPointsStore.class);}
     }
 
 }

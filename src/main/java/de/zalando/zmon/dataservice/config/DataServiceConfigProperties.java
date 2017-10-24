@@ -17,6 +17,11 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
+    // Datapoints Redis buffer for KairosDB
+    private String datapointsRedisHost = "localhost";
+    private int datapointsRedisPort = 6378;
+    private int datapointsRedisPoolSize = 20;
+
     private List<List<String>> kairosdbWriteUrls;
 
     private boolean proxyController = false;
@@ -47,6 +52,7 @@ public class DataServiceConfigProperties {
     private int kairosdbTimeout = 1000;
     private int kairosdbSockettimeout = 500;
     private boolean kairosdbEnabled = true;
+    private boolean datapointsRedisEnabled = false;
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
@@ -491,6 +497,38 @@ public class DataServiceConfigProperties {
 
     public void setOauth2StaticToken(String oauth2StaticToken) {
         this.oauth2StaticToken = oauth2StaticToken;
+    }
+
+    public String getDatapointsRedisHost() {
+        return datapointsRedisHost;
+    }
+
+    public void setDatapointsRedisHost(String datapointsRedisHost) {
+        this.datapointsRedisHost = datapointsRedisHost;
+    }
+
+    public int getDatapointsRedisPort() {
+        return datapointsRedisPort;
+    }
+
+    public void setDatapointsRedisPort(int datapointsRedisPort) {
+        this.datapointsRedisPort = datapointsRedisPort;
+    }
+
+    public int getDatapointsRedisPoolSize() {
+        return datapointsRedisPoolSize;
+    }
+
+    public void setDatapointsRedisPoolSize(int datapointsRedisPoolSize) {
+        this.datapointsRedisPoolSize = datapointsRedisPoolSize;
+    }
+
+    public boolean isDatapointsRedisEnabled() {
+        return datapointsRedisEnabled;
+    }
+
+    public void setDatapointsRedisEnabled(boolean datapointsRedisEnabled) {
+        this.datapointsRedisEnabled = datapointsRedisEnabled;
     }
 }
 
