@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -66,9 +67,8 @@ public class DataServiceConfigProperties {
     private int proxyKairosdbSockettimeout = 500;
     private int proxyKairosdbTimeout = 1000;
 
-    private int asyncPoolCoreSize = 150;
-    private int asyncPoolMaxSize = 200;
-    private int asyncPoolQueueSize = 5000;
+    @NestedConfigurationProperty
+    private Map<String, AsyncExecutorProperties> asyncExecutors = new HashMap<>();
 
     private int resultSizeWarning = 100;
 
@@ -80,6 +80,14 @@ public class DataServiceConfigProperties {
 
     public void setTrackCheckRate(boolean trackCheckRate) {
         this.trackCheckRate = trackCheckRate;
+    }
+
+    public Map<String, AsyncExecutorProperties> getAsyncExecutors() {
+        return asyncExecutors;
+    }
+
+    public void setAsyncExecutors(final Map<String, AsyncExecutorProperties> asyncExecutors) {
+        this.asyncExecutors = asyncExecutors;
     }
 
     public int getResultSizeWarning() {
@@ -104,30 +112,6 @@ public class DataServiceConfigProperties {
 
     public void setKairosdbEnabled(boolean kairosdbEnabled) {
         this.kairosdbEnabled = kairosdbEnabled;
-    }
-
-    public int getAsyncPoolCoreSize() {
-        return asyncPoolCoreSize;
-    }
-
-    public void setAsyncPoolCoreSize(int asyncPoolCoreSize) {
-        this.asyncPoolCoreSize = asyncPoolCoreSize;
-    }
-
-    public int getAsyncPoolMaxSize() {
-        return asyncPoolMaxSize;
-    }
-
-    public void setAsyncPoolMaxSize(int asyncPoolMaxSize) {
-        this.asyncPoolMaxSize = asyncPoolMaxSize;
-    }
-
-    public int getAsyncPoolQueueSize() {
-        return asyncPoolQueueSize;
-    }
-
-    public void setAsyncPoolQueueSize(int asyncPoolQueueSize) {
-        this.asyncPoolQueueSize = asyncPoolQueueSize;
     }
 
     public int getDataProxyPoolSize() {

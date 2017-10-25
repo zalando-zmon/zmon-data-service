@@ -11,8 +11,9 @@ import com.codahale.metrics.Timer;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 
 @Component
-class KairosDbWorkResultWriter implements WorkResultWriter {
+public class KairosDbWorkResultWriter implements WorkResultWriter {
 
+    public static final String KAIROS_WRITER_EXECUTOR = "kairos-writer";
     private final Logger log = LoggerFactory.getLogger(KairosDbWorkResultWriter.class);
 
     private final DataServiceMetrics metrics;
@@ -25,7 +26,7 @@ class KairosDbWorkResultWriter implements WorkResultWriter {
         this.metrics = metrics;
     }
 
-    @Async
+    @Async(KAIROS_WRITER_EXECUTOR)
     @Override
     public void write(WriteData writeData) {
         log.debug("write to KairosDB ...");

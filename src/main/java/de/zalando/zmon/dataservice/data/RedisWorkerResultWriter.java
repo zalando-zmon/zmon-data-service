@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 
 @Component
-class RedisWorkerResultWriter implements WorkResultWriter {
+public class RedisWorkerResultWriter implements WorkResultWriter {
 
+    public static final String REDIS_WRITER_EXECUTOR = "redis-writer";
     private final Logger log = LoggerFactory.getLogger(RedisWorkerResultWriter.class);
 
     private final RedisDataStore redisDataStore;
@@ -23,11 +24,10 @@ class RedisWorkerResultWriter implements WorkResultWriter {
         this.metrics = metrics;
     }
 
-    @Async
+    @Async(REDIS_WRITER_EXECUTOR)
     @Override
     public void write(WriteData writeData) {
         log.debug("write to redis ...");
-
         if (writeData.getWorkerResultOptional().isPresent()) {
             try {
                 redisDataStore.store(writeData.getWorkerResultOptional().get());
