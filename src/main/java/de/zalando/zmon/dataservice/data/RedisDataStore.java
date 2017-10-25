@@ -103,50 +103,14 @@ public class RedisDataStore {
     }
 
     public void store(WorkerResult wr) {
-        try (Jedis jedis = pool.getResource()){
+        for (CheckData cd : wr.results) {
+            String checkValue = writeValueAsString(cd.check_result).orElse(EMPTY_CHECK);
 
-            Pipeline p = jedis.pipelined();
-
-            for (CheckData cd : wr.results) {
-                p.sadd("zmon:checks", "" + cd.check_id);
-                p.sadd("zmon:checks:" + cd.check_id, cd.entity_id);
-                String checkTs = "zmon:checks:" + cd.check_id + ":" + cd.entity_id;
-
-                String checkValue = writeValueAsString(cd.check_result).orElse(EMPTY_CHECK);
-                p.lpush(checkTs, checkValue);
-                p.ltrim(checkTs, 0, 20);
-
-                if (null != cd.alerts) {
-                    for (AlertData alert : cd.alerts.values()) {
-
-                        createEvents(cd.entity_id, cd.check_id, checkValue, alert);
-
-                        if (alert.active && alert.in_period) {
-                            p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
-
-                            String value = buildValue(alert, cd);
-
-                            p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
-
-                        } else {
-                            p.srem("zmon:alerts:" + alert.alert_id, cd.entity_id);
-                            p.del("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id);
-                        }
-
-                        String captures = writeValueAsString(alert.captures).orElse(CAPTURES_NOT_SERIALIZED);
-
-                        p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
-
-                        p.eval("if table.getn(redis.call('smembers','zmon:alerts:" + alert.alert_id + "')) == 0 then " +
-                                    "redis.call('srem','zmon:alert-acks', " + alert.alert_id + "); " +
-                                    "return redis.call('srem','zmon:alerts'," + alert.alert_id + ") " +
-                                "else " +
-                                    "return redis.call('sadd','zmon:alerts'," + alert.alert_id + ") " +
-                                "end");
-                    }
+            if (null != cd.alerts) {
+                for (AlertData alert : cd.alerts.values()) {
+                    createEvents(cd.entity_id, cd.check_id, checkValue, alert);
                 }
             }
-            p.sync();
         }
     }
 

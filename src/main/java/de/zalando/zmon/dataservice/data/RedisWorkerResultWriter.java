@@ -27,6 +27,7 @@ class RedisWorkerResultWriter implements WorkResultWriter {
     @Override
     public void write(WriteData writeData) {
         log.debug("write to redis ...");
+
         if (writeData.getWorkerResultOptional().isPresent()) {
             try {
                 redisDataStore.store(writeData.getWorkerResultOptional().get());
