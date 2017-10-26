@@ -48,17 +48,6 @@ public class DataServiceConfigPropertiesTest {
         assertThat(properties.getCoreSize(), is(42));
         assertThat(properties.getMaxSize(), is(69));
         assertThat(properties.getQueueSize(), is(666));
-
-
-    }
-
-    @Test
-    public void testBarExecutor() {
-        final AsyncExecutorProperties properties = config.getAsyncExecutors().getOrDefault("bar", null);
-        assertThat(properties, notNullValue());
-        assertThat(properties.getCoreSize(), is(AsyncExecutorProperties.DEFAULT_CORE_SIZE));
-        assertThat(properties.getMaxSize(), is(AsyncExecutorProperties.DEFAULT_MAX_SIZE));
-        assertThat(properties.getQueueSize(), is(333));
     }
 
     @Test
