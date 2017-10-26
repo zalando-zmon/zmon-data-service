@@ -114,7 +114,7 @@ public class RedisDataStore {
 
                 String checkValue = writeValueAsString(cd.check_result).orElse(EMPTY_CHECK);
                 p.lpush(checkTs, checkValue);
-                p.ltrim(checkTs, 0, 20);
+                p.ltrim(checkTs, 0, 2);
 
                 if (null != cd.alerts) {
                     for (AlertData alert : cd.alerts.values()) {
