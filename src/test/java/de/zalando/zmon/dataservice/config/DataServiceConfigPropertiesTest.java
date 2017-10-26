@@ -8,10 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
-
-import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -23,6 +19,7 @@ import static org.junit.Assert.assertThat;
         "dataservice.async_executors.foo.core_size=42",
         "dataservice.async_executors.foo.max_size=69",
         "dataservice.async_executors.foo.queue_size=666",
+        "dataservice.async_executors.bar.queue_size=333",
 })
 public class DataServiceConfigPropertiesTest {
     @Configuration
@@ -36,7 +33,7 @@ public class DataServiceConfigPropertiesTest {
     @Test
     public void testIfDefaultExecutorPropertiesWork() {
         assertThat(config.getAsyncExecutors(), notNullValue());
-        final AsyncExecutorProperties properties = config.getAsyncExecutors().getOrDefault("bar",
+        final AsyncExecutorProperties properties = config.getAsyncExecutors().getOrDefault("zbr",
                 AsyncExecutorProperties.DEFAULT);
         assertThat(properties, is(AsyncExecutorProperties.DEFAULT));
         assertThat(properties.getCoreSize(), is(AsyncExecutorProperties.DEFAULT_CORE_SIZE));
@@ -51,5 +48,16 @@ public class DataServiceConfigPropertiesTest {
         assertThat(properties.getCoreSize(), is(42));
         assertThat(properties.getMaxSize(), is(69));
         assertThat(properties.getQueueSize(), is(666));
+
+
+    }
+
+    @Test
+    public void testBarExecutor() {
+        final AsyncExecutorProperties properties = config.getAsyncExecutors().getOrDefault("bar", null);
+        assertThat(properties, notNullValue());
+        assertThat(properties.getCoreSize(), is(AsyncExecutorProperties.DEFAULT_CORE_SIZE));
+        assertThat(properties.getMaxSize(), is(AsyncExecutorProperties.DEFAULT_MAX_SIZE));
+        assertThat(properties.getQueueSize(), is(333));
     }
 }
