@@ -246,7 +246,14 @@ public class KairosDBStore {
     private void storeDatapoints(WorkerResult wr, String query) {
         if (config.isDatapointsRedisEnabled()) {
             // Store to redis and skip KairosDB!
-            redisStore.store(query);
+            try {
+                redisStore.store(query);
+            } catch (IOException ex) {
+                if (config.isLogKairosdbErrors()) {
+                    LOG.error("KairosDB Redis write failed", ex);
+                }
+                metrics.markKairosHostError();
+            }
         } else {
             for (List<String> urls : config.getKairosdbWriteUrls()) {
                 // api is per check id, but for now we take the first one

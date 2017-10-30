@@ -1,5 +1,9 @@
 package de.zalando.zmon.dataservice.data;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.DeflaterOutputStream;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -18,9 +22,21 @@ public class RedisDataPointsStore {
         this.pool = pool;
     }
 
-    public void store(String query) {
+    public void store(String query) throws IOException {
         try (Jedis jedis = pool.getResource()) {
-            jedis.lpush(DATAPOINTS_QUEUE, query);
+            String compressedQuery = compress(query);
+            jedis.lpush(DATAPOINTS_QUEUE, compressedQuery);
         }
+    }
+
+    private String compress(String str) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DeflaterOutputStream deflater = new DeflaterOutputStream(bytes);
+
+        deflater.write(str.getBytes());
+        deflater.flush();
+        deflater.close();
+
+        return new String(bytes.toByteArray());
     }
 }
