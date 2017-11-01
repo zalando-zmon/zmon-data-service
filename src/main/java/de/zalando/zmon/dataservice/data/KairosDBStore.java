@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+
 /**
  * Created by jmussler on 5/8/15.
  */
@@ -45,7 +46,7 @@ public class KairosDBStore {
     private final RedisDataPointsStore redisStore;
 
     private final static Set<String> TAG_FIELDS = new HashSet<>(
-        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
+            Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
@@ -246,7 +247,14 @@ public class KairosDBStore {
     private void storeDatapoints(WorkerResult wr, String query) {
         if (config.isDatapointsRedisEnabled()) {
             // Store to redis and skip KairosDB!
-            redisStore.store(query);
+            try {
+                redisStore.store(query);
+            } catch (IOException ex) {
+                if (config.isLogKairosdbErrors()) {
+                    LOG.error("KairosDB Redis write failed", ex);
+                }
+                metrics.markKairosHostError();
+            }
         } else {
             for (List<String> urls : config.getKairosdbWriteUrls()) {
                 // api is per check id, but for now we take the first one
