@@ -42,6 +42,8 @@ public class KairosDBStore {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
 
+    private final RedisDataPointsStore redisStore;
+
     private final static Set<String> TAG_FIELDS = new HashSet<>(
         Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
 
@@ -88,13 +90,14 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, RedisDataPointsStore redisStore) {
         this.metrics = metrics;
         this.config = config;
+        this.redisStore = redisStore;
         this.resultSizeWarning = config.getResultSizeWarning();
 
 
-        if (config.isKairosdbEnabled()) {
+        if (config.isKairosdbEnabled() && !config.isDatapointsRedisEnabled()) {
             LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
 
             executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
@@ -230,6 +233,28 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
+            // Store datapoints query!
+            storeDatapoints(wr, query);
+        } catch (IOException ex) {
+            if (config.isLogKairosdbErrors()) {
+                LOG.error("KairosDB write path failed", ex);
+            }
+            metrics.markKairosError();
+        }
+    }
+
+    private void storeDatapoints(WorkerResult wr, String query) {
+        if (config.isDatapointsRedisEnabled()) {
+            // Store to redis and skip KairosDB!
+            try {
+                redisStore.store(query);
+            } catch (IOException ex) {
+                if (config.isLogKairosdbErrors()) {
+                    LOG.error("KairosDB Redis write failed", ex);
+                }
+                metrics.markKairosHostError();
+            }
+        } else {
             for (List<String> urls : config.getKairosdbWriteUrls()) {
                 // api is per check id, but for now we take the first one
                 final int index = wr.results.get(0).check_id % urls.size();
@@ -244,11 +269,7 @@ public class KairosDBStore {
                     metrics.markKairosHostError();
                 }
             }
-        } catch (IOException ex) {
-            if (config.isLogKairosdbErrors()) {
-                LOG.error("KairosDB write path failed", ex);
-            }
-            metrics.markKairosError();
         }
+
     }
 }
