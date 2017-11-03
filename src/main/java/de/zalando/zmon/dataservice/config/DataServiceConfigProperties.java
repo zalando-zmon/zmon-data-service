@@ -530,5 +530,6 @@ public class DataServiceConfigProperties {
     public void setDatapointsRedisEnabled(boolean datapointsRedisEnabled) {
         this.datapointsRedisEnabled = datapointsRedisEnabled;
     }
+
 }
 

@@ -1,11 +1,17 @@
 package de.zalando.zmon.dataservice.data;
 
+import java.io.IOException;
+
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
+
 
 @Configuration
 public class RedisConfig {
@@ -25,8 +31,9 @@ public class RedisConfig {
         poolConfig.setTestOnBorrow(true);
         poolConfig.setMaxTotal(config.getDatapointsRedisPoolSize());
 
-        JedisPool pool = new JedisPool(poolConfig, config.getDatapointsRedisHost(), config.getDatapointsRedisPort());
+        HostAndPort node = new HostAndPort(config.getDatapointsRedisHost(), config.getDatapointsRedisPort());
+        JedisCluster cluster = new JedisCluster(node, poolConfig);
 
-        return new RedisDataPointsStore(pool);
+        return new RedisDataPointsStore(cluster);
     }
 }

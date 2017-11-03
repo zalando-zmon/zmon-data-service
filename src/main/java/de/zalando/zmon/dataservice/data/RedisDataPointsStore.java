@@ -5,28 +5,26 @@ import java.io.IOException;
 import java.util.zip.DeflaterOutputStream;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisCluster;
 
 /**
  * Created by mabdelhameed on 24/10/2017.
  *
- * Use Redis as a buffer between Data-service and KairosDB.
+ * Use Redis cluster as a buffer between Data-service and KairosDB.
  *
  */
 public class RedisDataPointsStore {
     private static final String DATAPOINTS_QUEUE = "zmon:datapoints";
 
-    private JedisPool pool;
+    private JedisCluster cluster;
 
-    RedisDataPointsStore(JedisPool pool) {
-        this.pool = pool;
+    RedisDataPointsStore(JedisCluster cluster) {
+        this.cluster = cluster;
     }
 
     public void store(String query) throws IOException {
-        try (Jedis jedis = pool.getResource()) {
-            String compressedQuery = compress(query);
-            jedis.lpush(DATAPOINTS_QUEUE, compressedQuery);
-        }
+        String compressedQuery = compress(query);
+        cluster.lpush(DATAPOINTS_QUEUE, compressedQuery);
     }
 
     private String compress(String str) throws IOException {
