@@ -29,7 +29,7 @@ public class ChecksControllerWithNoOpServiceTest extends AbstractCheckController
         }
 
         @Bean
-        public TokenWrapper getTokenWrapper() {
+        public TokenWrapper accessTokens() {
             return new TokenWrapper("ABC");
         }
     }

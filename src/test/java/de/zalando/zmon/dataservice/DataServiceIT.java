@@ -10,13 +10,15 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 
@@ -24,9 +26,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-@SpringApplicationConfiguration(classes = {Application.class})
-@WebIntegrationTest(randomPort = true)
 @ActiveProfiles("it")
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { Application.class }, webEnvironment = RANDOM_PORT)
 public class DataServiceIT extends AbstractControllerTest {
 
     private static final Logger log = LoggerFactory.getLogger(DataServiceIT.class);

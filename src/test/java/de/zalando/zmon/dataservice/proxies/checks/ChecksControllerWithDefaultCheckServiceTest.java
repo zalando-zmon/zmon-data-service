@@ -45,7 +45,7 @@ public class ChecksControllerWithDefaultCheckServiceTest extends AbstractCheckCo
         }
 
         @Bean
-        public TokenWrapper getTokenWrapper() {
+        public TokenWrapper accessTokens() {
             return new TokenWrapper("ABC");
         }
 
