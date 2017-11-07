@@ -10,7 +10,12 @@ import org.mockito.Mockito;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+
 public class MarkWriterTest {
+
     private DataServiceMetrics metrics;
     private DataServiceConfigProperties properties;
 
@@ -42,8 +47,8 @@ public class MarkWriterTest {
     }
 
     protected void verify() {
-        Mockito.verify(metrics, Mockito.times(1)).markAccount(Mockito.anyString(), Mockito.anyObject(), Mockito.anyInt());
-        Mockito.verify(metrics, Mockito.times(1)).markCheck(Mockito.anyInt(), Mockito.anyInt());
+        Mockito.verify(metrics, Mockito.times(1)).markAccount(anyString(), anyObject(), anyInt());
+        Mockito.verify(metrics, Mockito.times(1))
+                .markCheck(anyInt(), anyInt(), anyInt(), anyInt(), anyString(), anyObject());
     }
-
 }
