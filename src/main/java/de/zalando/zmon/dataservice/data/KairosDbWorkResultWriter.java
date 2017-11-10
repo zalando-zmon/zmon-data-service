@@ -30,10 +30,14 @@ public class KairosDbWorkResultWriter implements WorkResultWriter {
     @Override
     public void write(WriteData writeData) {
         log.debug("write to KairosDB ...");
+
+        metrics.markAccount(writeData.getAccountId(), writeData.getRegion(), writeData.getData().length());
+
         if (writeData.getWorkerResultOptional().isPresent()) {
+
             Timer.Context c = metrics.getKairosDBTimer().time();
             try {
-                kairosStore.store(writeData.getWorkerResultOptional().get());
+                kairosStore.store(writeData);
                 log.debug("... written to KairosDb");
             } catch (Exception e) {
                 log.error("failed kairosdb write check={} data={}", writeData.getCheckId(), writeData.getData(), e);

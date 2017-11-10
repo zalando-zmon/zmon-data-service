@@ -31,22 +31,22 @@ public class RedisWorkResultWriterTest {
     public void testOptionalNotPresent() {
         RedisWorkerResultWriter writer = new RedisWorkerResultWriter(redisDataStore, metrics);
         writer.write(Fixture.writeData(Optional.empty()));
-        Mockito.verify(redisDataStore, Mockito.never()).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(redisDataStore, Mockito.never()).store(Mockito.any(WriteData.class));
     }
 
     @Test
     public void testOptionalPresent() {
         RedisWorkerResultWriter writer = new RedisWorkerResultWriter(redisDataStore, metrics);
         writer.write(Fixture.writeData(Optional.of(wrMock)));
-        Mockito.verify(redisDataStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(redisDataStore, Mockito.times(1)).store(Mockito.any(WriteData.class));
     }
 
     @Test
     public void testOptionalPresentStoreThrowsException() {
-        Mockito.doThrow(new RuntimeException("test")).when(redisDataStore).store(Mockito.any(WorkerResult.class));
+        Mockito.doThrow(new RuntimeException("test")).when(redisDataStore).store(Mockito.any(WriteData.class));
         RedisWorkerResultWriter writer = new RedisWorkerResultWriter(redisDataStore, metrics);
         writer.write(Fixture.writeData(Optional.of(wrMock)));
-        Mockito.verify(redisDataStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(redisDataStore, Mockito.times(1)).store(Mockito.any(WriteData.class));
         Mockito.verify(metrics, Mockito.times(1)).markRedisError();
     }
 

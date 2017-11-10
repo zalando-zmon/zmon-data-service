@@ -1,38 +1,29 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 
 import de.zalando.zmon.dataservice.ZMonEventType;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by jmussler on 4/22/15.
@@ -102,7 +93,15 @@ public class RedisDataStore {
         }
     }
 
-    public void store(WorkerResult wr) {
+    public void store(WriteData writeData) {
+
+        checkNotNull(writeData);
+
+        WorkerResult wr = writeData.getWorkerResultOptional().orElse(null);
+        if (wr == null) {
+            return;
+        }
+
         try (Jedis jedis = pool.getResource()){
 
             Pipeline p = jedis.pipelined();

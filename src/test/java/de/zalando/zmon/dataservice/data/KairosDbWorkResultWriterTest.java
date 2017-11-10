@@ -12,6 +12,10 @@ import com.codahale.metrics.Timer.Context;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+
 public class KairosDbWorkResultWriterTest {
 
     private KairosDBStore kairosDbStore;
@@ -39,7 +43,7 @@ public class KairosDbWorkResultWriterTest {
     public void onEmptyOptional() {
         KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
         writer.write(Fixture.writeData(Optional.empty()));
-        Mockito.verify(kairosDbStore, Mockito.never()).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(kairosDbStore, Mockito.never()).store(Mockito.any(WriteData.class));
         Mockito.verify(metrics, Mockito.never()).markKairosError();
     }
 
@@ -48,18 +52,17 @@ public class KairosDbWorkResultWriterTest {
         KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
         WorkerResult wr = Mockito.mock(WorkerResult.class);
         writer.write(Fixture.writeData(Optional.ofNullable(wr)));
-        Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WriteData.class));
         Mockito.verify(metrics, Mockito.never()).markKairosError();
     }
 
     @Test
     public void nonEmptyOptionalWithStoreException() {
-        Mockito.doThrow(new RuntimeException("test")).when(kairosDbStore).store(Mockito.any(WorkerResult.class));
+        Mockito.doThrow(new RuntimeException("test")).when(kairosDbStore).store(Mockito.any(WriteData.class));
         KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
         WorkerResult wr = Mockito.mock(WorkerResult.class);
         writer.write(Fixture.writeData(Optional.ofNullable(wr)));
-        Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
+        Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WriteData.class));
         Mockito.verify(metrics, Mockito.times(1)).markKairosError();
     }
-
 }

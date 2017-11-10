@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 
@@ -41,7 +42,7 @@ public class PutDataTest extends RedistTestSupport implements Resources {
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
         RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
-        ds.store(wr);
+        ds.store(Fixture.writeData(Optional.of(wr)));
         TimeUnit.SECONDS.sleep(10);
     }
 

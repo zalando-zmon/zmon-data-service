@@ -34,7 +34,7 @@ public class DataServiceConfigProperties {
     private boolean logKairosdbRequests = false;
     private boolean logKairosdbErrors = false;
 
-    private boolean trackCheckRate = false;
+    private boolean trackCheckRate = true;
 
     private List<Integer> actuatorMetricChecks = new ArrayList<>();
 

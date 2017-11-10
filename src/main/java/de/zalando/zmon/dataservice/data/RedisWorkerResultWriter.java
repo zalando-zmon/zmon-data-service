@@ -15,7 +15,6 @@ public class RedisWorkerResultWriter implements WorkResultWriter {
     private final Logger log = LoggerFactory.getLogger(RedisWorkerResultWriter.class);
 
     private final RedisDataStore redisDataStore;
-
     private final DataServiceMetrics metrics;
 
     @Autowired
@@ -27,16 +26,15 @@ public class RedisWorkerResultWriter implements WorkResultWriter {
     @Async(REDIS_WRITER_EXECUTOR)
     @Override
     public void write(WriteData writeData) {
-        log.debug("write to redis ...");
+        log.debug("Writing to redis ...");
         if (writeData.getWorkerResultOptional().isPresent()) {
             try {
-                redisDataStore.store(writeData.getWorkerResultOptional().get());
-                log.debug("written to redis");
+                redisDataStore.store(writeData);
+                log.debug("Wrote to redis.");
             } catch (Exception e) {
-                log.error("failed redis write check={} data={}", writeData.getCheckId(), writeData.getData(), e);
+                log.error("Failed redis write: check={} data={}", writeData.getCheckId(), writeData.getData(), e);
                 metrics.markRedisError();
             }
         }
     }
-
 }

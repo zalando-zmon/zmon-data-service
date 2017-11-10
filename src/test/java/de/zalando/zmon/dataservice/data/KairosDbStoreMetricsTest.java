@@ -10,11 +10,12 @@ import org.mockito.Mockito;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 
-public class MarkWriterTest {
+public class KairosDbStoreMetricsTest {
 
     private DataServiceMetrics metrics;
     private DataServiceConfigProperties properties;
@@ -23,6 +24,7 @@ public class MarkWriterTest {
     public void setUp() {
         metrics = Mockito.mock(DataServiceMetrics.class);
         properties = new DataServiceConfigProperties();
+        properties.setKairosdbWriteUrls(newArrayList());
         properties.setTrackCheckRate(true);
     }
 
@@ -33,22 +35,20 @@ public class MarkWriterTest {
 
     @Test
     public void markWhenOptionalIsEmpty() {
-        MarkWriter writer = new MarkWriter(properties, metrics);
-        writer.write(Fixture.writeData(Optional.empty()));
+        KairosDBStore writer = new KairosDBStore(properties, metrics);
+        writer.store(Fixture.writeData(Optional.of(Fixture.buildWorkerResult())));
         verify();
     }
 
     @Test
     public void markWhenOptionalIsNotEmpty() {
-        MarkWriter writer = new MarkWriter(properties, metrics);
-        WorkerResult wr = Mockito.mock(WorkerResult.class);
-        writer.write(Fixture.writeData(Optional.ofNullable(wr)));
+        KairosDBStore writer = new KairosDBStore(properties, metrics);
+        writer.store(Fixture.writeData(Optional.of(Fixture.buildWorkerResult())));
         verify();
     }
 
     protected void verify() {
-        Mockito.verify(metrics, Mockito.times(1)).markAccount(anyString(), anyObject(), anyInt());
-        Mockito.verify(metrics, Mockito.times(1))
-                .markCheck(anyInt(), anyInt(), anyInt(), anyInt(), anyString(), anyObject());
+        Mockito.verify(metrics, Mockito.times(5))
+                .markFieldsIngested(anyString(), anyObject(), anyInt(), anyInt());
     }
 }

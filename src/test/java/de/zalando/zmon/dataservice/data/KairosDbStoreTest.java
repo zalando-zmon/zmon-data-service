@@ -25,6 +25,7 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @ContextConfiguration
 public class KairosDbStoreTest extends AbstractControllerTest {
@@ -47,7 +48,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     @Test
     public void writeWorkerResult() {
         KairosDBStore kairosDb = new KairosDBStore(config, metrics);
-        kairosDb.store(Fixture.buildWorkerResult());
+        kairosDb.store(Fixture.writeData(Optional.of(Fixture.buildWorkerResult())));
         verify(metrics, never()).markKairosError();
     }
 
@@ -55,7 +56,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     public void testInvalidWorkerResult() {
         KairosDBStore kairosDb = new KairosDBStore(config, metrics);
         for(WorkerResult wr: new WorkerResult[]{null, new WorkerResult()}) {
-            kairosDb.store(wr);
+            kairosDb.store(Fixture.writeData(Optional.ofNullable(wr)));
             verify(metrics, never()).incKairosDBDataPoints(anyLong());
         }
     }

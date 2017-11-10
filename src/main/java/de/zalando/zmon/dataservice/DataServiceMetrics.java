@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -18,20 +17,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * Created by jmussler on 4/21/15.
  */
 public class DataServiceMetrics {
-
-    public static class IntGauge implements Gauge<Integer> {
-
-        private Integer value = 0;
-
-        @Override
-        public Integer getValue() {
-            return value;
-        }
-
-        public void setValue(Integer value) {
-            this.value = value;
-        }
-    }
 
     public static class LastUpdateGauge implements Gauge<Long> {
         private long v = System.currentTimeMillis();
@@ -54,10 +39,8 @@ public class DataServiceMetrics {
     private final Map<String, Meter> accountRateMeters = new HashMap<>();
     private final Map<String, Meter> accountByteMeters = new HashMap<>();
 
-    private final Map<String, Meter> checkDataIngestedMeters = new HashMap<>();
-    private final Map<String, Counter> checksIngestedCounter = new HashMap<>();
-    private final Map<String, IntGauge> checksFieldsIngestedGauges = new HashMap<>();
-    private final Map<String, IntGauge> checksMetricsIngestedGauges = new HashMap<>();
+    private final Map<String, Meter> totalFieldsIngestedMeters = new HashMap<>();
+    private final Map<String, Meter> metricsFieldsIngestedMeters = new HashMap<>();
 
     private final Map<String, Meter> entityMeters = new HashMap<>();
 
@@ -110,34 +93,6 @@ public class DataServiceMetrics {
         }
     }
 
-    public Counter getOrCreateCounter(Map<String, Counter> counters, String name) {
-        Counter m = counters.get(name);
-        if (null != m)
-            return m;
-        synchronized (this) {
-            m = counters.get(name);
-            if (null != m)
-                return m;
-            m = metrics.counter(name);
-            counters.put(name, m);
-            return m;
-        }
-    }
-
-    public IntGauge getOrCreateGauge(Map<String, IntGauge> gauges, String name) {
-        IntGauge m = gauges.get(name);
-        if (null != m)
-            return m;
-        synchronized (this) {
-            m = gauges.get(name);
-            if (null != m)
-                return m;
-            m = metrics.register(name, new IntGauge());
-            gauges.put(name, m);
-            return m;
-        }
-    }
-
     public void markTrialRunError() {
         trialRunDataError.mark();
     }
@@ -177,7 +132,7 @@ public class DataServiceMetrics {
         }
     }
 
-    public void markCheck(int checkId, int checkDataSize, int totalFieldsIngested, int metricsFieldsIngested, String account, Optional<String> region) {
+    public void markFieldsIngested(String account, Optional<String> region, int totalFieldsIngested, int metricsFieldsIngested) {
 
         checkArgument(!isNullOrEmpty(account));
         checkNotNull(region);
@@ -185,15 +140,13 @@ public class DataServiceMetrics {
         String base;
 
         if (region.isPresent()) {
-            base = String.format("ds.check.%s.%s.%s", checkId, account, region.get());
+            base = String.format("ds.check.%s.%s", region.get(), account);
         } else {
-            base = String.format("ds.check.%s.%s", checkId, account);
+            base = String.format("ds.check.%s", account);
         }
 
-        getOrCreateMeter(checkDataIngestedMeters, base + ".rate").mark(checkDataSize);
-        getOrCreateCounter(checksIngestedCounter, base + ".counter").inc();
-        getOrCreateGauge(checksFieldsIngestedGauges, base + ".total-fields").setValue(totalFieldsIngested);
-        getOrCreateGauge(checksMetricsIngestedGauges, base + ".metrics-fields").setValue(metricsFieldsIngested);
+        getOrCreateMeter(totalFieldsIngestedMeters, base + ".total-fields").mark(totalFieldsIngested);
+        getOrCreateMeter(metricsFieldsIngestedMeters, base + ".metrics-fields").mark(metricsFieldsIngested);
     }
 
     private void markEntityLastUpdate(String account) {

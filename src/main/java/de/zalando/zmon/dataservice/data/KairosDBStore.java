@@ -19,14 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static de.zalando.zmon.dataservice.utils.JsonUtils.flatMapJsonNode;
+import static de.zalando.zmon.dataservice.utils.JsonUtils.flatMapJsonNumericNodes;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 
 /**
@@ -65,15 +64,14 @@ public class KairosDBStore {
 
 
         if (config.isKairosdbEnabled()) {
-            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
-
-            executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
+            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}",
+                    config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
+            executor = Executor.newInstance(
+                    getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
         } else {
             LOG.info("KairosDB is disabled.");
-
             executor = null;
         }
-
     }
 
     public static String extractMetricName(String key) {
@@ -114,13 +112,17 @@ public class KairosDBStore {
         return tags;
     }
 
-    void store(WorkerResult workerResult) {
+    void store(WriteData writeData) {
+
+        checkNotNull(writeData);
 
         if (!config.isKairosdbEnabled()) {
             return;
         }
 
-        if(workerResult == null || workerResult.results == null || workerResult.results.isEmpty()) {
+        WorkerResult workerResult = writeData.getWorkerResultOptional().orElse(null);
+
+        if(workerResult == null || isEmpty(workerResult.results)) {
             LOG.warn("Received a request with invalid results: {}", workerResult);
             return;
         }
@@ -142,10 +144,15 @@ public class KairosDBStore {
 
                 if (checkData.check_result.get("value") != null) {
 
-                    final Map<String, JsonNode> flatMap = JsonUtils.flatMapJsonNode(checkData.check_result.get("value"));
-                    final Map<String, NumericNode> values = JsonUtils.flatMapJsonNumericNodes(flatMap);
+                    final Map<String, JsonNode> flatMap = flatMapJsonNode(checkData.check_result.get("value"));
+                    final Map<String, NumericNode> metricMap = flatMapJsonNumericNodes(flatMap);
 
-                    for (Map.Entry<String, NumericNode> entry : values.entrySet()) {
+                    if(config.isTrackCheckRate()) {
+                        metrics.markFieldsIngested(
+                                writeData.getAccountId(), writeData.getRegion(), flatMap.size(), metricMap.size());
+                    }
+
+                    for (Map.Entry<String, NumericNode> entry : metricMap.entrySet()) {
 
                         DataPoint point = new DataPoint();
                         point.name = timeSeries;
