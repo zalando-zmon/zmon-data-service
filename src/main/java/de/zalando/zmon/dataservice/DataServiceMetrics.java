@@ -10,12 +10,28 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  * Created by jmussler on 4/21/15.
  */
-
-// @Component
 public class DataServiceMetrics {
+
+    public static class IntGauge implements Gauge<Integer> {
+
+        private Integer value = 0;
+
+        @Override
+        public Integer getValue() {
+            return value;
+        }
+
+        public void setValue(Integer value) {
+            this.value = value;
+        }
+    }
 
     public static class LastUpdateGauge implements Gauge<Long> {
         private long v = System.currentTimeMillis();
@@ -38,8 +54,10 @@ public class DataServiceMetrics {
     private final Map<String, Meter> accountRateMeters = new HashMap<>();
     private final Map<String, Meter> accountByteMeters = new HashMap<>();
 
-    private final Map<String, Meter> checkMeters = new HashMap<>();
-    private final Map<String, Counter> checkCounter = new HashMap<>();
+    private final Map<String, Meter> checkDataIngestedMeters = new HashMap<>();
+    private final Map<String, Counter> checksIngestedCounter = new HashMap<>();
+    private final Map<String, IntGauge> checksFieldsIngestedGauges = new HashMap<>();
+    private final Map<String, IntGauge> checksMetricsIngestedGauges = new HashMap<>();
 
     private final Map<String, Meter> entityMeters = new HashMap<>();
 
@@ -47,12 +65,7 @@ public class DataServiceMetrics {
 
     private final Meter totalRate;
 
-    public long getTotalCount() {
-        return totalRate.getCount();
-    }
-
     private final Meter kairosErrorMeter;
-    private final Meter kairosHostErrorMeter;
     private final Meter redisErrorMeter;
     private final Meter parseError;
 
@@ -65,13 +78,11 @@ public class DataServiceMetrics {
     private final Meter proxyErrorMeter;
     private final Meter eventlogErrorMeter;
 
-    // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
         this.totalRate = metrics.meter("data-service.total-rate");
         this.parseError = metrics.meter("data-service.parse-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
-        this.kairosHostErrorMeter = metrics.meter("data-service.kairos-host-errors");
         this.redisErrorMeter = metrics.meter("data-service.redis-errors");
         this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
         this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
@@ -109,6 +120,20 @@ public class DataServiceMetrics {
                 return m;
             m = metrics.counter(name);
             counters.put(name, m);
+            return m;
+        }
+    }
+
+    public IntGauge getOrCreateGauge(Map<String, IntGauge> gauges, String name) {
+        IntGauge m = gauges.get(name);
+        if (null != m)
+            return m;
+        synchronized (this) {
+            m = gauges.get(name);
+            if (null != m)
+                return m;
+            m = metrics.register(name, new IntGauge());
+            gauges.put(name, m);
             return m;
         }
     }
@@ -152,9 +177,23 @@ public class DataServiceMetrics {
         }
     }
 
-    public void markCheck(int checkId, int size) {
-        getOrCreateMeter(checkMeters, "ds.check." + checkId + ".rate").mark(size);
-        getOrCreateCounter(checkCounter, "ds.check." + checkId + ".counter").inc();
+    public void markCheck(int checkId, int checkDataSize, int totalFieldsIngested, int metricsFieldsIngested, String account, Optional<String> region) {
+
+        checkArgument(!isNullOrEmpty(account));
+        checkNotNull(region);
+
+        String base;
+
+        if (region.isPresent()) {
+            base = String.format("ds.check.%s.%s.%s", checkId, account, region.get());
+        } else {
+            base = String.format("ds.check.%s.%s", checkId, account);
+        }
+
+        getOrCreateMeter(checkDataIngestedMeters, base + ".rate").mark(checkDataSize);
+        getOrCreateCounter(checksIngestedCounter, base + ".counter").inc();
+        getOrCreateGauge(checksFieldsIngestedGauges, base + ".total-fields").setValue(totalFieldsIngested);
+        getOrCreateGauge(checksMetricsIngestedGauges, base + ".metrics-fields").setValue(metricsFieldsIngested);
     }
 
     private void markEntityLastUpdate(String account) {

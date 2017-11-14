@@ -3,10 +3,10 @@ package de.zalando.zmon.dataservice.data;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class WorkerResultTest {
+
     @Test
     public void testToString() {
         WorkerResult wr = new WorkerResult();
@@ -18,5 +18,4 @@ public class WorkerResultTest {
         assertTrue(wr.toString().contains("account="));
         assertTrue(wr.toString().contains("team="));
     }
-
 }

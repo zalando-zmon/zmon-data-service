@@ -3,12 +3,10 @@ package de.zalando.zmon.dataservice.data;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.utils.JsonUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
@@ -21,16 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 
 /**
  * Created by jmussler on 5/8/15.
@@ -46,33 +43,6 @@ public class KairosDBStore {
     // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways    
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
         Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias","cluster_alias","alias"));
-
-    public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
-        if (base instanceof NumericNode) {
-            values.put(prefix, (NumericNode) base);
-        } else if (base instanceof TextNode) {
-            // try to convert string node in case it is numeric
-            try {
-                TextNode t = (TextNode) base;
-                BigDecimal db = new BigDecimal(t.textValue());
-                DecimalNode dn = new DecimalNode(db);
-                values.put(prefix, dn);
-            } catch (NumberFormatException ex) {
-                // Ignore
-            }
-        } else if (base instanceof ObjectNode) {
-            Iterator<String> i = base.fieldNames();
-            while (i.hasNext()) {
-                String k = i.next();
-
-                if (prefix.length() == 0) {
-                    fillFlatValueMap(values, k, base.get(k));
-                } else {
-                    fillFlatValueMap(values, prefix + "." + k, base.get(k));
-                }
-            }
-        }
-    }
 
     private final DataServiceMetrics metrics;
     private final Executor executor;
@@ -154,99 +124,108 @@ public class KairosDBStore {
         return tags;
     }
 
-    void store(WorkerResult wr) {
+    void store(WorkerResult workerResult) {
+
         if (!config.isKairosdbEnabled()) {
             return;
         }
 
-        if(wr == null || wr.results == null || wr.results.isEmpty()) {
-            LOG.warn("Received a request with invalid results: {}", wr);
+        if(workerResult == null || workerResult.results == null || workerResult.results.isEmpty()) {
+            LOG.warn("Received a request with invalid results: {}", workerResult);
             return;
         }
 
         try {
-            List<DataPoint> points = new LinkedList<>();
-            for (CheckData cd : wr.results) {
-                final Map<String, NumericNode> values = new HashMap<>();
-                final String timeSeries = "zmon.check." + cd.check_id;
+            List<DataPoint> dataPoints = new LinkedList<>();
+
+            for (CheckData checkData : workerResult.results) {
+                final String timeSeries = "zmon.check." + checkData.check_id;
 
                 String worker = "";
-                if (cd.check_result.has("worker")) {
-                    worker = cd.check_result.get("worker").asText();
+                if (checkData.check_result.has("worker")) {
+                    worker = checkData.check_result.get("worker").asText();
                 }
 
-                Double ts = cd.check_result.get("ts").asDouble();
+                Double ts = checkData.check_result.get("ts").asDouble();
                 ts = ts * 1000.;
                 Long tsL = ts.longValue();
 
-                fillFlatValueMap(values, "", cd.check_result.get("value"));
+                if (checkData.check_result.get("value") != null) {
 
-                for (Map.Entry<String, NumericNode> e : values.entrySet()) {
-                    DataPoint p = new DataPoint();
-                    p.name = timeSeries;
+                    final Map<String, JsonNode> flatMap = JsonUtils.flatMapJsonNode(checkData.check_result.get("value"));
+                    final Map<String, NumericNode> values = JsonUtils.flatMapJsonNumericNodes(flatMap);
 
-                    p.tags.putAll(getTags(e.getKey(), cd.entity_id, cd.entity));
+                    for (Map.Entry<String, NumericNode> entry : values.entrySet()) {
 
-                    // handle zmon actuator metrics and extract the http status code into its own field
-                    // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-                    if (config.getActuatorMetricChecks().contains(cd.check_id)) {
-                        final String[] keyParts = e.getKey().split("\\.");
+                        DataPoint point = new DataPoint();
+                        point.name = timeSeries;
+                        point.tags.putAll(getTags(entry.getKey(), checkData.entity_id, checkData.entity));
 
-                        if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
-                            // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
-                            continue;
-                        }
+                        // handle zmon actuator metrics and extract the http status code into its own field
+                        // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
+                        if (config.getActuatorMetricChecks().contains(checkData.check_id)) {
+                            final String[] keyParts = entry.getKey().split("\\.");
 
-                        if (keyParts.length >= 3) {
-                            final String statusCode = keyParts[keyParts.length - 2];
-                            p.tags.put("sc", statusCode);
-                            p.tags.put("sg", statusCode.substring(0, 1));
+                            if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
+                                // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
+                                continue;
+                            }
 
-                            if (keyParts.length >= 4) {
-                                StringBuilder b = new StringBuilder();
-                                for(int i = 0; i < keyParts.length - 3; ++i) {
-                                    if (i > 0) {
-                                        b.append(".");
+                            if (keyParts.length >= 3) {
+                                final String statusCode = keyParts[keyParts.length - 2];
+                                point.tags.put("sc", statusCode);
+                                point.tags.put("sg", statusCode.substring(0, 1));
+
+                                if (keyParts.length >= 4) {
+
+                                    StringBuilder b = new StringBuilder();
+                                    for (int i = 0; i < keyParts.length - 3; ++i) {
+                                        if (i > 0) {
+                                            b.append(".");
+                                        }
+                                        b.append(keyParts[i]);
                                     }
-                                    b.append(keyParts[i]);
-                                }
 
-                                p.tags.put("path", b.toString());
+                                    point.tags.put("path", b.toString());
+                                }
                             }
                         }
+
+                        if (null != worker && !"".equals(worker)) {
+                            point.tags.put("worker", worker);
+                        }
+
+                        ArrayNode arrayNode = mapper.createArrayNode();
+                        arrayNode.add(tsL);
+                        arrayNode.add(entry.getValue());
+
+                        point.datapoints.add(arrayNode);
+                        dataPoints.add(point);
                     }
 
-                    if (null != worker && !"".equals(worker)) {
-                        p.tags.put("worker", worker);
+                    if (dataPoints.size() > resultSizeWarning) {
+                        LOG.warn("result size warning: check={} data-points={} entity={}", checkData.check_id, dataPoints.size(), checkData.entity_id);
                     }
-
-                    ArrayNode arrayNode = mapper.createArrayNode();
-                    arrayNode.add(tsL);
-                    arrayNode.add(e.getValue());
-
-                    p.datapoints.add(arrayNode);
-                    points.add(p);
-                }
-
-                if (points.size() > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.check_id, points.size(), cd.entity_id);
                 }
             }
 
-            metrics.incKairosDBDataPoints(points.size());
+            metrics.incKairosDBDataPoints(dataPoints.size());
 
-            String query = mapper.writeValueAsString(points);
+            String query = mapper.writeValueAsString(dataPoints);
             if (config.isLogKairosdbRequests()) {
                 LOG.info("KairosDB Query: {}", query);
             }
 
             for (List<String> urls : config.getKairosdbWriteUrls()) {
                 // api is per check id, but for now we take the first one
-                final int index = wr.results.get(0).check_id % urls.size();
+                final int index = workerResult.results.get(0).check_id % urls.size();
                 final String url = urls.get(index);
 
                 try {
-                    executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
+                    executor.execute(Request.Post(url + "/api/v1/datapoints")
+                            .bodyString(query, ContentType.APPLICATION_JSON))
+                            .returnContent()
+                            .asString();
                 } catch (IOException ex) {
                     if (config.isLogKairosdbErrors()) {
                         LOG.error("KairosDB write failed url={}", url, ex);
