@@ -43,8 +43,9 @@ public class KairosDBStore {
     private final DataServiceConfigProperties config;
     private final Set<String> entityTagFields;
 
+    // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways    
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
-        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias"));
+        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias","cluster_alias","alias"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
