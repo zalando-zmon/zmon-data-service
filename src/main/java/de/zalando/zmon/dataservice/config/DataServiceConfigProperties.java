@@ -18,6 +18,7 @@ public class DataServiceConfigProperties {
     private int redisPoolSize = 20;
 
     private List<List<String>> kairosdbWriteUrls;
+    private List<String> kairosdbTagFields;
 
     private boolean proxyController = false;
     private boolean proxyControllerCache = true;
@@ -491,6 +492,14 @@ public class DataServiceConfigProperties {
 
     public void setOauth2StaticToken(String oauth2StaticToken) {
         this.oauth2StaticToken = oauth2StaticToken;
+    }
+
+    public List<String> getKairosdbTagFields() {
+        return kairosdbTagFields;
+    }
+
+    public void setKairosdbTagFields(List<String> kairosdbTagFields) {
+        this.kairosdbTagFields = kairosdbTagFields;
     }
 }
 

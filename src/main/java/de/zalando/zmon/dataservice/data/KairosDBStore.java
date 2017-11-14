@@ -41,9 +41,11 @@ public class KairosDBStore {
     private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
+    private final Set<String> entityTagFields;
 
-    private final static Set<String> TAG_FIELDS = new HashSet<>(
-        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
+    // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways    
+    private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
+        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias","cluster_alias","alias"));
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
@@ -93,6 +95,14 @@ public class KairosDBStore {
         this.config = config;
         this.resultSizeWarning = config.getResultSizeWarning();
 
+        if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
+            this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
+        }
+        else {
+            this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
+        }
+
+
 
         if (config.isKairosdbEnabled()) {
             LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
@@ -119,11 +129,11 @@ public class KairosDBStore {
     private static final String REPLACE_CHAR = "_";
     private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
-    public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
+    public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
         tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
 
-        for (String field : TAG_FIELDS) {
+        for (String field : entityTagFields) {
             if (entity.containsKey(field)) {
                 String fieldValue = entity.get(field);
                 if (null != fieldValue && !"".equals(fieldValue)) {
