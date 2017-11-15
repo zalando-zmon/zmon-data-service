@@ -11,7 +11,6 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 
 /**
@@ -43,10 +43,13 @@ public class KairosDBStore {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
 
-    private final RedisDataPointsStore redisStore;
+    private final DataPointsQueryStore dataPointsQueryStore;
 
     private final static Set<String> TAG_FIELDS = new HashSet<>(
             Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
+
+    private static final String REPLACE_CHAR = "_";
+    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
@@ -76,7 +79,6 @@ public class KairosDBStore {
     }
 
     private final DataServiceMetrics metrics;
-    private final Executor executor;
     private final int resultSizeWarning;
 
     private static class DataPoint {
@@ -85,29 +87,12 @@ public class KairosDBStore {
         public Map<String, String> tags = new HashMap<>();
     }
 
-    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
-        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
-    }
-
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, RedisDataPointsStore redisDataPointsStore) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
         this.metrics = metrics;
         this.config = config;
-        this.redisStore = redisDataPointsStore;
+        this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
-
-
-        if (config.isKairosdbEnabled() && !config.isDatapointsRedisEnabled()) {
-            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
-
-            executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
-        } else {
-            LOG.info("KairosDB is disabled.");
-
-            executor = null;
-        }
-
     }
 
     public static String extractMetricName(String key) {
@@ -119,9 +104,6 @@ public class KairosDBStore {
         }
         return metricName;
     }
-
-    private static final String REPLACE_CHAR = "_";
-    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
@@ -235,42 +217,16 @@ public class KairosDBStore {
             }
 
             // Store datapoints query!
-            storeDatapoints(wr, query);
+            int err = dataPointsQueryStore.store(query);
+            IntStream.range(0, err).forEach(n -> {
+                metrics.markKairosHostError();
+            });
+
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write path failed", ex);
             }
             metrics.markKairosError();
         }
-    }
-
-    private void storeDatapoints(WorkerResult wr, String query) {
-        if (config.isDatapointsRedisEnabled()) {
-            // Store to redis and skip KairosDB!
-            try {
-                redisStore.store(query);
-            } catch (IOException ex) {
-                if (config.isLogKairosdbErrors()) {
-                    LOG.error("KairosDB Redis write failed", ex);
-                }
-                metrics.markKairosHostError();
-            }
-        } else {
-            for (List<String> urls : config.getKairosdbWriteUrls()) {
-                // api is per check id, but for now we take the first one
-                final int index = wr.results.get(0).check_id % urls.size();
-                final String url = urls.get(index);
-
-                try {
-                    executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-                } catch (IOException ex) {
-                    if (config.isLogKairosdbErrors()) {
-                        LOG.error("KairosDB write failed url={}", url, ex);
-                    }
-                    metrics.markKairosHostError();
-                }
-            }
-        }
-
     }
 }
