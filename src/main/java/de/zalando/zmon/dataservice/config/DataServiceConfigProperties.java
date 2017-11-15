@@ -17,7 +17,7 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
-    // Datapoints Redis buffer for KairosDB
+    // Datapoints Redis buffer (queue) for KairosDB
     private String datapointsRedisHost = "localhost";
     private int datapointsRedisPort = 6378;
     private int datapointsRedisPoolSize = 20;
