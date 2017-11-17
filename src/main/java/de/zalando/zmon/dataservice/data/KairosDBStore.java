@@ -218,9 +218,9 @@ public class KairosDBStore {
 
             // Store datapoints query!
             int err = dataPointsQueryStore.store(query);
-            IntStream.range(0, err).forEach(n -> {
-                metrics.markKairosHostError();
-            });
+            if( err > 0) {
+                metrics.markKairosHostErrors(err);
+            }
 
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {

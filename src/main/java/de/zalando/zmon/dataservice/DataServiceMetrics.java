@@ -137,6 +137,10 @@ public class DataServiceMetrics {
         kairosErrorMeter.mark();
     }
 
+    public void markKairosHostErrors(long n) {
+        kairosErrorMeter.mark(n);
+    }
+
     public void markRedisError() {
         redisErrorMeter.mark();
     }
