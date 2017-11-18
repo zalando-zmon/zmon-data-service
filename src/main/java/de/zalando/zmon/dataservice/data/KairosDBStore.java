@@ -45,8 +45,10 @@ public class KairosDBStore {
 
     private final DataPointsQueryStore dataPointsQueryStore;
 
-    private final static Set<String> TAG_FIELDS = new HashSet<>(
-            Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "kube_service_name"));
+    private final Set<String> entityTagFields;
+    // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
+    private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
+        Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias","cluster_alias","alias"));
 
     private static final String REPLACE_CHAR = "_";
     private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
@@ -93,6 +95,13 @@ public class KairosDBStore {
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
+
+        if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
+            this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
+        }
+        else {
+            this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
+        }
     }
 
     public static String extractMetricName(String key) {
@@ -105,11 +114,11 @@ public class KairosDBStore {
         return metricName;
     }
 
-    public static Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
+    public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
         tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
 
-        for (String field : TAG_FIELDS) {
+        for (String field : entityTagFields) {
             if (entity.containsKey(field)) {
                 String fieldValue = entity.get(field);
                 if (null != fieldValue && !"".equals(fieldValue)) {
@@ -221,7 +230,6 @@ public class KairosDBStore {
             if( err > 0) {
                 metrics.markKairosHostErrors(err);
             }
-
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write path failed", ex);
