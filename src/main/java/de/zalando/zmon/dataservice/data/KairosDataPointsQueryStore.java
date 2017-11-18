@@ -30,7 +30,6 @@ public class KairosDataPointsQueryStore implements DataPointsQueryStore {
     private final Executor executor;
     private final DataServiceConfigProperties config;
 
-    @Autowired
     KairosDataPointsQueryStore(DataServiceConfigProperties config) {
         this.config = config;
 

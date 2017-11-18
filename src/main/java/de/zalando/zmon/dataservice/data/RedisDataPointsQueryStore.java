@@ -1,59 +1,54 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPOutputStream;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.JedisPool;
+import static org.slf4j.LoggerFactory.getLogger;
 
 
 /**
- * Created by mabdelhameed on 24/10/2017.
- *
  * Use Redis cluster as a buffer between Data-service and KairosDB.
- *
  */
 public class RedisDataPointsQueryStore implements DataPointsQueryStore {
-    private static final String DATAPOINTS_QUEUE = "zmon:datapoints";
+    private final Logger LOG = getLogger(RedisDataPointsQueryStore.class);
+    private static final byte[] DATAPOINTS_QUEUE = "zmon:datapoints".getBytes();
 
-    private JedisPool pool;
+    private final JedisPool pool;
 
-    @Autowired
-    RedisDataPointsQueryStore(DataServiceConfigProperties config) {
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setTestOnBorrow(true);
-        poolConfig.setMaxTotal(config.getRedisPoolSize());
-
-        this.pool = new JedisPool(poolConfig, config.getDatapointsRedisHost(), config.getDatapointsRedisPort());
+    RedisDataPointsQueryStore(final JedisPool jedisPool) {
+        this.pool = jedisPool;
     }
 
     public int store(String query) {
-        int error_count = 0;
-
-        try (Jedis jedis = pool.getResource()){
-            jedis.lpush(DATAPOINTS_QUEUE.getBytes(), compress(query));
+        try (final Jedis jedis = pool.getResource()) {
+            jedis.lpush(DATAPOINTS_QUEUE, compress(query));
+            return 0;
         } catch (IOException ex) {
-            error_count = 1;
+            LOG.error("failed to compress data point query", ex);
+        } catch (Exception ex) {
+            LOG.error("failed to push data point query to the redis queue", ex);
         }
-
-        return error_count;
+        return 1;
     }
 
-    private byte[] compress(String str) throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        DeflaterOutputStream deflater = new DeflaterOutputStream(bytes);
+    @VisibleForTesting
+    byte[] compress(String str) throws IOException {
+        final byte[] dataToCompress = str.getBytes();
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
+        try {
+            try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
+                zipStream.write(dataToCompress);
+            }
+        } finally {
+            byteStream.close();
+        }
 
-        deflater.write(str.getBytes());
-        deflater.flush();
-        deflater.close();
-
-        return bytes.toByteArray();
+        return byteStream.toByteArray();
     }
 }
