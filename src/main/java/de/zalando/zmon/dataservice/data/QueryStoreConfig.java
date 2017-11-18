@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.data;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.RedisDataPointsStoreProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,17 +16,17 @@ public class QueryStoreConfig {
 
     @Bean("redisDataPointsJedisPool")
     @ConditionalOnProperty(name = "dataservice.data_points_store_properties.enabled", havingValue = "true")
-    JedisPool redisDataPointsJedisPool(final DataServiceConfigProperties config) {
-        final RedisDataPointsStoreProperties storeProperties = config.getDataPointsStoreProperties();
+    JedisPool redisDataPointsJedisPool(final DataServiceConfigProperties dataServiceConfigProperties) {
+        final RedisDataPointsStoreProperties config = dataServiceConfigProperties.getDataPointsStoreProperties();
         final JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setTestOnBorrow(true);
-        poolConfig.setMaxTotal(storeProperties.getPoolSize());
-        return new JedisPool(poolConfig, storeProperties.getHost(), storeProperties.getPort(), storeProperties.getTimeOut());
+        poolConfig.setMaxTotal(config.getPoolSize());
+        return new JedisPool(poolConfig, config.getHost(), config.getPort(), config.getTimeOut());
     }
 
     @Bean
     @ConditionalOnBean(name = "redisDataPointsJedisPool")
-    DataPointsQueryStore redisDataPointsQueryStore(final JedisPool jedisPool) {
+    DataPointsQueryStore redisDataPointsQueryStore(@Qualifier("redisDataPointsJedisPool") final JedisPool jedisPool) {
         return new RedisDataPointsQueryStore(jedisPool);
     }
 

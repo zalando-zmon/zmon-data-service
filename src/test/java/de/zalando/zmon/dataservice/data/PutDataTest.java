@@ -36,9 +36,6 @@ public class PutDataTest extends RedistTestSupport implements Resources {
     @Autowired
     private JedisPool jedisPool;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
     @Before
     public void setUp() throws IOException {
         wr = mapper.readValue(resourceToString(jsonResource("workerResult")), WorkerResult.class);
@@ -46,14 +43,14 @@ public class PutDataTest extends RedistTestSupport implements Resources {
 
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, null);
         ds.store(wr);
         TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void putDataWithRedisTemplate() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, stringRedisTemplate, null);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, null);
         ds.store(wr);
         TimeUnit.SECONDS.sleep(10);
     }

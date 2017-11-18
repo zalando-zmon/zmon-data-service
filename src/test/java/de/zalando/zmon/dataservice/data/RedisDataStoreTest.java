@@ -10,7 +10,7 @@ public class RedisDataStoreTest {
     @Test
     public void testSerializeValue() {
         ObjectMapper mapper = new ObjectMapper();
-        RedisDataStore ds = new RedisDataStore(null, mapper, null, null);
+        RedisDataStore ds = new RedisDataStore(null, mapper, null);
         CheckData cd = new CheckData();
         ObjectNode node = mapper.createObjectNode();
         node.put("value", "foobar");
