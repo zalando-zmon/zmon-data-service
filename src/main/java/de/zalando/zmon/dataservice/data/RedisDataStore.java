@@ -1,43 +1,22 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.SetOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.scripting.support.ResourceScriptSource;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
-
 import de.zalando.zmon.dataservice.ZMonEventType;
-import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.scripting.support.ResourceScriptSource;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 
-/**
- * Created by jmussler on 4/22/15.
- */
-@Service
+import java.util.Optional;
+
 public class RedisDataStore {
 
     private static final String CAPTURES_NOT_SERIALIZED = "{\"msg\":\"ERROR: Captures not serialized\"}";
@@ -54,16 +33,12 @@ public class RedisDataStore {
 
     private final HttpEventLogger eventLogger;
 
-    private final StringRedisTemplate stringRedisTemplate;
-
     private final RedisScript<Long> checkAlertScript;
 
-    @Autowired
-    public RedisDataStore(JedisPool pool, @DefaultObjectMapper ObjectMapper mapper,
-            StringRedisTemplate stringRedisTemplate, HttpEventLogger eventLogger) {
+    public RedisDataStore(final JedisPool pool, final ObjectMapper mapper,
+                          final HttpEventLogger eventLogger) {
         this.pool = pool;
         this.mapper = mapper;
-        this.stringRedisTemplate = stringRedisTemplate;
         this.checkAlertScript = initializeScript();
         this.eventLogger = eventLogger;
     }
@@ -76,13 +51,6 @@ public class RedisDataStore {
     }
 
     public void storeTrialRun(String requestId, String id, String result) {
-        /*
-         * final String key = "zmon:trial_run:" + requestId + ":results";
-         * BoundHashOperations<Object, String, String> bho =
-         * redisTemplate.boundHashOps(key); bho.put(id, result); bho.expire(300,
-         * TimeUnit.SECONDS);
-         */
-
         try (Jedis jedis = pool.getResource()){
             String key = "zmon:trial_run:" + requestId + ":results";
             jedis.hset(key, id, result);

@@ -8,7 +8,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.util.Properties;
 
-import static de.zalando.zmon.dataservice.data.RedistTestSupport.*;
+import static de.zalando.zmon.dataservice.data.RedistTestSupport.REDIS_SERVER;
 
 @Configuration
 @Import({RedisAutoConfiguration.class})

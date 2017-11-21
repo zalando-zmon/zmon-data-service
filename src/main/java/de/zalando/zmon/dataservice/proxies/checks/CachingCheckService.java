@@ -51,6 +51,7 @@ public class CachingCheckService implements ChecksService {
     }
 
     protected static long getTimestamp(String headerValue) {
+        if(headerValue == null) return 0;
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         df.setTimeZone(tz);
@@ -63,7 +64,7 @@ public class CachingCheckService implements ChecksService {
     }
 
     protected static boolean doRefresh(String headerValue, long currentMaxLastModified, String lastData) {
-        if (lastData == null) return true;
+        if (lastData == null || headerValue == null) return true;
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");

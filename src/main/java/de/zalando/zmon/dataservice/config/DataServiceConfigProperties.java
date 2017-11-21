@@ -17,6 +17,10 @@ public class DataServiceConfigProperties {
     private int redisPort = 6378;
     private int redisPoolSize = 20;
 
+    // Datapoints Redis buffer (queue) for KairosDB
+    @NestedConfigurationProperty
+    private RedisDataPointsStoreProperties dataPointsStoreProperties = new RedisDataPointsStoreProperties();
+
     private List<List<String>> kairosdbWriteUrls;
     private List<String> kairosdbTagFields;
 
@@ -500,6 +504,14 @@ public class DataServiceConfigProperties {
 
     public void setKairosdbTagFields(List<String> kairosdbTagFields) {
         this.kairosdbTagFields = kairosdbTagFields;
+    }
+
+    public RedisDataPointsStoreProperties getDataPointsStoreProperties() {
+        return dataPointsStoreProperties;
+    }
+
+    public void setDataPointsStoreProperties(final RedisDataPointsStoreProperties dataPointsStoreProperties) {
+        this.dataPointsStoreProperties = dataPointsStoreProperties;
     }
 }
 

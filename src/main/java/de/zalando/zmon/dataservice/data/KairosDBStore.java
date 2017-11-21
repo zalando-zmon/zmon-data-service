@@ -11,7 +11,6 @@ import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+
 
 /**
  * Created by jmussler on 5/8/15.
@@ -41,11 +42,16 @@ public class KairosDBStore {
     private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private final DataServiceConfigProperties config;
-    private final Set<String> entityTagFields;
 
-    // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways    
+    private final DataPointsQueryStore dataPointsQueryStore;
+
+    private final Set<String> entityTagFields;
+    // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
         Arrays.asList("application_id", "application_version", "stack_name", "stack_version", "application","version","account_alias","cluster_alias","alias"));
+
+    private static final String REPLACE_CHAR = "_";
+    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
@@ -75,7 +81,6 @@ public class KairosDBStore {
     }
 
     private final DataServiceMetrics metrics;
-    private final Executor executor;
     private final int resultSizeWarning;
 
     private static class DataPoint {
@@ -84,15 +89,11 @@ public class KairosDBStore {
         public Map<String, String> tags = new HashMap<>();
     }
 
-    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
-        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
-    }
-
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
         this.metrics = metrics;
         this.config = config;
+        this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
@@ -101,19 +102,6 @@ public class KairosDBStore {
         else {
             this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
         }
-
-
-
-        if (config.isKairosdbEnabled()) {
-            LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(), config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
-
-            executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(), config.getKairosdbConnections()));
-        } else {
-            LOG.info("KairosDB is disabled.");
-
-            executor = null;
-        }
-
     }
 
     public static String extractMetricName(String key) {
@@ -125,9 +113,6 @@ public class KairosDBStore {
         }
         return metricName;
     }
-
-    private static final String REPLACE_CHAR = "_";
-    private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
@@ -240,19 +225,10 @@ public class KairosDBStore {
                 LOG.info("KairosDB Query: {}", query);
             }
 
-            for (List<String> urls : config.getKairosdbWriteUrls()) {
-                // api is per check id, but for now we take the first one
-                final int index = wr.results.get(0).check_id % urls.size();
-                final String url = urls.get(index);
-
-                try {
-                    executor.execute(Request.Post(url + "/api/v1/datapoints").bodyString(query, ContentType.APPLICATION_JSON)).returnContent().asString();
-                } catch (IOException ex) {
-                    if (config.isLogKairosdbErrors()) {
-                        LOG.error("KairosDB write failed url={}", url, ex);
-                    }
-                    metrics.markKairosHostError();
-                }
+            // Store datapoints query!
+            int err = dataPointsQueryStore.store(query);
+            if( err > 0) {
+                metrics.markKairosHostErrors(err);
             }
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {

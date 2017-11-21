@@ -4,13 +4,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +35,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     public final WireMockRule wireMockRule = new WireMockRule(10081);
 
     @Autowired
+    private DataPointsQueryStore dataPointsQueryStore;
+
+    @Autowired
     private DataServiceConfigProperties config;
 
     @Autowired
@@ -46,17 +51,20 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void writeWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
         kairosDb.store(Fixture.buildWorkerResult());
+        verify(dataPointsQueryStore).store(anyString());
         verify(metrics, never()).markKairosError();
+        verify(metrics, never()).markKairosHostErrors(anyLong());
     }
 
     @Test
     public void testInvalidWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
         for(WorkerResult wr: new WorkerResult[]{null, new WorkerResult()}) {
             kairosDb.store(wr);
             verify(metrics, never()).incKairosDBDataPoints(anyLong());
+            verify(dataPointsQueryStore, never()).store(anyString());
         }
     }
 
@@ -66,9 +74,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         @Bean
         public DataServiceConfigProperties dataServiceConfigProperties() {
             DataServiceConfigProperties props = new DataServiceConfigProperties();
-            List<String> kairosdbHosts = new ArrayList<>(1);
-            kairosdbHosts.add("http://localhost:10081");
-            props.setKairosdbWriteUrls(Arrays.asList(kairosdbHosts));
+            props.setKairosdbWriteUrls(ImmutableList.of(ImmutableList.of("http://localhost:10081")));
             props.setLogKairosdbRequests(true);
             props.setLogKairosdbErrors(true);
             return props;
@@ -76,8 +82,11 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
         @Bean
         public DataServiceMetrics dataServiceMetrics() {
-            return Mockito.mock(DataServiceMetrics.class);
+            return mock(DataServiceMetrics.class);
         }
+
+        @Bean
+        public DataPointsQueryStore dataPointsStore() {return mock(DataPointsQueryStore.class);}
     }
 
 }

@@ -1,12 +1,17 @@
 package de.zalando.zmon.dataservice.proxies;
 
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.data.DataPointsQueryStore;
 import de.zalando.zmon.dataservice.data.KairosDBStore;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by jmussler on 19.09.16.
@@ -15,7 +20,8 @@ public class KairosDBTest {
 
     @Test
     public void testReplace() {
-        KairosDBStore store = new KairosDBStore(new DataServiceConfigProperties(), null);
+        KairosDBStore store = new KairosDBStore(mock(DataServiceConfigProperties.class), mock(DataServiceMetrics.class),
+                mock(DataPointsQueryStore.class));
 
         Map<String, String> entity = new HashMap<>();
         entity.put("id", "host01[aws:1234]");
