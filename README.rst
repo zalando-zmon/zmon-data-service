@@ -38,8 +38,6 @@ Building
 .. code-block:: bash
 
     $ ./mvnw clean package
-    $ sudo pip3 install scm-source
-    $ scm-source -f target/scm-source.json
     $ docker build -t zmon-data-service .
 
 Running
