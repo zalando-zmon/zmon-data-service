@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,7 +26,7 @@ public class RedisConfig {
     @Bean
     RedisDataStore redisDataStore(@Qualifier("redisMainJedisPool") final JedisPool pool,
                                   @DefaultObjectMapper final ObjectMapper mapper,
-                                  final HttpEventLogger eventLogger) {
-        return new RedisDataStore(pool, mapper, eventLogger);
+                                  final HttpEventLogger eventLogger, DataServiceMetrics metrics) {
+        return new RedisDataStore(pool, mapper, eventLogger, metrics);
     }
 }

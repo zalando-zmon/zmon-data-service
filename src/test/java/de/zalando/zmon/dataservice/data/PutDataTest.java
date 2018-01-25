@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zalando.zmon.dataservice.Resources;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.config.ObjectMapperConfig;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -37,6 +38,9 @@ public class PutDataTest extends RedistTestSupport implements Resources {
     @Autowired
     private JedisPool jedisPool;
 
+    @Autowired
+    private DataServiceMetrics metrics;
+
     @Before
     public void setUp() throws IOException {
         wr = mapper.readValue(resourceToString(jsonResource("workerResult")), WorkerResult.class);
@@ -44,7 +48,7 @@ public class PutDataTest extends RedistTestSupport implements Resources {
 
     @Test
     public void putDataWithJedisPool() throws InterruptedException {
-        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, null);
+        RedisDataStore ds = new RedisDataStore(jedisPool, mapper, null, metrics);
         ds.store(wr);
     }
 
@@ -62,6 +66,12 @@ public class PutDataTest extends RedistTestSupport implements Resources {
         public HttpEventLogger eventLogger() {
             return mock(HttpEventLogger.class);
         }
+
+        @Bean
+        public DataServiceMetrics dataServiceMetrics() {
+            return mock(DataServiceMetrics.class);
+        }
+
     }
 
 }
