@@ -117,7 +117,7 @@ public class RedisDataStore {
                                 "end");
 
                         if (alert.alert_evaluation_ts != null) {
-                            Double duration = Math.abs(System.currentTimeMillis() / 1000. - alert.alert_evaluation_ts);
+                            Double duration = Math.abs(System.currentTimeMillis() - alert.alert_evaluation_ts * 1000.);
                             metrics.updateAlertDurations(duration.longValue());
                         }
                     }
