@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.ZMonEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,15 @@ public class RedisDataStore {
 
     private final RedisScript<Long> checkAlertScript;
 
+    private final DataServiceMetrics metrics;
+
     public RedisDataStore(final JedisPool pool, final ObjectMapper mapper,
-                          final HttpEventLogger eventLogger) {
+                          final HttpEventLogger eventLogger, DataServiceMetrics metrics) {
         this.pool = pool;
         this.mapper = mapper;
         this.checkAlertScript = initializeScript();
         this.eventLogger = eventLogger;
+        this.metrics = metrics;
     }
 
     private static RedisScript<Long> initializeScript() {
@@ -111,6 +115,11 @@ public class RedisDataStore {
                                 "else " +
                                     "return redis.call('sadd','zmon:alerts'," + alert.alert_id + ") " +
                                 "end");
+
+                        if (alert.alert_evaluation_ts != null) {
+                            Double duration = Math.abs(System.currentTimeMillis() - alert.alert_evaluation_ts * 1000.);
+                            metrics.updateAlertDurations(duration.longValue());
+                        }
                     }
                 }
             }

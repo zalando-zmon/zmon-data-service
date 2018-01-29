@@ -15,4 +15,5 @@ public class AlertData {
     public boolean active;
     public JsonNode downtimes;
     public boolean in_period;
+    public Double alert_evaluation_ts;
 }

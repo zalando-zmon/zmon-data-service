@@ -1,14 +1,10 @@
 package de.zalando.zmon.dataservice;
 
+import com.codahale.metrics.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 
 /**
  * Created by jmussler on 4/21/15.
@@ -45,6 +41,8 @@ public class DataServiceMetrics {
 
     public final Map<String, LastUpdateGauge> entityLastUpdateStores = new HashMap<>();
 
+    public final Histogram alertDurations;
+
     private final Meter totalRate;
 
     public long getTotalCount() {
@@ -79,6 +77,7 @@ public class DataServiceMetrics {
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
         this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
         this.kairosDbDataPointsCount = metrics.meter("data-service.kairosdb-points.written");
+        this.alertDurations = metrics.histogram("data-service.alert-durations");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -189,5 +188,9 @@ public class DataServiceMetrics {
 
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);
+    }
+
+    public void updateAlertDurations(long duration) {
+        alertDurations.update(duration);
     }
 }
