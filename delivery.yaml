@@ -8,23 +8,20 @@ pipeline:
           apt-get install -y \
           openjdk-8-* \
           maven \
-          git \
-          python3.5 \
-          python3-pip
+          git
           curl -fLOsS https://delivery.cloud.zalando.com/utils/ensure-docker && sh ensure-docker && rm ensure-docker
 
       - desc: "Build maven package"
         cmd: |
           ./mvnw clean package
 
-          # Our Dockerfiles still need to be compatible with Jenkins deployments and local builds:
-          pip3 install --upgrade scm-source
-          scm-source -f target/scm-source.json
-
       - desc: "Push Docker Image"
         cmd: |
-          if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
-            AGENT_IMAGE=registry-write.opensource.zalan.do/zmon/zmon-data-service:${CDP_BUILD_VERSION}
+          IS_PR_BUILD=${CDP_PULL_REQUEST_NUMBER+"true"}
+          if [[ ${IS_PR_BUILD} != "true" ]]
+          then
+            RELEASE_VERSION=$(git describe --tags --always --dirty)
+            AGENT_IMAGE=registry-write.opensource.zalan.do/zmon/zmon-data-service:${RELEASE_VERSION}
             docker build --tag "$AGENT_IMAGE" .
             docker push "$AGENT_IMAGE"
           else
