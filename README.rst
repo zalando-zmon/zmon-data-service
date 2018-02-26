@@ -2,6 +2,10 @@
 ZMON Data Service
 =================
 
+.. image:: https://img.shields.io/badge/OpenTracing-enabled-blue.svg
+    :target: http://opentracing.io
+    :alt: OpenTracing enabled
+
 Worker sends its data to the zmon-data-service, which is itself responsible for:
 
 * storing it in Redis for frontend
