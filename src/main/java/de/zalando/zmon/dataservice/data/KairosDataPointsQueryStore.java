@@ -1,14 +1,12 @@
 package de.zalando.zmon.dataservice.data;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+
+import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.HttpClients;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.io.IOException;
@@ -44,7 +42,7 @@ public class KairosDataPointsQueryStore implements DataPointsQueryStore {
                 .setSocketTimeout(socketTimeout)
                 .setConnectTimeout(timeout)
                 .build();
-        return HttpClients.custom()
+        return new TracingHttpClientBuilder()
                 .setMaxConnPerRoute(maxConnections)
                 .setMaxConnTotal(maxConnections)
                 .setDefaultRequestConfig(config)

@@ -2,12 +2,12 @@ package de.zalando.zmon.dataservice.proxies;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.oauth2.BearerToken;
+import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -27,10 +27,17 @@ public class ControllerProxy {
      */
     protected static Executor getExecutor(DataServiceConfigProperties config) {
         final int maxConnections = 100;
-        final RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(config.getProxyControllerSocketTimeout()).setConnectTimeout(config.getProxyControllerConnectTimeout()).build();
-        final HttpClient httpClient = HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig).build();
-        final Executor executor = Executor.newInstance(httpClient);
-        return executor;
+        final RequestConfig requestConfig = RequestConfig.custom()
+                .setSocketTimeout(config.getProxyControllerSocketTimeout())
+                .setConnectTimeout(config.getProxyControllerConnectTimeout())
+                .build();
+        final HttpClient httpClient = new TracingHttpClientBuilder()
+                .setMaxConnPerRoute(maxConnections)
+                .setMaxConnTotal(maxConnections)
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        return Executor.newInstance(httpClient);
     }
 
     protected URIBuilder uri(String path)  {
