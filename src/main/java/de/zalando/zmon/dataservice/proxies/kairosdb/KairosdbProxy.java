@@ -6,15 +6,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import org.apache.http.HttpException;
+import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +39,15 @@ public class KairosdbProxy {
     private final boolean enabled;
 
     public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
-        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
+        RequestConfig config = RequestConfig.custom()
+                .setSocketTimeout(socketTimeout)
+                .setConnectTimeout(timeout)
+                .build();
+        return new TracingHttpClientBuilder()
+                .setMaxConnPerRoute(maxConnections)
+                .setMaxConnTotal(maxConnections)
+                .setDefaultRequestConfig(config)
+                .build();
     }
 
     @Autowired

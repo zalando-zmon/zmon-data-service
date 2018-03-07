@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice.data;
 
+import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Async;
@@ -8,7 +9,6 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +53,15 @@ public class ProxyWriter {
     }
 
     public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(timeout).build();
-        return HttpClients.custom().setMaxConnPerRoute(maxConnections).setMaxConnTotal(maxConnections).setDefaultRequestConfig(config).build();
+        RequestConfig config = RequestConfig.custom()
+                .setSocketTimeout(socketTimeout)
+                .setConnectTimeout(timeout)
+                .build();
+        return new TracingHttpClientBuilder()
+                .setMaxConnPerRoute(maxConnections)
+                .setMaxConnTotal(maxConnections)
+                .setDefaultRequestConfig(config)
+                .build();
     }
 
     /*
