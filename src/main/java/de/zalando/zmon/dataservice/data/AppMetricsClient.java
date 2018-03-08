@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.fluent.Async;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -33,8 +36,6 @@ public class AppMetricsClient {
 
     private final ObjectMapper mapper;
 
-    private final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(15);
-
     private final Async async;
 
     @Autowired
@@ -42,7 +43,14 @@ public class AppMetricsClient {
         serviceHosts = config.getRestMetricHosts();
         serverPort = config.getRestMetricPort();
         this.mapper = defaultObjectMapper;
-        async = Async.newInstance().use(asyncExecutorPool);
+
+        final HttpClient httpClient = new TracingHttpClientBuilder()
+                .build();
+        final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(15);
+        final Executor executor = Executor.newInstance(httpClient);
+        async = Async.newInstance()
+                .use(asyncExecutorPool)
+                .use(executor);
 
         LOG.info("App metric cache config: hosts {} port {}", serviceHosts, serverPort);
     }
