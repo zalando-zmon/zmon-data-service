@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.opentracing.Tracer;
 import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.fluent.Async;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.TracedAsync;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +37,10 @@ public class AppMetricsClient {
 
     private final ObjectMapper mapper;
 
-    private final Async async;
+    private final TracedAsync async;
 
     @Autowired
-    public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper) {
+    public AppMetricsClient(DataServiceConfigProperties config, @DefaultObjectMapper ObjectMapper defaultObjectMapper, Tracer tracer) {
         serviceHosts = config.getRestMetricHosts();
         serverPort = config.getRestMetricPort();
         this.mapper = defaultObjectMapper;
@@ -48,7 +49,7 @@ public class AppMetricsClient {
                 .build();
         final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(15);
         final Executor executor = Executor.newInstance(httpClient);
-        async = Async.newInstance()
+        async = TracedAsync.newInstance(tracer)
                 .use(asyncExecutorPool)
                 .use(executor);
 

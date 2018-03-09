@@ -1,12 +1,13 @@
 package de.zalando.zmon.dataservice.data;
 
+import io.opentracing.Tracer;
 import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.fluent.Async;
 import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.TracedAsync;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -30,12 +31,12 @@ public class ProxyWriter {
     private final Executor executor;
 
     private DataServiceMetrics metrics;
-    private final Async async;
+    private final TracedAsync async;
 
     private final Logger log = LoggerFactory.getLogger(ProxyWriter.class);
 
     @Autowired
-    public ProxyWriter(DataServiceConfigProperties config, DataServiceMetrics metrics) {
+    public ProxyWriter(DataServiceConfigProperties config, DataServiceMetrics metrics, Tracer tracer) {
         this.forwardUrl = config.getDataProxyUrl();
         this.metrics = metrics;
 
@@ -43,7 +44,7 @@ public class ProxyWriter {
             log.info("Forwarding data to: {}", this.forwardUrl);
             executor = Executor.newInstance(getHttpClient(config.getDataProxySocketTimeout(), config.getDataProxyTimeout(), config.getDataProxyConnections()));
             ExecutorService threadpool = Executors.newFixedThreadPool(config.getDataProxyPoolSize());
-            async = Async.newInstance().use(threadpool).use(executor);
+            async = TracedAsync.newInstance(tracer).use(threadpool).use(executor);
         }
         else {
             log.info("Forwarding data disabled");

@@ -3,10 +3,12 @@ package de.zalando.zmon.dataservice.data;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.EventType;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import org.apache.http.client.fluent.Async;
+
+import io.opentracing.Tracer;
 import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.TracedAsync;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -34,7 +36,7 @@ public class HttpEventLogger {
     private final Executor executor;
 
     private DataServiceMetrics metrics;
-    private final Async async;
+    private final TracedAsync async;
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(HttpEventLogger.class);
@@ -61,7 +63,7 @@ public class HttpEventLogger {
     }
 
     @Autowired
-    public HttpEventLogger(DataServiceMetrics metrics, DataServiceConfigProperties config) {
+    public HttpEventLogger(DataServiceMetrics metrics, DataServiceConfigProperties config, Tracer tracer) {
         this.metrics = metrics;
         enabled = config.isEventlogEnabled();
         mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -71,7 +73,7 @@ public class HttpEventLogger {
             log.info("EventLog enabled: {}", forwardUrl);
             executor = Executor.newInstance(ProxyWriter.getHttpClient(config.getEventlogSocketTimeout(), config.getEventlogTimeout(), config.getEventlogConnections()));
             ExecutorService threadPool = Executors.newFixedThreadPool(config.getEventlogPoolSize());
-            async = Async.newInstance().use(threadPool).use(executor);
+            async = TracedAsync.newInstance(tracer).use(threadPool).use(executor);
         } else {
             log.info("EventLog disabled");
             forwardUrl = null;
