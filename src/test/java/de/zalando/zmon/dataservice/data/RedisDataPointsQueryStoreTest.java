@@ -1,5 +1,8 @@
 package de.zalando.zmon.dataservice.data;
 
+import io.opentracing.Tracer;
+import io.opentracing.noop.NoopTracer;
+import io.opentracing.util.GlobalTracer;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,15 +22,17 @@ import static org.mockito.Mockito.when;
 
 public class RedisDataPointsQueryStoreTest {
     private String json;
+    private Tracer tracer;
 
     @Before
     public void setUp() throws Exception {
         json = IOUtils.toString(this.getClass().getResourceAsStream("kairosdbQuery.json"), "UTF-8");
+        tracer = GlobalTracer.get();
     }
 
     @Test
     public void testCompression() throws Exception {
-        final RedisDataPointsQueryStore store = new RedisDataPointsQueryStore(mock(JedisPool.class));
+        final RedisDataPointsQueryStore store = new RedisDataPointsQueryStore(mock(JedisPool.class), GlobalTracer.get());
         final byte[] got = store.compress(json);
         assertNotNull(got);
         assertTrue(got.length > 0);
@@ -37,6 +42,7 @@ public class RedisDataPointsQueryStoreTest {
     @Test
     public void testStoreCompressed() throws IOException {
         final JedisPool pool = mock(JedisPool.class);
+        final Tracer tracer = mock(Tracer.class);
         final Jedis jedis = mock(Jedis.class);
         when(pool.getResource()).thenReturn(jedis);
         when(jedis.lpush(any(byte[].class), any(byte[].class))).thenReturn(42L);
@@ -50,6 +56,7 @@ public class RedisDataPointsQueryStoreTest {
     @Test
     public void testFailedRedisWrite() {
         final JedisPool pool = mock(JedisPool.class);
+        final Tracer tracer = mock(Tracer.class);
         final Jedis jedis = mock(Jedis.class);
         when(pool.getResource()).thenReturn(jedis);
         when(jedis.lpush(any(byte[].class), any(byte[].class))).thenThrow(new RuntimeException("alles kapput"));
@@ -61,6 +68,7 @@ public class RedisDataPointsQueryStoreTest {
     @Test
     public void testFailedCompression() throws IOException {
         final JedisPool pool = mock(JedisPool.class);
+        final Tracer tracer = mock(Tracer.class);
         final Jedis jedis = mock(Jedis.class);
         when(pool.getResource()).thenReturn(jedis);
         final RedisDataPointsQueryStore dataPointsQueryStore = spy(new RedisDataPointsQueryStore(pool));
