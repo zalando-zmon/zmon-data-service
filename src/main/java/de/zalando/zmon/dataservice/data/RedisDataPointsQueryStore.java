@@ -16,6 +16,7 @@ import redis.clients.jedis.JedisPool;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.zip.GZIPOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -62,12 +63,17 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
         Carrier carrier = new Carrier();
         tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
 
-        int context_length = carrier.toString().length();
-        byte[] length = Integer.toString(context_length).getBytes();
-        final byte[] spanContextLength = ByteBuffer.allocate(4).put(length).array();
-
         final byte[] dataToCompress = str.getBytes();
         final byte[] context = carrier.toString().getBytes();
+        int context_length = context.length;
+        byte[] length = Integer.toString(context_length).getBytes();
+
+        final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
+
+        for(int i = 0 ; i < spanContextLength.length; i++) {
+            LOG.debug("sp lemght : " + spanContextLength[i] + "\n");
+        }
+
         final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length + spanContextLength.length + context.length);
         try {
