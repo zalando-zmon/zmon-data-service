@@ -63,21 +63,29 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
         tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
 
         int context_length = carrier.toString().length();
-        //LOG.debug("" + context_length + carrier.toString() + str);
         byte[] length = Integer.toString(context_length).getBytes();
         final byte[] spanContextLength = ByteBuffer.allocate(4).put(length).array();
+
         final byte[] dataToCompress = str.getBytes();
         final byte[] context = carrier.toString().getBytes();
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length + context_length + context.length);
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length + spanContextLength.length + context.length);
         try {
             try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
-                zipStream.write(length);
-                zipStream.write(context);
                 zipStream.write(dataToCompress);
+
+                outputStream.write("0".getBytes());
+                outputStream.write(spanContextLength);
+                outputStream.write(context);
+                outputStream.write(byteStream.toByteArray());
+                LOG.debug(byteStream.toString());
+                LOG.debug(outputStream.toString());
+
             }
         } finally {
             byteStream.close();
+            outputStream.close();
         }
-        return byteStream.toByteArray();
+        return outputStream.toByteArray();
     }
 }
