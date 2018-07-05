@@ -47,7 +47,6 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
     public int store(String query) {
         try (final Jedis jedis = pool.getResource()) {
             jedis.lpush(DATAPOINTS_QUEUE, compress(query));
-            LOG.debug("Query: " + query);
             return 0;
         } catch (IOException ex) {
             LOG.error("failed to compress data point query", ex);
@@ -59,23 +58,37 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
 
     @VisibleForTesting
     byte[] compress(String str) throws IOException {
+
+        final byte[] dataToCompress = str.getBytes();
+        byte[] tracePayload = buildRedisTracePayload();
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
+        ByteArrayOutputStream payLoad = new ByteArrayOutputStream(tracePayload.length + dataToCompress.length);
+
+        try {
+            try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
+                zipStream.write(dataToCompress);
+                payLoad.write(tracePayload);
+                payLoad.write(byteStream.toByteArray());
+                LOG.debug(byteStream.toString());
+                LOG.debug(payLoad.toString());
+            }
+        } finally {
+            byteStream.close();
+            payLoad.close();
+        }
+        return payLoad.toByteArray();
+
+         /*
         SpanContext spanContext = tracer.activeSpan().context();
         Carrier carrier = new Carrier();
         tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
 
-        final byte[] dataToCompress = str.getBytes();
+
         final byte[] context = carrier.toString().getBytes();
         int context_length = context.length;
-        byte[] length = Integer.toString(context_length).getBytes();
-
         final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
-
-        for(int i = 0 ; i < spanContextLength.length; i++) {
-            LOG.debug("sp lemght : " + spanContextLength[i] + "\n");
-        }
-
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length + spanContextLength.length + context.length);
+
         try {
             try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
                 zipStream.write(dataToCompress);
@@ -92,6 +105,27 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
             byteStream.close();
             outputStream.close();
         }
-        return outputStream.toByteArray();
+ */
+
+    }
+
+    byte[] buildRedisTracePayload(){
+
+        SpanContext spanContext = tracer.activeSpan().context();
+        Carrier carrier = new Carrier();
+        tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
+
+        final byte[] firstByte = ByteBuffer.allocate(1).put("0".getBytes()).array();
+        final byte[] context = carrier.toString().getBytes();
+        int context_length = context.length;
+        final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
+
+        byte[] tracePayload = new byte[firstByte.length + spanContextLength.length + context.length];
+
+        System.arraycopy(firstByte, 0, tracePayload, 0, firstByte.length);
+        System.arraycopy(spanContextLength, 0, tracePayload, firstByte.length, spanContextLength.length);
+        System.arraycopy(context, 0, tracePayload, firstByte.length + spanContextLength.length, context.length);
+
+        return tracePayload;
     }
 }
