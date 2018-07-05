@@ -15,8 +15,11 @@ import redis.clients.jedis.JedisPool;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -59,20 +62,19 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
 
     @VisibleForTesting
     byte[] compress(String str) throws IOException {
-        SpanContext spanContext = tracer.activeSpan().context();
-        Carrier carrier = new Carrier();
-        tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
+
+        Map<String, String> result = new HashMap<>();
+        Carrier carrier = new Carrier((HashMap<String, String>)result);
+        //Inject spanContext in Carrier
+        tracer.inject(tracer.activeSpan().context(), Format.Builtin.HTTP_HEADERS, carrier);
 
         final byte[] dataToCompress = str.getBytes();
         final byte[] context = carrier.toString().getBytes();
+
         int context_length = context.length;
         byte[] length = Integer.toString(context_length).getBytes();
 
         final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
-
-        for(int i = 0 ; i < spanContextLength.length; i++) {
-            LOG.debug("sp lemght : " + spanContextLength[i] + "\n");
-        }
 
         final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length + spanContextLength.length + context.length);
@@ -86,7 +88,6 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
                 outputStream.write(byteStream.toByteArray());
                 LOG.debug(byteStream.toString());
                 LOG.debug(outputStream.toString());
-
             }
         } finally {
             byteStream.close();
