@@ -1,7 +1,9 @@
 package de.zalando.zmon.dataservice.opentracing;
 
 import io.opentracing.propagation.TextMap;
+import org.springframework.util.MultiValueMap;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,11 +11,6 @@ import java.util.Map;
 public class Carrier implements TextMap {
 
     public HashMap<String, String> map;
-
-    public Carrier() {
-
-        map = new HashMap<String, String>();
-    }
 
     public Carrier(HashMap<String, String> map) {
 
@@ -26,7 +23,7 @@ public class Carrier implements TextMap {
     }
 
     public Iterator<Map.Entry<String, String>> iterator() {
-        return map.entrySet().iterator();
+        throw new UnsupportedOperationException("TextMapInjectAdapter should only be used with Tracer.inject()");
     }
 
     public String toString() {

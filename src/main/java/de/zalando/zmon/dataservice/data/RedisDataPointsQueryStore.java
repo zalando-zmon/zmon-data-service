@@ -15,8 +15,11 @@ import redis.clients.jedis.JedisPool;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -77,42 +80,12 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
             payLoad.close();
         }
         return payLoad.toByteArray();
-
-         /*
-        SpanContext spanContext = tracer.activeSpan().context();
-        Carrier carrier = new Carrier();
-        tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
-
-
-        final byte[] context = carrier.toString().getBytes();
-        int context_length = context.length;
-        final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length + spanContextLength.length + context.length);
-
-        try {
-            try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
-                zipStream.write(dataToCompress);
-
-                outputStream.write("0".getBytes());
-                outputStream.write(spanContextLength);
-                outputStream.write(context);
-                outputStream.write(byteStream.toByteArray());
-                LOG.debug(byteStream.toString());
-                LOG.debug(outputStream.toString());
-
-            }
-        } finally {
-            byteStream.close();
-            outputStream.close();
-        }
- */
-
     }
 
     byte[] buildRedisTracePayload(){
 
         SpanContext spanContext = tracer.activeSpan().context();
-        Carrier carrier = new Carrier();
+        Carrier carrier = new Carrier(new HashMap<>());
         tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
 
         final byte[] firstByte = ByteBuffer.allocate(1).put("0".getBytes()).array();
