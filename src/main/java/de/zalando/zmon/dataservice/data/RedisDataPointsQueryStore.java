@@ -1,5 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentracing.SpanContext;
@@ -132,12 +134,14 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
          TextMapInjectAdapter carrier = new TextMapInjectAdapter(map);
          tracer.inject(spanContext, Format.Builtin.TEXT_MAP, carrier);
          ObjectMapper mapper = new ObjectMapper();
-         try {
-             byte[] context = mapper.valueToTree(map).toString().getBytes();
-             return context;
-         } catch (Throwable e) {
+
+        try {
+            JsonNode jsonNode = mapper.convertValue(map, JsonNode.class);
+            byte[] context = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode).getBytes();
+            return context;
+        } catch (JsonProcessingException e) {
             LOG.error("preparing a trace failed" + e.toString());
             return null;
-         }
+        }
     }
 }
