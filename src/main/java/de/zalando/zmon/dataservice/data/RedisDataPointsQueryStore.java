@@ -99,9 +99,10 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
         if (context == null){
             return null;
         }
+
         final byte[] firstByte = sptCtxtFormat.equals(SpanContextFormat.TEXTMAP.toString()) ?
-                ByteBuffer.allocate(1).put("0".getBytes()).array():
-                ByteBuffer.allocate(1).put("1".getBytes()).array();
+                ByteBuffer.allocate(1).put((byte)0).array():
+                ByteBuffer.allocate(1).put((byte)1).array();
 
         int context_length = context.length;
         final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
