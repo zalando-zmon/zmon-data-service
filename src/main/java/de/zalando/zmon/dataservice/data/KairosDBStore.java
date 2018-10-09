@@ -140,11 +140,6 @@ public class KairosDBStore {
                 final Map<String, NumericNode> values = new HashMap<>();
                 final String timeSeries = "zmon.check." + cd.check_id;
 
-                String worker = "";
-                if (cd.check_result.has("worker")) {
-                    worker = cd.check_result.get("worker").asText();
-                }
-
                 Double ts = cd.check_result.get("ts").asDouble();
                 ts = ts * 1000.;
                 Long tsL = ts.longValue();
@@ -184,10 +179,6 @@ public class KairosDBStore {
                                 p.tags.put("path", b.toString());
                             }
                         }
-                    }
-
-                    if (null != worker && !"".equals(worker)) {
-                        p.tags.put("worker", worker);
                     }
 
                     ArrayNode arrayNode = mapper.createArrayNode();
