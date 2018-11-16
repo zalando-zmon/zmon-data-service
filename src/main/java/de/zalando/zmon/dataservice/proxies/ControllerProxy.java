@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice.proxies;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.data.HttpClientFactory;
 import de.zalando.zmon.dataservice.oauth2.BearerToken;
 import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
@@ -11,6 +12,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 
 public class ControllerProxy {
@@ -25,19 +27,14 @@ public class ControllerProxy {
     /**
      * @return HTTP executor to use only once (no connection pooling)
      */
-    protected static Executor getExecutor(DataServiceConfigProperties config) {
+    private static Executor getExecutor(DataServiceConfigProperties config) {
         final int maxConnections = 100;
-        final RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(config.getProxyControllerSocketTimeout())
-                .setConnectTimeout(config.getProxyControllerConnectTimeout())
-                .build();
-        final HttpClient httpClient = new TracingHttpClientBuilder()
-                .setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
-
-        return Executor.newInstance(httpClient);
+        return HttpClientFactory.getExecutor(
+                config.getProxyControllerSocketTimeout(),
+                config.getProxyControllerConnectTimeout(),
+                maxConnections,
+                config.getConnectionsTimeToLive()
+        );
     }
 
     protected URIBuilder uri(String path)  {

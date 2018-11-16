@@ -2,9 +2,7 @@ package de.zalando.zmon.dataservice.data;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
-import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.entity.ContentType;
 
@@ -33,20 +31,12 @@ public class KairosDataPointsQueryStore implements DataPointsQueryStore {
 
         LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(),
                 config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
-        executor = Executor.newInstance(getHttpClient(config.getKairosdbSockettimeout(), config.getKairosdbTimeout(),
-                config.getKairosdbConnections()));
-    }
-
-    private static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        final RequestConfig config = RequestConfig.custom()
-                .setSocketTimeout(socketTimeout)
-                .setConnectTimeout(timeout)
-                .build();
-        return new TracingHttpClientBuilder()
-                .setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections)
-                .setDefaultRequestConfig(config)
-                .build();
+        executor = HttpClientFactory.getExecutor(
+                config.getKairosdbSockettimeout(),
+                config.getKairosdbTimeout(),
+                config.getKairosdbConnections(),
+                config.getConnectionsTimeToLive()
+        );
     }
 
     public int store(String query) {

@@ -69,7 +69,12 @@ public class HttpEventLogger {
         if (enabled) {
             forwardUrl = config.getEventlogUrl() + "/api/v1";
             log.info("EventLog enabled: {}", forwardUrl);
-            executor = Executor.newInstance(ProxyWriter.getHttpClient(config.getEventlogSocketTimeout(), config.getEventlogTimeout(), config.getEventlogConnections()));
+            executor = HttpClientFactory.getExecutor(
+                    config.getEventlogSocketTimeout(),
+                    config.getEventlogTimeout(),
+                    config.getEventlogConnections(),
+                    config.getConnectionsTimeToLive()
+            );
             ExecutorService threadPool = Executors.newFixedThreadPool(config.getEventlogPoolSize());
             async = Async.newInstance().use(threadPool).use(executor);
         } else {

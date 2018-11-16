@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.fluent.Async;
 import org.apache.http.client.fluent.Executor;
@@ -44,10 +43,15 @@ public class AppMetricsClient {
         serverPort = config.getRestMetricPort();
         this.mapper = defaultObjectMapper;
 
-        final HttpClient httpClient = new TracingHttpClientBuilder()
-                .build();
+
         final ExecutorService asyncExecutorPool = Executors.newFixedThreadPool(15);
-        final Executor executor = Executor.newInstance(httpClient);
+        final Executor executor = HttpClientFactory.getExecutor(
+                config.getRestMetricSocketTimeout(),
+                config.getRestMetricTimeout(),
+                config.getRestMetricConnections(),
+                config.getConnectionsTimeToLive()
+
+        );
         async = Async.newInstance()
                 .use(asyncExecutorPool)
                 .use(executor);
@@ -55,7 +59,7 @@ public class AppMetricsClient {
         LOG.info("App metric cache config: hosts {} port {}", serviceHosts, serverPort);
     }
 
-    public void receiveData(Map<Integer, List<CheckData>> data) {
+    void receiveData(Map<Integer, List<CheckData>> data) {
         for (int i = 0; i < serviceHosts.size(); ++i) {
             if (!data.containsKey(i) || data.get(i).size() <= 0)
                 continue;
@@ -63,7 +67,7 @@ public class AppMetricsClient {
             try {
                 Request r = Request
                         .Post("http://" + serviceHosts.get(i) + ":" + serverPort + "/api/v1/rest-api-metrics/")
-                        .addHeader("Cookie", "metric_cache="+i)
+                        .addHeader("Cookie", "metric_cache=" + i)
                         .bodyString(mapper.writeValueAsString(data.get(i)), ContentType.APPLICATION_JSON);
                 async.execute(r);
             } catch (IOException ex) {
