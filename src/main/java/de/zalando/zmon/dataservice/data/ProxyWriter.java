@@ -19,6 +19,7 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jmussler on 25.04.16.
@@ -41,9 +42,14 @@ public class ProxyWriter {
 
         if (null != forwardUrl) {
             log.info("Forwarding data to: {}", this.forwardUrl);
-            executor = Executor.newInstance(getHttpClient(config.getDataProxySocketTimeout(), config.getDataProxyTimeout(), config.getDataProxyConnections()));
-            ExecutorService threadpool = Executors.newFixedThreadPool(config.getDataProxyPoolSize());
-            async = Async.newInstance().use(threadpool).use(executor);
+            executor = HttpClientFactory.getExecutor(
+                    config.getDataProxySocketTimeout(),
+                    config.getDataProxyTimeout(),
+                    config.getDataProxyConnections(),
+                    config.getConnectionsTimeToLive()
+            );
+            ExecutorService threadPool = Executors.newFixedThreadPool(config.getDataProxyPoolSize());
+            async = Async.newInstance().use(threadPool).use(executor);
         }
         else {
             log.info("Forwarding data disabled");
@@ -52,23 +58,11 @@ public class ProxyWriter {
         }
     }
 
-    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom()
-                .setSocketTimeout(socketTimeout)
-                .setConnectTimeout(timeout)
-                .build();
-        return new TracingHttpClientBuilder()
-                .setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections)
-                .setDefaultRequestConfig(config)
-                .build();
-    }
-
     /*
     * We will reuse the original request's token for the proxy call, that saves us some setup/dependency to token management
     * */
     public void write(String token, String accountId, String checkId, String data) {
-        if (null == forwardUrl && !"".equals(forwardUrl)) {
+        if (null == forwardUrl) {
             return;
         }
 

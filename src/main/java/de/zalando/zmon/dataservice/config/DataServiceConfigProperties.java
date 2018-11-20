@@ -45,6 +45,10 @@ public class DataServiceConfigProperties {
 
     private List<String> restMetricHosts = new ArrayList<>();
     private int restMetricPort = 8088;
+    private int restMetricConnections = 50;
+    private int restMetricPoolSize = 50;
+    private int restMetricSocketTimeout = 500;
+    private int restMetricTimeout = 1000;
 
     private Map<String, String> oauth2Scopes = new HashMap<>(0);
 
@@ -76,6 +80,7 @@ public class DataServiceConfigProperties {
     private Map<String, AsyncExecutorProperties> asyncExecutors = new HashMap<>();
 
     private int resultSizeWarning = 100;
+    private long connectionsTimeToLive = 2 * 60 * 1000;
 
     private Map<String, Object> versionConfig = null;
 
@@ -238,9 +243,9 @@ public class DataServiceConfigProperties {
 
     private String oauth2TokenInfoUrl;
 
-    String oauth2AccessTokenUrl = null;
+    private String oauth2AccessTokenUrl = null;
 
-    String oauth2StaticToken = "";
+    private String oauth2StaticToken = "";
 
     public String getRedisHost() {
         return redisHost;
@@ -368,6 +373,38 @@ public class DataServiceConfigProperties {
 
     public void setRestMetricPort(int restMetricPort) {
         this.restMetricPort = restMetricPort;
+    }
+
+    public int getRestMetricConnections() {
+        return restMetricConnections;
+    }
+
+    public void setRestMetricConnections(int restMetricConnections) {
+        this.restMetricConnections = restMetricConnections;
+    }
+
+    public int getRestMetricPoolSize() {
+        return restMetricPoolSize;
+    }
+
+    public void setRestMetricPoolSize(int restMetricPoolSize) {
+        this.restMetricPoolSize = restMetricPoolSize;
+    }
+
+    public int getRestMetricSocketTimeout() {
+        return restMetricSocketTimeout;
+    }
+
+    public void setRestMetricSocketTimeout(int restMetricSocketTimeout) {
+        this.restMetricSocketTimeout = restMetricSocketTimeout;
+    }
+
+    public int getRestMetricTimeout() {
+        return restMetricTimeout;
+    }
+
+    public void setRestMetricTimeout(int restMetricTimeout) {
+        this.restMetricTimeout = restMetricTimeout;
     }
 
     public String getOauth2TokenInfoUrl() {
@@ -512,6 +549,14 @@ public class DataServiceConfigProperties {
 
     public void setDataPointsStoreProperties(final RedisDataPointsStoreProperties dataPointsStoreProperties) {
         this.dataPointsStoreProperties = dataPointsStoreProperties;
+    }
+
+    public long getConnectionsTimeToLive() {
+        return connectionsTimeToLive;
+    }
+
+    public void setConnectionsTimeToLive(long connectionsTimeToLive) {
+        this.connectionsTimeToLive = connectionsTimeToLive;
     }
 }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.data.HttpClientFactory;
 import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
@@ -38,18 +40,6 @@ public class KairosdbProxy {
     private final String url;
     private final boolean enabled;
 
-    public static HttpClient getHttpClient(int socketTimeout, int timeout, int maxConnections) {
-        RequestConfig config = RequestConfig.custom()
-                .setSocketTimeout(socketTimeout)
-                .setConnectTimeout(timeout)
-                .build();
-        return new TracingHttpClientBuilder()
-                .setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections)
-                .setDefaultRequestConfig(config)
-                .build();
-    }
-
     @Autowired
     public KairosdbProxy(DataServiceConfigProperties config, DataServiceMetrics metrics) {
         this.metricRegistry = metrics.getMetricRegistry();
@@ -58,7 +48,12 @@ public class KairosdbProxy {
 
         if (null != url) {
             log.info("KairosDB Proxy: {}", url);
-            executor = Executor.newInstance(getHttpClient(config.getProxyKairosdbSockettimeout(), config.getProxyKairosdbTimeout(), config.getProxyKairosdbConnections()));
+            executor = HttpClientFactory.getExecutor(
+                    config.getProxyKairosdbSockettimeout(),
+                    config.getProxyKairosdbTimeout(),
+                    config.getProxyKairosdbConnections(),
+                    config.getConnectionsTimeToLive()
+            );
         } else {
             executor = null;
         }
@@ -85,10 +80,10 @@ public class KairosdbProxy {
 
     @ResponseBody
     @RequestMapping(value = {"/api/v1/datapoints/query"}, method = RequestMethod.POST, produces = "application/json")
-    public void kairosDBPost(@RequestBody(required = true) final JsonNode node, final Writer writer,
+    public void kairosDBPost(@RequestBody final JsonNode node, final Writer writer,
                              final HttpServletResponse response) throws IOException {
 
-        String metricName = null;
+        String metricName;
         try {
             metricName = node.get("metrics").get(0).get("name").textValue();
         } catch (Exception e) {
@@ -131,7 +126,8 @@ public class KairosdbProxy {
 
     @ResponseBody
     @RequestMapping(value = {"/api/v1/datapoints/query/tags"}, method = RequestMethod.POST, produces = "application/json")
-    public void kairosDBtags(@RequestBody(required = true) final JsonNode node, final Writer writer,
+    public void kairosDBtags(@RequestBody final JsonNode node,
+                             final Writer writer,
                              final HttpServletResponse response) throws IOException {
         final String kairosDBURL = url + "/api/v1/datapoints/query/tags";
 
