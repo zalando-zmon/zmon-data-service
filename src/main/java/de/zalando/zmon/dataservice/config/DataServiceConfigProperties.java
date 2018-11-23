@@ -76,6 +76,17 @@ public class DataServiceConfigProperties {
     private int proxyKairosdbSockettimeout = 500;
     private int proxyKairosdbTimeout = 1000;
 
+    private List<Integer> whiteListedChecks = new ArrayList<>();
+
+    public List<Integer> getwhiteListedChecks() {
+        return whiteListedChecks;
+    }
+
+    public void setwhiteListedChecks(List<Integer> whiteListedChecks) {
+        this.whiteListedChecks = whiteListedChecks;
+    }
+
+
     @NestedConfigurationProperty
     private Map<String, AsyncExecutorProperties> asyncExecutors = new HashMap<>();
 
