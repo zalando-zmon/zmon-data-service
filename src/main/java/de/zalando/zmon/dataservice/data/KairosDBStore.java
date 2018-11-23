@@ -205,18 +205,21 @@ public class KairosDBStore {
                 }
             }
 
-            metrics.incKairosDBDataPoints(points.size());
+            if (points.size()>0){
+                metrics.incKairosDBDataPoints(points.size());
 
-            String query = mapper.writeValueAsString(points);
-            if (config.isLogKairosdbRequests()) {
-                LOG.info("KairosDB Query: {}", query);
+                String query = mapper.writeValueAsString(points);
+                if (config.isLogKairosdbRequests()) {
+                    LOG.info("KairosDB Query: {}", query);
+                }
+
+                // Store datapoints query!
+                int err = dataPointsQueryStore.store(query);
+                if( err > 0) {
+                    metrics.markKairosHostErrors(err);
+                }
             }
 
-            // Store datapoints query!
-            int err = dataPointsQueryStore.store(query);
-            if( err > 0) {
-                metrics.markKairosHostErrors(err);
-            }
         } catch (IOException ex) {
             if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write path failed", ex);
