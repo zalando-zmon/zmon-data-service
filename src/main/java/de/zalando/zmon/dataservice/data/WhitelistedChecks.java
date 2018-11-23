@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import de.zalando.zmon.dataservice.TokenWrapper;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,8 +59,12 @@ public class WhitelistedChecks {
             String data = executor.execute(request).returnContent().toString();
             LOG.info("data: " + data);
             JsonNode jsonNode = objectMapper.readTree(data);
-            Stream<Integer> checkIdsStream = jsonNode.findValues("check_ids").stream().map(JsonNode::intValue);
-            this.whitelist = checkIdsStream.collect(Collectors.toList());
+            Iterator<JsonNode> checkIds = jsonNode.get("check_ids").iterator();
+            List<Integer> list = new ArrayList<>();
+            while (checkIds.hasNext()) {
+                list.add(checkIds.next().intValue());
+            }
+            this.whitelist = list;
             LOG.info("whitelist updated. New whitelist size={}", whitelist.size());
         } catch (Exception e) {
             LOG.error("error updating whitelist", e);
