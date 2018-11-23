@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableList;
+import de.zalando.zmon.dataservice.config.WhitelistedChecks;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +44,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     @Autowired
     private DataServiceMetrics metrics;
 
+    @Autowired
+    private WhitelistedChecks whitelistedChecks;
+
     @Before
     public void setUp() {
         wireMockRule.stubFor(post(urlPathEqualTo("/api/v1/datapoints"))
@@ -51,7 +55,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void writeWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, whitelistedChecks);
         kairosDb.store(Fixture.buildWorkerResult());
         verify(dataPointsQueryStore).store(anyString());
         verify(metrics, never()).markKairosError();
@@ -60,8 +64,8 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void testInvalidWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
-        for(WorkerResult wr: new WorkerResult[]{null, new WorkerResult()}) {
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, whitelistedChecks);
+        for (WorkerResult wr : new WorkerResult[]{null, new WorkerResult()}) {
             kairosDb.store(wr);
             verify(metrics, never()).incKairosDBDataPoints(anyLong());
             verify(dataPointsQueryStore, never()).store(anyString());
@@ -86,7 +90,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         }
 
         @Bean
-        public DataPointsQueryStore dataPointsStore() {return mock(DataPointsQueryStore.class);}
+        public DataPointsQueryStore dataPointsStore() {
+            return mock(DataPointsQueryStore.class);
+        }
     }
 
 }
