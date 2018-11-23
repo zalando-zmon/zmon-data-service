@@ -138,11 +138,14 @@ public class KairosDBStore {
             List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
 
+                //Get whitelist from dynamic entity reader
                 List<Integer> whiteListedChecks = new ArrayList<>();
+
                 //Only ingest whitelisted checks
+                //if (! config.getwhiteListedChecks().contains(cd.check_id)){
                 if (! whiteListedChecks.contains(cd.check_id)){
                     LOG.warn("Dropping non critical BlackFriday checkid: "+ cd.check_id);
-                    break;
+                    continue;
                 }
 
                 final Map<String, NumericNode> values = new HashMap<>();
