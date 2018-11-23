@@ -54,10 +54,8 @@ public class WhitelistedChecks {
         try {
             LOG.info("started updating whitelist. Old whitelist size={}", whitelist.size());
             String uri = hostname + "/api/v1/entities/zmon-checkid-whitelist";
-            LOG.info("calling uri: " + uri);
             Request request = Request.Get(uri).addHeader("Authorization", "Bearer " + wrapper.get());
             String data = executor.execute(request).returnContent().toString();
-            LOG.info("data: " + data);
             JsonNode jsonNode = objectMapper.readTree(data);
             Iterator<JsonNode> checkIds = jsonNode.get("check_ids").iterator();
             List<Integer> list = new ArrayList<>();
