@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.*;
 import com.google.common.collect.ImmutableSet;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.config.WhitelistedChecks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,7 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final int resultSizeWarning;
+    private WhitelistedChecks whitelist;
 
     private static class DataPoint {
         public String name;
@@ -75,16 +77,17 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore,
+                         WhitelistedChecks whitelist) {
         this.metrics = metrics;
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
+        this.whitelist = whitelist;
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
             this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
-        }
-        else {
+        } else {
             this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
         }
     }
@@ -129,7 +132,7 @@ public class KairosDBStore {
             return;
         }
 
-        if(wr == null || wr.results == null || wr.results.isEmpty()) {
+        if (wr == null || wr.results == null || wr.results.isEmpty()) {
             LOG.warn("Received a request with invalid results: {}", wr);
             return;
         }
@@ -139,11 +142,11 @@ public class KairosDBStore {
             for (CheckData cd : wr.results) {
 
                 //Get whitelist from dynamic entity reader
-                List<Integer> whiteListedChecks = new ArrayList<>();
+                List<Integer> whiteListedChecks = whitelist.getWhitelist();
 
                 //Only ingest whitelisted checks
                 //if (! config.getwhiteListedChecks().contains(cd.check_id)){
-                if (! whiteListedChecks.contains(cd.check_id)){
+                if (!whiteListedChecks.contains(cd.check_id)) {
                     LOG.warn("Dropping non critical checkid={} ", cd.check_id);
                     continue;
                 }
@@ -180,7 +183,7 @@ public class KairosDBStore {
 
                             if (keyParts.length >= 4) {
                                 StringBuilder b = new StringBuilder();
-                                for(int i = 0; i < keyParts.length - 3; ++i) {
+                                for (int i = 0; i < keyParts.length - 3; ++i) {
                                     if (i > 0) {
                                         b.append(".");
                                     }
@@ -215,7 +218,7 @@ public class KairosDBStore {
 
                 // Store datapoints query!
                 int err = dataPointsQueryStore.store(query);
-                if( err > 0) {
+                if (err > 0) {
                     metrics.markKairosHostErrors(err);
                 }
             }
