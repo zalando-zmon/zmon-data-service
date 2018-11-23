@@ -2,13 +2,12 @@ package de.zalando.zmon.dataservice.proxies;
 
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import de.zalando.zmon.dataservice.config.WhitelistedChecks;
+import de.zalando.zmon.dataservice.data.WhitelistedChecks;
 import de.zalando.zmon.dataservice.data.DataPointsQueryStore;
 import de.zalando.zmon.dataservice.data.KairosDBStore;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.Map;
 

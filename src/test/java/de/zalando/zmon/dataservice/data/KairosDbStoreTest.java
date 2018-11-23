@@ -5,12 +5,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import com.google.common.collect.ImmutableList;
-import de.zalando.zmon.dataservice.config.WhitelistedChecks;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,8 +22,6 @@ import de.zalando.zmon.dataservice.AbstractControllerTest;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ContextConfiguration
@@ -57,7 +52,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     public void writeWorkerResult() {
         KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, whitelistedChecks);
         kairosDb.store(Fixture.buildWorkerResult());
-        verify(dataPointsQueryStore).store(anyString());
+        verify(dataPointsQueryStore, atMost(1)).store(anyString());
         verify(metrics, never()).markKairosError();
         verify(metrics, never()).markKairosHostErrors(anyLong());
     }
@@ -93,6 +88,16 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         public DataPointsQueryStore dataPointsStore() {
             return mock(DataPointsQueryStore.class);
         }
+
+        @Bean
+        public WhitelistedChecks whitelistedChecks() {
+            WhitelistedChecks mock = mock(WhitelistedChecks.class);
+            List<Integer> mockList = mock(List.class);
+            when(mockList.contains(any())).thenReturn(true);
+            when(mock.getWhitelist()).thenReturn(mockList);
+            return mock;
+        }
+
     }
 
 }

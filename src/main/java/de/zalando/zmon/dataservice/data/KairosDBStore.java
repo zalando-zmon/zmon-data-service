@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.*;
 import com.google.common.collect.ImmutableSet;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import de.zalando.zmon.dataservice.config.WhitelistedChecks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

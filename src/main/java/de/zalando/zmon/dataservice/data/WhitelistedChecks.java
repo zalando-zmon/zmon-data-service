@@ -1,25 +1,20 @@
-package de.zalando.zmon.dataservice.config;
+package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zalando.zmon.dataservice.TokenWrapper;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
-import de.zalando.zmon.dataservice.data.HttpClientFactory;
-import de.zalando.zmon.dataservice.data.KairosDBStore;
+import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.zalando.stups.tokens.AccessToken;
-import org.zalando.stups.tokens.AccessTokens;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,6 +44,7 @@ public class WhitelistedChecks {
 
         this.hostname = config.getProxyControllerUrl();
         this.wrapper = wrapper;
+        this.whitelist = new ArrayList<>();
     }
 
     @Scheduled(fixedRate = 60_000)
