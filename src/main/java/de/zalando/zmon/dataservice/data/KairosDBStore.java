@@ -137,6 +137,14 @@ public class KairosDBStore {
         try {
             List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
+
+                List<Integer> whiteListedChecks = new ArrayList<>();
+                //Only ingest whitelisted checks
+                if (! whiteListedChecks.contains(cd.check_id)){
+                    LOG.warn("Dropping non critical BlackFriday checkid: "+ cd.check_id);
+                    break;
+                }
+
                 final Map<String, NumericNode> values = new HashMap<>();
                 final String timeSeries = "zmon.check." + cd.check_id;
 
