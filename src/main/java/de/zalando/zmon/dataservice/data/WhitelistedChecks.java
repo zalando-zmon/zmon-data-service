@@ -50,14 +50,16 @@ public class WhitelistedChecks {
     @Scheduled(fixedRate = 60_000)
     public void updateWhitelist() {
         try {
-            LOG.debug("started updating whitelist. Old whitelist size={}",whitelist.size());
-            Request request = Request.Get(hostname + "/api/v1/entities/zmon-checkid-whitelist")
-                    .addHeader("Authorization", "Bearer " + wrapper.get());
+            LOG.info("started updating whitelist. Old whitelist size={}", whitelist.size());
+            String uri = hostname + "/api/v1/entities/zmon-checkid-whitelist";
+            LOG.info("calling uri: " + uri);
+            Request request = Request.Get(uri).addHeader("Authorization", "Bearer " + wrapper.get());
             String data = executor.execute(request).returnContent().toString();
+            LOG.info("data: " + data);
             JsonNode jsonNode = objectMapper.readTree(data);
             Stream<Integer> checkIdsStream = jsonNode.findValues("check_ids").stream().map(JsonNode::intValue);
             this.whitelist = checkIdsStream.collect(Collectors.toList());
-            LOG.debug("whitelist updated. New whitelist size={}",whitelist.size());
+            LOG.info("whitelist updated. New whitelist size={}", whitelist.size());
         } catch (Exception e) {
             LOG.error("error updating whitelist", e);
         }
