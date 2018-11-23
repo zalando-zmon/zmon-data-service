@@ -144,7 +144,7 @@ public class KairosDBStore {
                 //Only ingest whitelisted checks
                 //if (! config.getwhiteListedChecks().contains(cd.check_id)){
                 if (! whiteListedChecks.contains(cd.check_id)){
-                    LOG.warn("Dropping non critical BlackFriday checkid={} ", cd.check_id);
+                    LOG.warn("Dropping non critical checkid={} ", cd.check_id);
                     continue;
                 }
 
