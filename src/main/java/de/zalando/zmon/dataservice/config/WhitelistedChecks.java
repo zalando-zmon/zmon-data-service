@@ -2,6 +2,7 @@ package de.zalando.zmon.dataservice.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.zalando.zmon.dataservice.TokenWrapper;
 import de.zalando.zmon.dataservice.components.DefaultObjectMapper;
 import de.zalando.zmon.dataservice.data.HttpClientFactory;
 import de.zalando.zmon.dataservice.data.KairosDBStore;
@@ -29,13 +30,13 @@ public class WhitelistedChecks {
 
     private final ObjectMapper objectMapper;
     private final Executor executor;
-    private final AccessTokens accessTokens;
+    private final TokenWrapper wrapper;
     private List<Integer> whitelist;
 
     @Autowired
     public WhitelistedChecks(@DefaultObjectMapper ObjectMapper objectMapper,
                              DataServiceConfigProperties config,
-                             AccessTokens accessTokens) {
+                             @Qualifier("accessTokens") TokenWrapper wrapper) {
         this.objectMapper = objectMapper;
         this.executor = HttpClientFactory.getExecutor(
                 config.getRestMetricSocketTimeout(),
@@ -45,7 +46,7 @@ public class WhitelistedChecks {
 
         );
 
-        this.accessTokens = accessTokens;
+        this.wrapper = wrapper;
     }
 
     @Scheduled(fixedRate = 60_000)
@@ -53,7 +54,7 @@ public class WhitelistedChecks {
         try {
             LOG.debug("started updating whitelist");
             Request request = Request.Get("https://zmon.zalando.net/api/v1/entities/zmon-checkid-whitelist")
-                    .addHeader("Authorization", "Bearer " + accessTokens.get("controller"));
+                    .addHeader("Authorization", "Bearer " + wrapper.get());
             String data = executor.execute(request).returnContent().toString();
             JsonNode jsonNode = objectMapper.readTree(data);
             Stream<Integer> checkIdsStream = jsonNode.findValues("check_ids").stream().map(JsonNode::intValue);
