@@ -42,7 +42,7 @@ public class WhitelistedChecks {
 
         );
 
-        this.hostname = config.getProxyControllerUrl();
+        this.hostname = config.getProxyControllerBaseUrl();
         this.wrapper = wrapper;
         this.whitelist = new ArrayList<>();
     }
