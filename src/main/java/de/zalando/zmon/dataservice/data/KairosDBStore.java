@@ -142,7 +142,7 @@ public class KairosDBStore {
 
                 //Get whitelist from dynamic entity reader
                 List<Integer> whiteListedChecks = whitelist.getWhitelist();
-
+                LOG.info("Whitelist: " + Arrays.toString(whiteListedChecks.toArray()));
                 //Only ingest whitelisted checks
                 //if (! config.getwhiteListedChecks().contains(cd.check_id)){
                 if (!whiteListedChecks.contains(cd.check_id)) {
