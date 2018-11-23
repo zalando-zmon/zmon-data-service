@@ -31,6 +31,7 @@ public class WhitelistedChecks {
     private final ObjectMapper objectMapper;
     private final Executor executor;
     private final TokenWrapper wrapper;
+    private final String hostname;
     private List<Integer> whitelist;
 
     @Autowired
@@ -46,6 +47,7 @@ public class WhitelistedChecks {
 
         );
 
+        this.hostname = config.getProxyControllerUrl();
         this.wrapper = wrapper;
     }
 
@@ -53,7 +55,7 @@ public class WhitelistedChecks {
     public void updateWhitelist() {
         try {
             LOG.debug("started updating whitelist");
-            Request request = Request.Get("https://zmon.zalando.net/api/v1/entities/zmon-checkid-whitelist")
+            Request request = Request.Get(hostname + "/api/v1/entities/zmon-checkid-whitelist")
                     .addHeader("Authorization", "Bearer " + wrapper.get());
             String data = executor.execute(request).returnContent().toString();
             JsonNode jsonNode = objectMapper.readTree(data);
