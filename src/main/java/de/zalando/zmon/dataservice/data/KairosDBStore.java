@@ -67,7 +67,6 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final int resultSizeWarning;
-    private WhitelistedChecks whitelist;
 
     private static class DataPoint {
         public String name;
@@ -76,13 +75,11 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore,
-                         WhitelistedChecks whitelist) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
         this.metrics = metrics;
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
-        this.whitelist = whitelist;
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
             this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
@@ -140,12 +137,8 @@ public class KairosDBStore {
             List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
 
-                //Get whitelist from dynamic entity reader
-                List<Integer> whiteListedChecks = whitelist.getWhitelist();
-                //Only ingest whitelisted checks
-                //if (! config.getwhiteListedChecks().contains(cd.check_id)){
-                if (!whiteListedChecks.contains(cd.check_id)) {
-                    LOG.warn("Dropping non critical checkid={} ", cd.check_id);
+                if (!cd.is_sampled) {
+                    LOG.debug("Dropping non-sampled metrics for checkid={}", cd.check_id);
                     continue;
                 }
 
