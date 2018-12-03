@@ -1,18 +1,17 @@
 package de.zalando.zmon.dataservice.data;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 class Fixture {
 
@@ -38,14 +37,14 @@ class Fixture {
         List<CheckData> result = Lists.newArrayList();
         for (int i = 0; i < 5; i++) {
             CheckData cd = new CheckData();
-            cd.check_id = i;
-            cd.entity_id = "ENTITY_" + i;
+            cd.checkId = i;
+            cd.entityId = "ENTITY_" + i;
             cd.exception = i % 2 == 0;
-            cd.run_time = i * 1.2;
+            cd.runTime = i * 1.2;
             cd.time = "1234567";
             cd.worker = "worker_" + i;
             cd.alerts = buildAlertDataMap();
-            cd.check_result = buildCheckResult();
+            cd.checkResult = buildCheckResult();
             cd.entity = buildEntityMap();
             result.add(cd);
         }

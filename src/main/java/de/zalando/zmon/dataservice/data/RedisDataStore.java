@@ -80,34 +80,34 @@ public class RedisDataStore {
             Pipeline p = jedis.pipelined();
 
             for (CheckData cd : wr.results) {
-                p.sadd("zmon:checks", "" + cd.check_id);
-                p.sadd("zmon:checks:" + cd.check_id, cd.entity_id);
-                String checkTs = "zmon:checks:" + cd.check_id + ":" + cd.entity_id;
+                p.sadd("zmon:checks", "" + cd.checkId);
+                p.sadd("zmon:checks:" + cd.checkId, cd.entityId);
+                String checkTs = "zmon:checks:" + cd.checkId + ":" + cd.entityId;
 
-                String checkValue = writeValueAsString(cd.check_result).orElse(EMPTY_CHECK);
+                String checkValue = writeValueAsString(cd.checkResult).orElse(EMPTY_CHECK);
                 p.lpush(checkTs, checkValue);
                 p.ltrim(checkTs, 0, 2);
 
                 if (null != cd.alerts) {
                     for (AlertData alert : cd.alerts.values()) {
 
-                        createEvents(cd.entity_id, cd.check_id, checkValue, alert);
+                        createEvents(cd.entityId, cd.checkId, checkValue, alert);
 
                         if (alert.active && alert.in_period) {
-                            p.sadd("zmon:alerts:" + alert.alert_id, cd.entity_id);
+                            p.sadd("zmon:alerts:" + alert.alert_id, cd.entityId);
 
                             String value = buildValue(alert, cd);
 
-                            p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id, value);
+                            p.set("zmon:alerts:" + alert.alert_id + ":" + cd.entityId, value);
 
                         } else {
-                            p.srem("zmon:alerts:" + alert.alert_id, cd.entity_id);
-                            p.del("zmon:alerts:" + alert.alert_id + ":" + cd.entity_id);
+                            p.srem("zmon:alerts:" + alert.alert_id, cd.entityId);
+                            p.del("zmon:alerts:" + alert.alert_id + ":" + cd.entityId);
                         }
 
                         String captures = writeValueAsString(alert.captures).orElse(CAPTURES_NOT_SERIALIZED);
 
-                        p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entity_id, captures);
+                        p.hset("zmon:alerts:" + alert.alert_id + ":entities", cd.entityId, captures);
 
                         p.eval("if redis.call('scard','zmon:alerts:" + alert.alert_id + "') == 0 then " +
                                     "redis.call('srem','zmon:alert-acks', " + alert.alert_id + "); " +
@@ -151,15 +151,15 @@ public class RedisDataStore {
 
         vNode.put("start_time", alertStart);
 
-        vNode.set("ts", cd.check_result.get("ts"));
-        vNode.set("td", cd.check_result.get("td"));
-        vNode.set("worker", cd.check_result.get("worker"));
+        vNode.set("ts", cd.checkResult.get("ts"));
+        vNode.set("td", cd.checkResult.get("td"));
+        vNode.set("worker", cd.checkResult.get("worker"));
 
         if (cd.exception) {
             vNode.put("exc", 1);
         }
 
-        vNode.putPOJO("value", cd.check_result.get("value"));
+        vNode.putPOJO("value", cd.checkResult.get("value"));
 
         try {
             value = mapper.writeValueAsString(vNode);
