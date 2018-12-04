@@ -1,13 +1,13 @@
 package de.zalando.zmon.dataservice.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.context.annotation.Configuration;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "dataservice")
@@ -90,7 +90,7 @@ public class DataServiceConfigProperties {
     @NestedConfigurationProperty
     private Map<String, AsyncExecutorProperties> asyncExecutors = new HashMap<>();
 
-    private int resultSizeWarning = 100;
+    private int resultSizeWarning = 2000;
     private long connectionsTimeToLive = 2 * 60 * 1000;
 
     private Map<String, Object> versionConfig = null;

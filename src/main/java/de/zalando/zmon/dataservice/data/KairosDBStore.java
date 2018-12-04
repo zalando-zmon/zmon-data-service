@@ -67,7 +67,6 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final int resultSizeWarning;
-    private WhitelistedChecks whitelist;
 
     private static class DataPoint {
         public String name;
@@ -76,13 +75,11 @@ public class KairosDBStore {
     }
 
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore,
-                         WhitelistedChecks whitelist) {
+    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
         this.metrics = metrics;
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
-        this.whitelist = whitelist;
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
             this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
@@ -140,33 +137,29 @@ public class KairosDBStore {
             List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
 
-                //Get whitelist from dynamic entity reader
-                List<Integer> whiteListedChecks = whitelist.getWhitelist();
-                //Only ingest whitelisted checks
-                //if (! config.getwhiteListedChecks().contains(cd.check_id)){
-                if (!whiteListedChecks.contains(cd.check_id)) {
-                    LOG.warn("Dropping non critical checkid={} ", cd.check_id);
+                if (!cd.isSampled) {
+                    LOG.debug("Dropping non-sampled metrics for checkid={}", cd.checkId);
                     continue;
                 }
 
                 final Map<String, NumericNode> values = new HashMap<>();
-                final String timeSeries = "zmon.check." + cd.check_id;
+                final String timeSeries = "zmon.check." + cd.checkId;
 
-                Double ts = cd.check_result.get("ts").asDouble();
+                Double ts = cd.checkResult.get("ts").asDouble();
                 ts = ts * 1000.;
                 Long tsL = ts.longValue();
 
-                fillFlatValueMap(values, "", cd.check_result.get("value"));
+                fillFlatValueMap(values, "", cd.checkResult.get("value"));
 
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
 
-                    p.tags.putAll(getTags(e.getKey(), cd.entity_id, cd.entity));
+                    p.tags.putAll(getTags(e.getKey(), cd.entityId, cd.entity));
 
                     // handle zmon actuator metrics and extract the http status code into its own field
                     // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-                    if (config.getActuatorMetricChecks().contains(cd.check_id)) {
+                    if (config.getActuatorMetricChecks().contains(cd.checkId)) {
                         final String[] keyParts = e.getKey().split("\\.");
 
                         if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
@@ -202,7 +195,7 @@ public class KairosDBStore {
                 }
 
                 if (points.size() > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.check_id, points.size(), cd.entity_id);
+                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.checkId, points.size(), cd.entityId);
                 }
             }
 

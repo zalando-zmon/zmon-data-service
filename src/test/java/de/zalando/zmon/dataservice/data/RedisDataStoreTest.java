@@ -19,7 +19,7 @@ public class RedisDataStoreTest {
         CheckData cd = new CheckData();
         ObjectNode node = mapper.createObjectNode();
         node.put("value", "foobar");
-        cd.check_result = node;
+        cd.checkResult = node;
         String value = ds.buildValue(new AlertData(), cd);
         Assertions.assertThat(value).contains("\"value\":\"foobar\"");
     }
