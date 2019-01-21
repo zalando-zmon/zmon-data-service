@@ -44,9 +44,14 @@ public class DataServiceController {
     private final ApplianceVersionService applianceVersionService;
 
     @Autowired
-    public DataServiceController(RedisDataStore storage, DataServiceMetrics dataServiceMetrics,
-                                 @DefaultObjectMapper ObjectMapper defaultObjectMapper, @CustomObjectMapper ObjectMapper customObjectMapper,
-                                 List<WorkResultWriter> workResultWriter, ProxyWriter proxyWriter, DataServiceConfigProperties config, ApplianceVersionService applianceVersionService) {
+    public DataServiceController(RedisDataStore storage,
+                                 DataServiceMetrics dataServiceMetrics,
+                                 @DefaultObjectMapper ObjectMapper defaultObjectMapper,
+                                 @CustomObjectMapper ObjectMapper customObjectMapper,
+                                 List<WorkResultWriter> workResultWriter,
+                                 ProxyWriter proxyWriter,
+                                 DataServiceConfigProperties config,
+                                 ApplianceVersionService applianceVersionService) {
         this.storage = storage;
         this.metrics = dataServiceMetrics;
         this.mapper = defaultObjectMapper;
@@ -67,7 +72,7 @@ public class DataServiceController {
     }
 
     @RequestMapping(value = "/v1/data/trial-run/", method = RequestMethod.PUT, consumes = {"text/plain", "application/json"})
-    void putTrialRunData(@RequestBody String data) {
+    public void putTrialRunData(@RequestBody String data) {
         try {
             metrics.markTrialRunData();
             JsonNode node = mapper.readTree(data);
@@ -79,29 +84,50 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = {"/v1/data/{account}/{checkid}/", "/v1/data/{account}/{checkid}"}, method = RequestMethod.PUT, consumes = {"text/plain",
-            "application/json"})
-    void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId,
-                 @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+    @RequestMapping(
+            value = {"/v1/data/{account}/{checkid}/", "/v1/data/{account}/{checkid}"},
+            method = RequestMethod.PUT,
+            consumes = {"text/plain", "application/json"}
+    )
+    public void putData(@PathVariable(value = "checkid") int checkId,
+                        @PathVariable(value = "account") String accountId,
+                        @RequestBody String data,
+                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        putData(checkId, accountId, Optional.empty(), data, authHeader);
+    }
 
+    @RequestMapping(
+            value = {"/v2/data/{account}/{checkid}/{region}/", "/v2/data/{account}/{checkid}/{region}"},
+            method = RequestMethod.PUT,
+            consumes = {"text/plain", "application/json"}
+    )
+    public void putData(@PathVariable(value = "checkid") int checkId,
+                        @PathVariable(value = "account") String accountId,
+                        @PathVariable(value = "region") String region,
+                        @RequestBody String data,
+                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        putData(checkId, accountId, Optional.of(region), data, authHeader);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private void putData(int checkId, String accountId, Optional<String> region, String data, String authHeader) {
         proxyData(authHeader, accountId, String.valueOf(checkId), data);
 
         Optional<WorkerResult> wrOptional = extractAndFilter(data, accountId, checkId);
-        WriteData writeData = new WriteData(wrOptional, accountId, Optional.empty(), checkId, data);
+        WriteData writeData = new WriteData(wrOptional, accountId, region, checkId, data);
 
         // some writer are async, keep in mind
         workResultWriter.forEach(writer -> writer.write(writeData));
     }
 
-    protected void proxyData(String authHeader, String accountId, String checkId, String data) {
+    void proxyData(String authHeader, String accountId, String checkId, String data) {
         BearerToken.extractFromHeader(authHeader).ifPresent(t -> proxyWriter.write(t, accountId, checkId, data));
     }
 
-    protected Optional<WorkerResult> extractAndFilter(String data, String accountId, int checkId) {
+    Optional<WorkerResult> extractAndFilter(String data, String accountId, int checkId) {
         Optional<WorkerResult> wrOptional = Optional.empty();
         try {
-            wrOptional = Optional.ofNullable(valueMapper.readValue(data, new TypeReference<WorkerResult>() {
-            }));
+            wrOptional = Optional.ofNullable(valueMapper.readValue(data, new TypeReference<WorkerResult>() {}));
             if (wrOptional.isPresent()) {
 
                 metrics.markRate(wrOptional.get().results.size());
@@ -125,17 +151,4 @@ public class DataServiceController {
         }
     }
 
-    @RequestMapping(value = {"/v2/data/{account}/{checkid}/{region}/", "/v2/data/{account}/{checkid}/{region}"}, method = RequestMethod.PUT, consumes = {"text/plain",
-            "application/json"})
-    void putData(@PathVariable(value = "checkid") int checkId, @PathVariable(value = "account") String accountId, @PathVariable(value = "region") String region,
-                 @RequestBody String data, @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
-
-        proxyData(authHeader, accountId, String.valueOf(checkId), data);
-
-        Optional<WorkerResult> wrOptional = extractAndFilter(data, accountId, checkId);
-        WriteData writeData = new WriteData(wrOptional, accountId, Optional.of(region), checkId, data);
-
-        // some writer are async, keep in mind
-        workResultWriter.forEach(writer -> writer.write(writeData));
-    }
 }

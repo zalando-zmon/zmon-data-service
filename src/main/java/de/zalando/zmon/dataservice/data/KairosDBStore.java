@@ -25,20 +25,46 @@ public class KairosDBStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-    private final DataServiceConfigProperties config;
-
-    private final DataPointsQueryStore dataPointsQueryStore;
-
-    private final Set<String> entityTagFields;
     // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
             ImmutableSet.of("application_id", "application_version", "stack_name", "stack_version", "application",
                     "version", "account_alias", "cluster_alias", "alias", "namespace"));
-
     private static final String REPLACE_CHAR = "_";
     private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
-    public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
+    private final DataServiceConfigProperties config;
+    private final DataPointsQueryStore dataPointsQueryStore;
+    private final Set<String> entityTagFields;
+    private final DataServiceMetrics metrics;
+    private final int resultSizeWarning;
+
+    @Autowired
+    public KairosDBStore(final DataServiceConfigProperties config,
+                         final DataServiceMetrics metrics,
+                         final DataPointsQueryStore dataPointsQueryStore) {
+        this.metrics = metrics;
+        this.config = config;
+        this.dataPointsQueryStore = dataPointsQueryStore;
+        this.resultSizeWarning = config.getResultSizeWarning();
+
+        if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
+            this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
+        } else {
+            this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
+        }
+    }
+
+    private static String extractMetricName(String key) {
+        if (null == key || "".equals(key)) return null;
+        String[] keyParts = key.split("\\.");
+        String metricName = keyParts[keyParts.length - 1];
+        if ("".equals(metricName)) {
+            metricName = keyParts[keyParts.length - 2];
+        }
+        return metricName;
+    }
+
+    private void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
             values.put(prefix, (NumericNode) base);
         } else if (base instanceof TextNode) {
@@ -65,39 +91,6 @@ public class KairosDBStore {
         }
     }
 
-    private final DataServiceMetrics metrics;
-    private final int resultSizeWarning;
-
-    private static class DataPoint {
-        public String name;
-        public List<ArrayNode> datapoints = new LinkedList<>();
-        public Map<String, String> tags = new HashMap<>();
-    }
-
-    @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
-        this.metrics = metrics;
-        this.config = config;
-        this.dataPointsQueryStore = dataPointsQueryStore;
-        this.resultSizeWarning = config.getResultSizeWarning();
-
-        if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
-            this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
-        } else {
-            this.entityTagFields = new HashSet<>(config.getKairosdbTagFields());
-        }
-    }
-
-    public static String extractMetricName(String key) {
-        if (null == key || "".equals(key)) return null;
-        String[] keyParts = key.split("\\.");
-        String metricName = keyParts[keyParts.length - 1];
-        if ("".equals(metricName)) {
-            metricName = keyParts[keyParts.length - 2];
-        }
-        return metricName;
-    }
-
     public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
         tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
@@ -109,10 +102,6 @@ public class KairosDBStore {
                     tags.put(field, entity.get(field));
                 }
             }
-        }
-
-        if (null != key && !"".equals(key)) {
-            tags.put("key", KAIROSDB_INVALID_TAG_CHARS.matcher(key).replaceAll(REPLACE_CHAR));
         }
 
         String metricName = extractMetricName(key);
@@ -134,7 +123,7 @@ public class KairosDBStore {
         }
 
         try {
-            List<DataPoint> points = new LinkedList<>();
+            final List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
 
                 if (!cd.isSampled) {
@@ -142,51 +131,33 @@ public class KairosDBStore {
                     continue;
                 }
 
-                final Map<String, NumericNode> values = new HashMap<>();
                 final String timeSeries = "zmon.check." + cd.checkId;
 
-                Double ts = cd.checkResult.get("ts").asDouble();
-                ts = ts * 1000.;
-                Long tsL = ts.longValue();
+                final double ts = cd.checkResult.get("ts").asDouble();
+                final long tsL = (long) (ts * 1000L);
 
+                final Map<String, NumericNode> values = new HashMap<>();
                 fillFlatValueMap(values, "", cd.checkResult.get("value"));
 
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
-                    DataPoint p = new DataPoint();
-                    p.name = timeSeries;
+                    final DataPoint p = new DataPoint();
+                    final String key = e.getKey();
+                    final String[] keyParts = key.split("\\.");
 
-                    p.tags.putAll(getTags(e.getKey(), cd.entityId, cd.entity));
-
-                    // handle zmon actuator metrics and extract the http status code into its own field
-                    // put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-                    if (config.getActuatorMetricChecks().contains(cd.checkId)) {
-                        final String[] keyParts = e.getKey().split("\\.");
-
-                        if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
-                            // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
-                            continue;
-                        }
-
-                        if (keyParts.length >= 3) {
-                            final String statusCode = keyParts[keyParts.length - 2];
-                            p.tags.put("sc", statusCode);
-                            p.tags.put("sg", statusCode.substring(0, 1));
-
-                            if (keyParts.length >= 4) {
-                                StringBuilder b = new StringBuilder();
-                                for (int i = 0; i < keyParts.length - 3; ++i) {
-                                    if (i > 0) {
-                                        b.append(".");
-                                    }
-                                    b.append(keyParts[i]);
-                                }
-
-                                p.tags.put("path", b.toString());
-                            }
-                        }
+                    if (keyParts.length >= 3 && "health".equals(keyParts[0]) && "200".equals(keyParts[2])) {
+                        // remove the 200 health check data points, with 1/sec * instances with elb checks they just confuse
+                        continue;
                     }
 
-                    ArrayNode arrayNode = mapper.createArrayNode();
+                    p.name = timeSeries + "." + key;
+
+                    final Map<String, String> tags = getTags(key, cd.entityId, cd.entity);
+                    if (config.getActuatorMetricChecks().contains(cd.checkId)) {
+                        addActuatorMetricTags(keyParts, tags);
+                    }
+                    p.tags.putAll(tags);
+
+                    final ArrayNode arrayNode = mapper.createArrayNode();
                     arrayNode.add(tsL);
                     arrayNode.add(e.getValue());
 
@@ -199,7 +170,7 @@ public class KairosDBStore {
                 }
             }
 
-            if (points.size()>0){
+            if (points.size() > 0) {
                 metrics.incKairosDBDataPoints(points.size());
 
                 String query = mapper.writeValueAsString(points);
@@ -220,5 +191,34 @@ public class KairosDBStore {
             }
             metrics.markKairosError();
         }
+    }
+
+    /*
+        handle zmon actuator metrics and extract the http status code into its own field
+        put the first character of the status code into "status group" sg, this is only for easy kairosdb query
+    */
+    private void addActuatorMetricTags(String[] keyParts, Map<String, String> tags) {
+        if (keyParts.length >= 3) {
+            final String statusCode = keyParts[keyParts.length - 2];
+            tags.put("sc", statusCode);
+            tags.put("sg", statusCode.substring(0, 1));
+
+            if (keyParts.length >= 4) {
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < keyParts.length - 3; ++i) {
+                    if (i > 0) {
+                        b.append(".");
+                    }
+                    b.append(keyParts[i]);
+                }
+                tags.put("path", b.toString());
+            }
+        }
+    }
+
+    private static class DataPoint {
+        public String name;
+        List<ArrayNode> datapoints = new LinkedList<>();
+        Map<String, String> tags = new HashMap<>();
     }
 }
