@@ -7,10 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.data.HttpClientFactory;
-import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -26,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
@@ -59,69 +56,29 @@ public class KairosdbProxy {
         }
     }
 
-    private void proxy(Request request, Writer writer, HttpServletResponse response) throws IOException {
-        if (!enabled) {
-            writer.write("");
-            return;
-        }
-
-        try {
-            String data = executor.execute(request).returnContent().toString();
-            response.setContentType("application/json");
-            writer.write(data);
-        } catch (HttpResponseException hre) {
-            log.warn("KairosDB returned non 2xx response: {}", hre.getMessage());
-            response.sendError(hre.getStatusCode());
-        } catch (IOException e) {
-            log.warn("I/O error while calling KairosDB: {}", e.getMessage());
-            response.sendError(HttpServletResponse.SC_BAD_GATEWAY);
-        }
-    }
-
     @ResponseBody
     @RequestMapping(value = {"/api/v1/datapoints/query"}, method = RequestMethod.POST, produces = "application/json")
     public void kairosDBPost(@RequestBody final JsonNode node, final Writer writer,
                              final HttpServletResponse response) throws IOException {
 
-        String metricName;
+        final String checkId = getCheckId(node);
+
         try {
-            metricName = node.get("metrics").get(0).get("name").textValue();
+            fixMetricNames(node);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-//        if (!metricName.startsWith("zmon.check.")) {
-//            response.setContentType("application/json");
-//            writer.write("{}");
-//            return;
-//        }
 
-        final String checkId = metricName.replace("zmon.check.", "");
+        try (Timer.Context ignored = metricRegistry.timer("kairosdb.check.query." + checkId).time()) {
+            alignQueriesToMinutes(node);
 
-        Timer.Context timer = metricRegistry.timer("kairosdb.check.query." + checkId).time();
-
-        // align all queries to full minutes
-        if (node instanceof ObjectNode) {
-            ObjectNode q = (ObjectNode) node;
-            q.put("cache_time", 60);
-            if (q.has("start_absolute")) {
-                long start = q.get("start_absolute").asLong();
-                start = start - (start % 60000);
-                q.put("start_absolute", start);
-            }
+            final String kairosDBURL = url + "/api/v1/datapoints/query";
+            final Request request = Request.Post(kairosDBURL)
+                    .addHeader("X-ZMON-CHECK-ID", checkId)
+                    .bodyString(node.toString(), ContentType.APPLICATION_JSON);
+            proxy(request, writer, response);
         }
-
-        final String kairosDBURL = url + "/api/v1/datapoints/query";
-
-        proxy(Request.Post(kairosDBURL)
-                .addHeader("X-ZMON-CHECK-ID", checkId)
-                .bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response
-        );
-
-        if (timer != null) {
-            timer.stop();
-        }
-
     }
 
     @ResponseBody
@@ -141,4 +98,62 @@ public class KairosdbProxy {
 
         proxy(Request.Get(kairosDBURL), writer, response);
     }
+
+    private String getCheckId(@RequestBody JsonNode node) {
+        final JsonNode metrics = node.get("metrics");
+        if (metrics.size() > 0) {
+            final Optional<JsonNode> nameNode = Optional.ofNullable(metrics.get(0).get("nameNode"));
+            final Optional<String> checkId = nameNode.map(n -> n.textValue().replace("zmon.check.", ""));
+            return checkId.orElse("");
+        }
+        return "";
+    }
+
+
+    private void fixMetricNames(@RequestBody JsonNode node) {
+        for (final JsonNode metric : node.get("metrics")) {
+            final JsonNode tags = metric.get("tags");
+            final Optional<JsonNode> keyNode = Optional.ofNullable(tags.get("key"));
+            if (keyNode.isPresent()) {
+                final String prefix = metric.get("name").textValue();
+                final String suffix = keyNode.get().textValue();
+                final String metricName = prefix + "." + suffix;
+                ((ObjectNode) metric).put("name", metricName);
+                ((ObjectNode) tags).remove("key");
+            }
+        }
+    }
+
+    private void alignQueriesToMinutes(@RequestBody JsonNode node) {
+        if (node.isObject()) {
+            final ObjectNode q = (ObjectNode) node;
+            q.put("cache_time", 60);
+            if (q.has("start_absolute")) {
+                long start = q.get("start_absolute").asLong();
+                start = start - (start % 60000);
+                q.put("start_absolute", start);
+            }
+        }
+    }
+
+    private void proxy(Request request, Writer writer, HttpServletResponse response) throws IOException {
+        if (!enabled) {
+            writer.write("");
+            return;
+        }
+
+        try {
+            final String data = executor.execute(request).returnContent().toString();
+            response.setContentType("application/json");
+            writer.write(data);
+        } catch (HttpResponseException hre) {
+            log.warn("KairosDB returned non 2xx response: {}", hre.getMessage());
+            response.sendError(hre.getStatusCode());
+        } catch (IOException e) {
+            log.warn("I/O error while calling KairosDB: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_GATEWAY);
+        }
+    }
+
+
 }
