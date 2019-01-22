@@ -30,7 +30,6 @@ public class KairosDBTest {
         Map<String, String> tags = store.getTags("fragment.fjo:rd/c@rt?hide_footer=true", "host01[aws:1234]", entity);
 
         Map<String, String> expected = new HashMap<>();
-        expected.put("key", "fragment.fjo_rd/c_rt_hide_footer_true");
         expected.put("stack_name", "data-service");
         expected.put("application_id", "zmon-data-service");
         expected.put("entity", "host01_aws_1234_");

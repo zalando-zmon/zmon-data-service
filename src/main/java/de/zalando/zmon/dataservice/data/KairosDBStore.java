@@ -33,17 +33,17 @@ public class KairosDBStore {
     private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
     private final DataServiceConfigProperties config;
-    private final DataPointsQueryStore dataPointsQueryStore;
-    private final Set<String> entityTagFields;
     private final DataServiceMetrics metrics;
+    private final DataPointsQueryStore dataPointsQueryStore;
     private final int resultSizeWarning;
+    private final Set<String> entityTagFields;
 
     @Autowired
     public KairosDBStore(final DataServiceConfigProperties config,
                          final DataServiceMetrics metrics,
                          final DataPointsQueryStore dataPointsQueryStore) {
-        this.metrics = metrics;
         this.config = config;
+        this.metrics = metrics;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
 
