@@ -99,7 +99,7 @@ public class KairosdbProxy {
         proxy(Request.Get(kairosDBURL), writer, response);
     }
 
-    private String getCheckId(@RequestBody JsonNode node) {
+    private String getCheckId(final JsonNode node) {
         final JsonNode metrics = node.get("metrics");
         if (metrics.size() > 0) {
             final Optional<JsonNode> nameNode = Optional.ofNullable(metrics.get(0).get("nameNode"));
@@ -110,7 +110,7 @@ public class KairosdbProxy {
     }
 
 
-    private void fixMetricNames(@RequestBody JsonNode node) {
+    private void fixMetricNames(final JsonNode node) {
         for (final JsonNode metric : node.get("metrics")) {
             final JsonNode tags = metric.get("tags");
             final Optional<JsonNode> keyNode = Optional.ofNullable(tags.get("key"));
@@ -124,7 +124,7 @@ public class KairosdbProxy {
         }
     }
 
-    private void alignQueriesToMinutes(@RequestBody JsonNode node) {
+    private void alignQueriesToMinutes(final JsonNode node) {
         if (node.isObject()) {
             final ObjectNode q = (ObjectNode) node;
             q.put("cache_time", 60);
@@ -136,7 +136,9 @@ public class KairosdbProxy {
         }
     }
 
-    private void proxy(Request request, Writer writer, HttpServletResponse response) throws IOException {
+    private void proxy(final Request request,
+                       final Writer writer,
+                       final HttpServletResponse response) throws IOException {
         if (!enabled) {
             writer.write("");
             return;
