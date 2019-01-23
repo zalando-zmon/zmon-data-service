@@ -104,6 +104,10 @@ public class KairosDBStore {
             }
         }
 
+        if (null != key && !"".equals(key)) {
+            tags.put("key", KAIROSDB_INVALID_TAG_CHARS.matcher(key).replaceAll(REPLACE_CHAR));
+        }
+
         String metricName = extractMetricName(key);
         if (null != metricName) {
             tags.put("metric", KAIROSDB_INVALID_TAG_CHARS.matcher(metricName).replaceAll(REPLACE_CHAR));
