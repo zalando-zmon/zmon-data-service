@@ -86,8 +86,9 @@ public class KairosdbProxy {
     public void kairosDBtags(@RequestBody final JsonNode node,
                              final Writer writer,
                              final HttpServletResponse response) throws IOException {
-        final String kairosDBURL = url + "/api/v1/datapoints/query/tags";
+        fixMetricNames(node);
 
+        final String kairosDBURL = url + "/api/v1/datapoints/query/tags";
         proxy(Request.Post(kairosDBURL).bodyString(node.toString(), ContentType.APPLICATION_JSON), writer, response);
     }
 
@@ -95,7 +96,6 @@ public class KairosdbProxy {
     @RequestMapping(value = {"/api/v1/metricnames"}, method = RequestMethod.GET, produces = "application/json")
     public void kairosDBmetrics(final Writer writer, final HttpServletResponse response) throws IOException {
         final String kairosDBURL = url + "/api/v1/metricnames";
-
         proxy(Request.Get(kairosDBURL), writer, response);
     }
 
@@ -113,7 +113,7 @@ public class KairosdbProxy {
     private void fixMetricNames(final JsonNode node) {
         for (final JsonNode metric : node.get("metrics")) {
             final Optional<JsonNode> tags = Optional.ofNullable(metric.get("tags"));
-            final Optional<JsonNode> keyNode = tags.map(t -> t.get("key"));
+            final Optional<JsonNode> keyNode = tags.map(t -> t.get("key")).filter(k -> !k.textValue().isEmpty());
             if (keyNode.isPresent()) {
                 final String prefix = metric.get("name").textValue();
                 final String suffix = keyNode.get().textValue();
