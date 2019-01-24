@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
@@ -225,9 +226,13 @@ public class KairosDBStore {
         }
     }
 
+
     private static class DataPoint {
-        public String name;
+        @JsonProperty
+        String name;
+        @JsonProperty
         List<ArrayNode> datapoints = new LinkedList<>();
+        @JsonProperty
         Map<String, String> tags = new HashMap<>();
     }
 }
