@@ -51,6 +51,7 @@ public class DataServiceMetrics {
 
     private final Meter kairosErrorMeter;
     private final Meter kairosHostErrorMeter;
+    private final Meter m3DbErrorMeter;
     private final Meter redisErrorMeter;
     private final Meter parseError;
 
@@ -70,6 +71,7 @@ public class DataServiceMetrics {
         this.parseError = metrics.meter("data-service.parse-error");
         this.kairosErrorMeter = metrics.meter("data-service.kairos-errors");
         this.kairosHostErrorMeter = metrics.meter("data-service.kairos-host-errors");
+        this.m3DbErrorMeter = metrics.meter("data-service.kairos-errors");
         this.redisErrorMeter = metrics.meter("data-service.redis-errors");
         this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
         this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
@@ -130,6 +132,10 @@ public class DataServiceMetrics {
 
     public void markKairosError() {
         kairosErrorMeter.mark();
+    }
+
+    public void markM3DbError() {
+        m3DbErrorMeter.mark();
     }
 
     public void markKairosHostErrors(long n) {

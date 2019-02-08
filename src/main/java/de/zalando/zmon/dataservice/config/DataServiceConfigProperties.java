@@ -57,6 +57,8 @@ public class DataServiceConfigProperties {
     private int kairosdbSockettimeout = 500;
     private boolean kairosdbEnabled = true;
 
+    private boolean m3DbEnabled = false;
+
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
     private int dataProxyPoolSize = 50;
@@ -133,6 +135,14 @@ public class DataServiceConfigProperties {
 
     public void setKairosdbEnabled(boolean kairosdbEnabled) {
         this.kairosdbEnabled = kairosdbEnabled;
+    }
+
+    public boolean isM3DbEnabled() {
+        return m3DbEnabled;
+    }
+
+    public void setM3DbEnabled(boolean m3DbEnabled) {
+        this.m3DbEnabled = m3DbEnabled;
     }
 
     public int getDataProxyPoolSize() {
