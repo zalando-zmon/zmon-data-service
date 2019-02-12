@@ -83,7 +83,7 @@ public class M3DbStore {
 
                     // M3Db data point format
                     M3DbDataPoint dataPoint = new M3DbDataPoint();
-                    dataPoint.timeStamp = checkData.timeStampLong.;
+                    dataPoint.timeStamp = checkData.timeStampLong;
                     dataPoint.value = metrics.value;
 
                     m3DbMetrics.dataPoint = dataPoint;
