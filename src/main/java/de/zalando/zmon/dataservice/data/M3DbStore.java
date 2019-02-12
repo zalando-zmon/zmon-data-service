@@ -1,37 +1,58 @@
 package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.collect.ImmutableSet;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import sun.rmi.runtime.Log;
+import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class M3DbStore {
-    private static final Logger LOG = LoggerFactory.getLogger(KairosDBStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(M3DbStore.class);
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private final DataServiceConfigProperties config;
+
 
 
     private final DataPointsQueryStore dataPointsQueryStore;
     private final DataServiceMetrics metrics;
+    private final int resultSizeWarning;
 
+    private static final String M3DB_DEFAULT_NAMESPACE = "default";
 
     @Autowired
     M3DbStore(DataPointsQueryStore dataPointsQueryStore, DataServiceMetrics metrics, DataServiceConfigProperties config) {
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.metrics = metrics;
         this.config = config;
+        this.resultSizeWarning = config.getResultSizeWarning();
+    }
+
+    private static class M3DbMetrics {
+        public final String nameSpace = M3DB_DEFAULT_NAMESPACE;
+        public String id;
+        public List<M3DbTag> tags;
+        public M3DbDataPoint dataPoint;
+    }
+    private static class M3DbTag{
+        public String name;
+        public String value;
+    }
+    private static class M3DbDataPoint {
+        public Long timeStamp;
+        public Long value;
     }
 
     void store(WorkerResult wr) {
@@ -45,61 +66,53 @@ public class M3DbStore {
         }
 
         try {
-            String query = "";
-
+            final List<M3DbMetrics> points = new LinkedList<>();
             for (CheckData checkData : wr.results) {
 
-                // TODO: Move Sampling login to the generic data model
+                for (CheckData.ZmonTimeSeriesMetrics metrics: checkData.dataPoints) {
+                    M3DbMetrics m3DbMetrics = new M3DbMetrics();
+                    m3DbMetrics.id = metrics.id;
 
-                Map<String, NumericNode> value = new HashMap<>();
-                String timeSeries_id = "zmon.check.id." + checkData.checkId;
+                    // M3Db tag format
+                    for (Map.Entry<String, String> tag: metrics.tags.entrySet()) {
+                        M3DbTag m3dbTag = new M3DbTag();
+                        m3dbTag.name = tag.getKey();
+                        m3dbTag.value = tag.getValue();
+                        m3DbMetrics.tags.add(m3dbTag);
+                    }
 
-                fillFlatValueMap(value, "", checkData.checkResult.get("value"));
+                    // M3Db data point format
+                    M3DbDataPoint dataPoint = new M3DbDataPoint();
+                    dataPoint.timeStamp = checkData.timeStampLong.;
+                    dataPoint.value = metrics.value;
 
-                //TODO: Translate ZMON metrics format to M3DB metrics format
-            }
+                    m3DbMetrics.dataPoint = dataPoint;
+                    points.add(m3DbMetrics);
 
-            int err = dataPointsQueryStore.store(query);
-            if (err > 0) {
-                metrics.markM3DbError();
-            }
-        } catch (Exception e) {
-            LOG.error("M3Db write failed", e);
-        }
-    }
-
-    /**
-     * TODO: This utility function logic needs to move to generic data model. This is not specific to M3DB
-     * Flattens the JSONNode that contains a single check results into a map
-     *
-     * @param values
-     * @param prefix
-     * @param base
-     */
-    public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
-        if (base instanceof NumericNode) {
-            values.put(prefix, (NumericNode) base);
-        } else if (base instanceof TextNode) {
-            // try to convert string node in case it is numeric
-            try {
-                TextNode t = (TextNode) base;
-                BigDecimal db = new BigDecimal(t.textValue());
-                DecimalNode dn = new DecimalNode(db);
-                values.put(prefix, dn);
-            } catch (NumberFormatException ex) {
-                // Ignore
-            }
-        } else if (base instanceof ObjectNode) {
-            Iterator<String> i = base.fieldNames();
-            while (i.hasNext()) {
-                String k = i.next();
-
-                if (prefix.length() == 0) {
-                    fillFlatValueMap(values, k, base.get(k));
-                } else {
-                    fillFlatValueMap(values, prefix + "." + k, base.get(k));
+                }
+                if (points.size() > resultSizeWarning) {
+                    LOG.warn("result size warning: check={} data-points={} entity={}", checkData.checkId, points.size(), checkData.entityId);
                 }
             }
+            if (points.size()>0){
+                metrics.incM3DBDataPoints(points.size());
+                String query = mapper.writeValueAsString(points);
+
+                if (config.isLogM3dbRequests()) {
+                    LOG.info("M3DB Query: {}", query);
+                }
+
+                // Store datapoints query!
+                int err = dataPointsQueryStore.store(query);
+                if (err > 0) {
+                    metrics.markM3DbHostErrors(err);
+                }
+            }
+        } catch (Exception e) {
+            if (config.isLogM3dbErrors()){
+                LOG.error("M3Db write path failed", e);
+            }
+            metrics.markM3DbError();
         }
     }
 }

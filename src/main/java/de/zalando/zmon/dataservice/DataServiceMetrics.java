@@ -58,6 +58,7 @@ public class DataServiceMetrics {
     private final Meter trialRunDataCount;
     private final Meter trialRunDataError;
     private final Meter kairosDbDataPointsCount;
+    private final Meter m3DbDataPointsCount;
 
     private final Timer kairosDBTimer;
 
@@ -79,6 +80,7 @@ public class DataServiceMetrics {
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
         this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
         this.kairosDbDataPointsCount = metrics.meter("data-service.kairosdb-points.written");
+        this.m3DbDataPointsCount = metrics.meter("data-service.m3db-points.written");
         this.alertDurations = metrics.histogram("data-service.alert-durations");
     }
 
@@ -142,6 +144,10 @@ public class DataServiceMetrics {
         kairosErrorMeter.mark(n);
     }
 
+    public void markM3DbHostErrors(long n) {
+        m3DbErrorMeter.mark(n);
+    }
+
     public void markRedisError() {
         redisErrorMeter.mark();
     }
@@ -194,6 +200,10 @@ public class DataServiceMetrics {
 
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);
+    }
+
+    public void incM3DBDataPoints(long c) {
+        m3DbDataPointsCount.mark(c);
     }
 
     public void updateAlertDurations(long duration) {

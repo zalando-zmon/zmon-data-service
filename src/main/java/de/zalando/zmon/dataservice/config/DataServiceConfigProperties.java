@@ -39,6 +39,10 @@ public class DataServiceConfigProperties {
     private boolean logKairosdbRequests = false;
     private boolean logKairosdbErrors = false;
 
+    private boolean logM3dbRequests = false;
+    private boolean logM3dbErrors = false;
+
+
     private boolean trackCheckRate = false;
 
     private List<Integer> actuatorMetricChecks = new ArrayList<>();
@@ -370,6 +374,22 @@ public class DataServiceConfigProperties {
 
     public void setLogKairosdbErrors(boolean logKairosdbErrors) {
         this.logKairosdbErrors = logKairosdbErrors;
+    }
+
+    public boolean isLogM3dbRequests() {
+        return logM3dbRequests;
+    }
+
+    public void setLogM3dbRequests(boolean logM3dbRequests) {
+        this.logM3dbRequests = logM3dbRequests;
+    }
+
+    public boolean isLogM3dbErrors() {
+        return logM3dbErrors;
+    }
+
+    public void setLogM3dbErrors(boolean logM3dbErrors) {
+        this.logM3dbErrors = logM3dbErrors;
     }
 
     public List<Integer> getActuatorMetricChecks() {

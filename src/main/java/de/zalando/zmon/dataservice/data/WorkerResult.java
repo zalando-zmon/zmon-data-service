@@ -18,4 +18,10 @@ public class WorkerResult {
                 ", team='" + team + '\'' +
                 ", " + (results == null || results.isEmpty() ? "no results" : results.size() + " result(s)") + "}";
     }
+
+    public void formatTimeSeriesMetrics(){
+        for (CheckData checkData: this.results) {
+            checkData.formatTimeSeriesMetrics();
+        }
+    }
 }
