@@ -116,8 +116,6 @@ public class DataServiceController {
                     wrOptional.get().results = wrOptional.get().results.stream()
                             .filter(x -> x.entityId.contains(accountId)).collect(Collectors.toList());
                 }
-                // Format incoming Checkdata into Generic time series data model
-                wrOptional.get().formatTimeSeriesMetrics();
             }
             return wrOptional;
         } catch (Exception e) {

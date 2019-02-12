@@ -13,6 +13,10 @@ import java.util.Optional;
 // @Component
 public class DataServiceMetrics {
 
+    public Timer getM3DBTimer() {
+        return m3DBTimer;
+    }
+
     public static class LastUpdateGauge implements Gauge<Long> {
         private long v = System.currentTimeMillis();
 
@@ -61,6 +65,7 @@ public class DataServiceMetrics {
     private final Meter m3DbDataPointsCount;
 
     private final Timer kairosDBTimer;
+    private final Timer m3DBTimer;
 
     private final Meter proxyErrorMeter;
     private final Meter eventlogErrorMeter;
@@ -77,6 +82,7 @@ public class DataServiceMetrics {
         this.trialRunDataCount = metrics.meter("data-service.trial-run.data");
         this.trialRunDataError = metrics.meter("data-service.trial-run.data.error");
         this.kairosDBTimer = metrics.timer("data-service.kairosdb.timer");
+        this.m3DBTimer = metrics.timer("data-service.m3db.timer");
         this.proxyErrorMeter = metrics.meter("data-service.proxy-errors");
         this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
         this.kairosDbDataPointsCount = metrics.meter("data-service.kairosdb-points.written");
@@ -153,11 +159,10 @@ public class DataServiceMetrics {
     }
 
     public void markAccount(String account, Optional<String> region, int size) {
-        if(region.isPresent()) {
+        if (region.isPresent()) {
             getOrCreateMeter(accountByteMeters, "ds.acc." + account + "." + region.get() + ".check.data-rate").mark(size);
             getOrCreateMeter(accountRateMeters, "ds.acc." + account + "." + region.get() + ".check.check-rate").mark();
-        }
-        else {
+        } else {
             getOrCreateMeter(accountByteMeters, "ds.acc." + account + ".check.data-rate").mark(size);
             getOrCreateMeter(accountRateMeters, "ds.acc." + account + ".check.check-rate").mark();
         }
@@ -196,7 +201,9 @@ public class DataServiceMetrics {
         proxyErrorMeter.mark();
     }
 
-    public void markEventLogError() { eventlogErrorMeter.mark(); }
+    public void markEventLogError() {
+        eventlogErrorMeter.mark();
+    }
 
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);

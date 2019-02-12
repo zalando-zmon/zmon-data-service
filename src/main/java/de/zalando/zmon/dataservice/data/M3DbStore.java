@@ -1,29 +1,21 @@
 package de.zalando.zmon.dataservice.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.DecimalNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.collect.ImmutableSet;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class M3DbStore {
     private static final Logger LOG = LoggerFactory.getLogger(M3DbStore.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final DataServiceConfigProperties config;
-
 
 
     private final DataPointsQueryStore dataPointsQueryStore;
@@ -46,35 +38,37 @@ public class M3DbStore {
         public List<M3DbTag> tags;
         public M3DbDataPoint dataPoint;
     }
-    private static class M3DbTag{
+
+    private static class M3DbTag {
         public String name;
         public String value;
     }
+
     private static class M3DbDataPoint {
         public Long timeStamp;
         public Long value;
     }
 
-    void store(WorkerResult wr) {
+    void store(List<GenericMetrics> genericMetrics) {
         if (!config.isM3DbEnabled()) {
             return;
         }
 
-        if (wr == null || wr.results == null || wr.results.isEmpty()) {
-            LOG.warn("Received a request with invalid results: {}", wr);
+        if (genericMetrics == null || genericMetrics.isEmpty()) {
+            LOG.warn("Received a request with invalid results: {}", genericMetrics);
             return;
         }
 
         try {
             final List<M3DbMetrics> points = new LinkedList<>();
-            for (CheckData checkData : wr.results) {
+            for (GenericMetrics m : genericMetrics) {
 
-                for (CheckData.ZmonTimeSeriesMetrics metrics: checkData.dataPoints) {
+                for (GenericMetrics.GenericDataPoint dp : m.getDataPoints()) {
                     M3DbMetrics m3DbMetrics = new M3DbMetrics();
-                    m3DbMetrics.id = metrics.id;
+                    m3DbMetrics.id = dp.getId();
 
                     // M3Db tag format
-                    for (Map.Entry<String, String> tag: metrics.tags.entrySet()) {
+                    for (Map.Entry<String, String> tag : dp.getTags().entrySet()) {
                         M3DbTag m3dbTag = new M3DbTag();
                         m3dbTag.name = tag.getKey();
                         m3dbTag.value = tag.getValue();
@@ -83,18 +77,19 @@ public class M3DbStore {
 
                     // M3Db data point format
                     M3DbDataPoint dataPoint = new M3DbDataPoint();
-                    dataPoint.timeStamp = checkData.timeStampLong;
-                    dataPoint.value = metrics.value;
+                    dataPoint.timeStamp = m.getTimeStampLong();
+                    dataPoint.value = dp.getValue();
 
                     m3DbMetrics.dataPoint = dataPoint;
                     points.add(m3DbMetrics);
 
                 }
                 if (points.size() > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={}", checkData.checkId, points.size(), checkData.entityId);
+                    // TODO: entityID
+                    LOG.warn("result size warning: check={} data-points={} entity={}", m.getCheckId(), points.size());
                 }
             }
-            if (points.size()>0){
+            if (points.size() > 0) {
                 metrics.incM3DBDataPoints(points.size());
                 String query = mapper.writeValueAsString(points);
 
@@ -109,7 +104,7 @@ public class M3DbStore {
                 }
             }
         } catch (Exception e) {
-            if (config.isLogM3dbErrors()){
+            if (config.isLogM3dbErrors()) {
                 LOG.error("M3Db write path failed", e);
             }
             metrics.markM3DbError();

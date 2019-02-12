@@ -1,15 +1,13 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.codahale.metrics.Timer;
+import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import com.codahale.metrics.Timer;
-
-import de.zalando.zmon.dataservice.DataServiceMetrics;
 
 import java.util.List;
 
@@ -44,7 +42,5 @@ public class KairosDbWorkResultWriter extends AbstractWorkResultWriter {
             c.stop();
         }
     }
-
 }
 
-}

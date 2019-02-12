@@ -36,15 +36,18 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
     public void write(WriteData writeData) {
         if (writeData.getWorkerResultOptional().isPresent()) {
             final WorkerResult workerResult = writeData.getWorkerResultOptional().get();
-            workerResult.results.forEach(this::formatTimeSeriesMetrics);
-            List<GenericMetrics> metrics = null;
+            List<GenericMetrics> metrics = new ArrayList<>();
+            for (CheckData cd : workerResult.results) {
+                formatTimeSeriesMetrics(cd, metrics);
+            }
             store(metrics);
         }
     }
 
     protected abstract void store(List<GenericMetrics> metrics);
 
-    public void formatTimeSeriesMetrics(final CheckData checkData){
+    public void formatTimeSeriesMetrics(final CheckData checkData, List<GenericMetrics> metrics) {
+
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
             this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
         } else {
@@ -57,13 +60,18 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
         }
 
         final double timeStamp = checkData.checkResult.get("ts").asDouble();
-        checkData.timeStampLong = (long) (timeStamp * 1000L);
-
+        Long timeStampLong = (long) (timeStamp * 1000L);
         String timeSeries = TIME_SERIES_PREFIX + checkData.checkId;
+
+        GenericMetrics genericMetric = new GenericMetrics(timeSeries, timeStampLong);
 
         Map<String, NumericNode> values = new HashMap<>();
         fillFlatValueMap(values, "", checkData.checkResult.get("value"));
-        mapDataPoints(checkData, values, timeSeries);
+
+        // Translate datapoints to generic format
+        mapDataPoints(checkData, values, genericMetric);
+
+        metrics.add(genericMetric);
     }
 
     /**
@@ -73,7 +81,7 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
      * @param prefix
      * @param base
      */
-    public void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
+    private void fillFlatValueMap(Map<String, NumericNode> values, String prefix, JsonNode base) {
         if (base instanceof NumericNode) {
             values.put(prefix, (NumericNode) base);
         } else if (base instanceof TextNode) {
@@ -100,11 +108,11 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
         }
     }
 
-    public void mapDataPoints(CheckData checkData, Map<String, NumericNode> values, String timeSeries){
+    private void mapDataPoints(CheckData checkData, Map<String, NumericNode> values, GenericMetrics genericMetric) {
 
         for (Map.Entry<String, NumericNode> e : values.entrySet()) {
-
-            CheckData.ZmonTimeSeriesMetrics metrics = new CheckData.ZmonTimeSeriesMetrics();
+            String id;
+            Long value;
 
             String key = e.getKey();
             String[] keyParts = key.split("\\.");
@@ -114,25 +122,25 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
             }
 
             // Data points id = "zmon.check.1234.cpu_latency_p99"
-            if (StringUtils.hasText(key)){
-                metrics.id = timeSeries + "." + key;
+            if (StringUtils.hasText(key)) {
+                id = genericMetric.getCheckId() + "." + key;
             } else {
-                metrics.id = timeSeries;
+                id = genericMetric.getCheckId();
             }
+
+            value = e.getValue().asLong();
 
             final Map<String, String> tags = getTags(key, checkData.entityId, checkData.entity);
             if (config.getActuatorMetricChecks().contains(checkData.checkId)) {
                 addActuatorMetricTags(keyParts, tags);
             }
 
-            metrics.tags = tags;
-            metrics.value = e.getValue().asLong();
-
-            checkData.dataPoints.add(metrics);
+            GenericMetrics.GenericDataPoint dataPoint = new GenericMetrics.GenericDataPoint(id, value, tags);
+            genericMetric.getDataPoints().add(dataPoint);
         }
     }
 
-    public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
+    private Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
         tags.put("entity", INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
 
@@ -167,10 +175,10 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
         return metricName;
     }
 
-    /*
-        handle zmon actuator metrics and extract the http status code into its own field
-        put the first character of the status code into "status group" sg, this is only for easy kairosdb query
-    */
+    /**
+     * handle zmon actuator metrics and extract the http status code into its own field
+     * put the first character of the status code into "status group" sg, this is only for easy kairosdb query
+     */
     private void addActuatorMetricTags(String[] keyParts, Map<String, String> tags) {
         if (keyParts.length >= 3) {
             final String statusCode = keyParts[keyParts.length - 2];
