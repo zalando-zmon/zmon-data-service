@@ -30,6 +30,7 @@ public class M3DbWorkResultWriter extends AbstractWorkResultWriter {
     }
 
     @Override
+    // TODO: Use async writer
     public void store(List<GenericMetrics> genericMetrics) {
         log.debug("Writing to M3DB ...");
         Timer.Context c = metrics.getM3DBTimer().time();
