@@ -21,7 +21,7 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
                     "version", "account_alias", "cluster_alias", "alias", "namespace"));
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractWorkResultWriter.class);
-    private static final String TIME_SERIES_PREFIX = "zmon.check.id.";
+    private static final String TIME_SERIES_METRICS_NAME_PREFIX = "zmon.check.id.";
     private static final String REPLACE_CHAR = "_";
     private static final Pattern INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
 
@@ -61,9 +61,8 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
 
         final double timeStamp = checkData.checkResult.get("ts").asDouble();
         Long timeStampLong = (long) (timeStamp * 1000L);
-        String timeSeries = TIME_SERIES_PREFIX + checkData.checkId;
 
-        GenericMetrics genericMetric = new GenericMetrics(timeSeries, timeStampLong);
+        GenericMetrics genericMetric = new GenericMetrics(String.valueOf(checkData.checkId), timeStampLong);
 
         Map<String, NumericNode> values = new HashMap<>();
         fillFlatValueMap(values, "", checkData.checkResult.get("value"));
@@ -123,9 +122,9 @@ public abstract class AbstractWorkResultWriter implements WorkResultWriter {
 
             // Data points id = "zmon.check.1234.cpu_latency_p99"
             if (StringUtils.hasText(key)) {
-                id = genericMetric.getCheckId() + "." + key;
+                id = TIME_SERIES_METRICS_NAME_PREFIX + genericMetric.getCheckId() + "." + key;
             } else {
-                id = genericMetric.getCheckId();
+                id = TIME_SERIES_METRICS_NAME_PREFIX + genericMetric.getCheckId();
             }
 
             value = e.getValue().asLong();
