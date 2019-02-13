@@ -6,6 +6,7 @@ import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,8 +30,8 @@ public class M3DbWorkResultWriter extends AbstractWorkResultWriter {
         this.metrics = metrics;
     }
 
+    @Async(M3DB_WRITER_EXECUTOR)
     @Override
-    // TODO: Use async writer
     public void store(List<GenericMetrics> genericMetrics) {
         log.debug("Writing to M3DB ...");
         Timer.Context c = metrics.getM3DBTimer().time();

@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import de.zalando.zmon.dataservice.data.KairosDbWorkResultWriter;
+import de.zalando.zmon.dataservice.data.M3DbWorkResultWriter;
 import de.zalando.zmon.dataservice.data.RedisWorkerResultWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,11 @@ public class ZMonAsyncConfigurer extends AsyncConfigurerSupport {
     @Bean(KairosDbWorkResultWriter.KAIROS_WRITER_EXECUTOR)
     public Executor kairosWriterExecutor() {
         return createExecutor("kairos");
+    }
+
+    @Bean(M3DbWorkResultWriter.M3DB_WRITER_EXECUTOR)
+    public Executor m3DbWriterExecutor() {
+        return createExecutor("m3Db");
     }
 
     private Executor createExecutor(final String name) {

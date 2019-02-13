@@ -61,7 +61,13 @@ public class DataServiceConfigProperties {
     private int kairosdbSockettimeout = 500;
     private boolean kairosdbEnabled = true;
 
-    private boolean m3DbEnabled = false;
+    private boolean m3dbEnabled = false;
+    private int m3dbConnections = 50;
+    private int m3dbTimeout = 1000;
+    private int m3dbSocketTimeout = 500;
+
+    private List<List<String>> m3DbWriteUrls;
+
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
@@ -141,12 +147,12 @@ public class DataServiceConfigProperties {
         this.kairosdbEnabled = kairosdbEnabled;
     }
 
-    public boolean isM3DbEnabled() {
-        return m3DbEnabled;
+    public boolean isM3dbEnabled() {
+        return m3dbEnabled;
     }
 
-    public void setM3DbEnabled(boolean m3DbEnabled) {
-        this.m3DbEnabled = m3DbEnabled;
+    public void setM3dbEnabled(boolean m3dbEnabled) {
+        this.m3dbEnabled = m3dbEnabled;
     }
 
     public int getDataProxyPoolSize() {
@@ -598,6 +604,38 @@ public class DataServiceConfigProperties {
 
     public void setConnectionsTimeToLive(long connectionsTimeToLive) {
         this.connectionsTimeToLive = connectionsTimeToLive;
+    }
+
+    public int getM3dbConnections() {
+        return m3dbConnections;
+    }
+
+    public void setM3dbConnections(int m3dbConnections) {
+        this.m3dbConnections = m3dbConnections;
+    }
+
+    public int getM3dbTimeout() {
+        return m3dbTimeout;
+    }
+
+    public void setM3dbTimeout(int m3dbTimeout) {
+        this.m3dbTimeout = m3dbTimeout;
+    }
+
+    public int getM3dbSocketTimeout() {
+        return m3dbSocketTimeout;
+    }
+
+    public void setM3dbSocketTimeout(int m3dbSocketTimeout) {
+        this.m3dbSocketTimeout = m3dbSocketTimeout;
+    }
+
+    public List<List<String>> getM3DbWriteUrls() {
+        return m3DbWriteUrls;
+    }
+
+    public void setM3DbWriteUrls(List<List<String>> m3DbWriteUrls) {
+        this.m3DbWriteUrls = m3DbWriteUrls;
     }
 }
 

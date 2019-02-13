@@ -35,4 +35,11 @@ public class QueryStoreConfig {
     DataPointsQueryStore kairosDataPointsQueryStore(DataServiceConfigProperties config) {
         return new KairosDataPointsQueryStore(config);
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "dataservice.m3db_enabled", havingValue = "true")
+    DataPointsQueryStore m3DbDataPointsQueryStore(DataServiceConfigProperties config) {
+        return new M3DbDataPointsQueryStore(config);
+    }
 }

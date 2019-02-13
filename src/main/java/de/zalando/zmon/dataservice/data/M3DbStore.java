@@ -50,7 +50,7 @@ public class M3DbStore {
     }
 
     void store(List<GenericMetrics> genericMetrics) {
-        if (!config.isM3DbEnabled()) {
+        if (!config.isM3dbEnabled()) {
             return;
         }
 
