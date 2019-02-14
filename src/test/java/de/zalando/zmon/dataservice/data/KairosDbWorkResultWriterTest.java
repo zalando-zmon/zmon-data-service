@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class KairosDbWorkResultWriterTest {
@@ -46,7 +47,7 @@ public class KairosDbWorkResultWriterTest {
   }
 
   @Test
-  public void nonEmptyOptional() {
+  public void onEmptyResults() {
     KairosDbWorkResultWriter writer =
         new KairosDbWorkResultWriter(configMock, kairosDbStore, metrics);
     WorkerResult wr = Mockito.mock(WorkerResult.class);
@@ -56,18 +57,29 @@ public class KairosDbWorkResultWriterTest {
   }
 
   @Test
+  public void nonEmptyResult() {
+    KairosDbWorkResultWriter writer =
+        new KairosDbWorkResultWriter(configMock, kairosDbStore, metrics);
+    WorkerResult wr = Fixture.buildWorkerResult();
+    writer.write(Fixture.writeData(Optional.ofNullable(wr)));
+
+    Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.anyList());
+    Mockito.verify(metrics, Mockito.never()).markKairosError();
+  }
+
+  @Test
   public void nonEmptyOptionalWithStoreException() {
     Mockito.doThrow(new RuntimeException("test"))
         .when(kairosDbStore)
-        .store(Fixture.buildGenericMetrics());
+        .store(Mockito.anyList());
 
     KairosDbWorkResultWriter writer =
-        new KairosDbWorkResultWriter(configMock, kairosDbStore, metrics);
+            new KairosDbWorkResultWriter(configMock, kairosDbStore, metrics);
 
     WorkerResult wr = Fixture.buildWorkerResult();
     writer.write(Fixture.writeData(Optional.ofNullable(wr)));
 
-    //Mockito.verify(kairosDbStore, Mockito.times(1)).store(Fixture.buildGenericMetrics());
+    Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.anyList());
     Mockito.verify(metrics, Mockito.times(1)).markKairosError();
   }
 }
