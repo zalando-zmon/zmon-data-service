@@ -109,7 +109,7 @@ public class KairosDBStore {
                 }
             }
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             if (config.isLogKairosdbErrors()) {
                 LOG.error("KairosDB write path failed", ex);
             }

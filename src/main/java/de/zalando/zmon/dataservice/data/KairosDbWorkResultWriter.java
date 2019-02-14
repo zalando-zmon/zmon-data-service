@@ -25,7 +25,7 @@ public class KairosDbWorkResultWriter extends AbstractWorkResultWriter {
     KairosDbWorkResultWriter(DataServiceConfigProperties config,
                              KairosDBStore kairosStore,
                              DataServiceMetrics metrics) {
-        super(config);
+        super(config, metrics);
         this.kairosStore = kairosStore;
         this.metrics = metrics;
     }
@@ -36,7 +36,9 @@ public class KairosDbWorkResultWriter extends AbstractWorkResultWriter {
         Timer.Context c = metrics.getKairosDBTimer().time();
         try {
             kairosStore.store(genericMetrics);
+            log.debug("... written to KairosDb");
         } catch (Exception e) {
+            log.error("failed kairosdb write check={} data={}", genericMetrics.get(0).getCheckId(), e);
             metrics.markKairosError();
         } finally {
             c.stop();

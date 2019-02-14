@@ -13,6 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -22,65 +26,61 @@ import static org.mockito.Mockito.verify;
 @ContextConfiguration
 public class KairosDbStoreTest extends AbstractControllerTest {
 
-    @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(10081);
+  @Rule public final WireMockRule wireMockRule = new WireMockRule(10081);
 
-    @Autowired
-    private DataPointsQueryStore dataPointsQueryStore;
+  @Autowired private DataPointsQueryStore dataPointsQueryStore;
 
-    @Autowired
-    private DataServiceConfigProperties config;
+  @Autowired private DataServiceConfigProperties config;
 
-    @Autowired
-    private DataServiceMetrics metrics;
+  @Autowired private DataServiceMetrics metrics;
 
+  @Before
+  public void setUp() {
+    wireMockRule.stubFor(
+        post(urlPathEqualTo("/api/v1/datapoints"))
+            .willReturn(aResponse().withStatus(200).withBody("{}").withFixedDelay(200)));
+  }
 
-    @Before
-    public void setUp() {
-        wireMockRule.stubFor(post(urlPathEqualTo("/api/v1/datapoints"))
-                .willReturn(aResponse().withStatus(200).withBody("{}").withFixedDelay(200)));
+  @Test
+  public void writeWorkerResult() {
+    KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
+    kairosDb.store(Fixture.buildGenericMetrics());
+    verify(dataPointsQueryStore, atMost(1)).store(anyString());
+    verify(metrics, never()).markKairosError();
+    verify(metrics, never()).markKairosHostErrors(anyLong());
+  }
+
+  @Test
+  public void testInvalidWorkerResult() {
+    KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
+    for (List<GenericMetrics> metricsList :
+        new ArrayList<List<GenericMetrics>>(Arrays.asList(null, new ArrayList<GenericMetrics>()))) {
+      kairosDb.store(metricsList);
+      verify(metrics, never()).incKairosDBDataPoints(anyLong());
+      verify(dataPointsQueryStore, never()).store(anyString());
+    }
+  }
+
+  @Configuration
+  static class TestConfig {
+
+    @Bean
+    public DataServiceConfigProperties dataServiceConfigProperties() {
+      DataServiceConfigProperties props = new DataServiceConfigProperties();
+      props.setKairosdbWriteUrls(ImmutableList.of(ImmutableList.of("http://localhost:10081")));
+      props.setLogKairosdbRequests(true);
+      props.setLogKairosdbErrors(true);
+      return props;
     }
 
-    @Test
-    public void writeWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
-        kairosDb.store(Fixture.buildWorkerResult());
-        verify(dataPointsQueryStore, atMost(1)).store(anyString());
-        verify(metrics, never()).markKairosError();
-        verify(metrics, never()).markKairosHostErrors(anyLong());
+    @Bean
+    public DataServiceMetrics dataServiceMetrics() {
+      return mock(DataServiceMetrics.class);
     }
 
-    @Test
-    public void testInvalidWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
-        for (WorkerResult wr : new WorkerResult[]{null, new WorkerResult()}) {
-            kairosDb.store(wr);
-            verify(metrics, never()).incKairosDBDataPoints(anyLong());
-            verify(dataPointsQueryStore, never()).store(anyString());
-        }
+    @Bean
+    public DataPointsQueryStore dataPointsStore() {
+      return mock(DataPointsQueryStore.class);
     }
-
-    @Configuration
-    static class TestConfig {
-
-        @Bean
-        public DataServiceConfigProperties dataServiceConfigProperties() {
-            DataServiceConfigProperties props = new DataServiceConfigProperties();
-            props.setKairosdbWriteUrls(ImmutableList.of(ImmutableList.of("http://localhost:10081")));
-            props.setLogKairosdbRequests(true);
-            props.setLogKairosdbErrors(true);
-            return props;
-        }
-
-        @Bean
-        public DataServiceMetrics dataServiceMetrics() {
-            return mock(DataServiceMetrics.class);
-        }
-
-        @Bean
-        public DataPointsQueryStore dataPointsStore() {
-            return mock(DataPointsQueryStore.class);
-        }
-    }
-
+  }
 }

@@ -25,7 +25,7 @@ public class M3DbWorkResultWriter extends AbstractWorkResultWriter {
     M3DbWorkResultWriter(DataServiceConfigProperties config,
                          M3DbStore m3DbStore,
                          DataServiceMetrics metrics) {
-        super(config);
+        super(config, metrics);
         this.m3DbStore = m3DbStore;
         this.metrics = metrics;
     }
