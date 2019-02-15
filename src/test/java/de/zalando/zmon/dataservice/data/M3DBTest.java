@@ -10,20 +10,19 @@ import java.util.Map;
 
 import static org.mockito.Mockito.mock;
 
-/** Created by jmussler on 19.09.16. */
-public class KairosDBTest {
-
+/** @author raparida on 15.02.19 */
+public class M3DBTest {
   @Test
   public void testReplace() {
-    KairosDBStore store =
-            new KairosDBStore(
-                    mock(DataServiceConfigProperties.class),
-                    mock(DataServiceMetrics.class),
-                    mock(DataPointsQueryStore.class));
+    M3DbStore store =
+        new M3DbStore(
+            mock(DataServiceConfigProperties.class),
+            mock(DataServiceMetrics.class),
+            mock(DataPointsQueryStore.class));
 
-    KairosDbWorkResultWriter writer =
-            new KairosDbWorkResultWriter(
-                    mock(DataServiceConfigProperties.class), store, mock(DataServiceMetrics.class));
+    M3DbWorkResultWriter writer =
+        new M3DbWorkResultWriter(
+            mock(DataServiceConfigProperties.class), store, mock(DataServiceMetrics.class));
 
     Map<String, String> entity = new HashMap<>();
     entity.put("id", "host01[aws:1234]");
@@ -31,7 +30,7 @@ public class KairosDBTest {
     entity.put("application_id", "zmon-data-service");
 
     Map<String, String> tags =
-            writer.getTags("fragment.fjo:rd/c@rt?hide_footer=true", "host01[aws:1234]", entity);
+        writer.getTags("fragment.fjo:rd/c@rt?hide_footer=true", "host01[aws:1234]", entity);
 
     Map<String, String> expected = new HashMap<>();
     expected.put("key", "fragment.fjo_rd/c_rt_hide_footer_true");
@@ -43,4 +42,3 @@ public class KairosDBTest {
     Assertions.assertThat(tags).isEqualTo(expected);
   }
 }
-
