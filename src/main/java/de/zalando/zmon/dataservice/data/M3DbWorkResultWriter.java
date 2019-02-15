@@ -15,7 +15,7 @@ import java.util.List;
 public class M3DbWorkResultWriter extends AbstractWorkResultWriter {
 
     public static final String M3DB_WRITER_EXECUTOR = "m3db-writer";
-    private final Logger log = LoggerFactory.getLogger(KairosDbWorkResultWriter.class);
+    private final Logger log = LoggerFactory.getLogger(M3DbWorkResultWriter.class);
 
     private final M3DbStore m3DbStore;
 
