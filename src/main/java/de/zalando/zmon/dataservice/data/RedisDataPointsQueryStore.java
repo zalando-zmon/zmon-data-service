@@ -116,6 +116,7 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
     }
 
     byte[] getSpanContext(String spCtxtFormat){
+        LOG.info(tracer.getClass().getName());
         SpanContext spanContext = tracer.activeSpan().context();
 
         if (spCtxtFormat.equals(SpanContextFormat.BINARY.toString())){
