@@ -117,7 +117,6 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
     }
 
     byte[] getSpanContext(String spCtxtFormat){
-        LOG.info(tracer.activeSpan().getClass().getName());
         Span span = tracer.activeSpan();
         if (span == null) {
             span = tracer.buildSpan("compress_dp_for_redis").withTag("parentless", true).start();
