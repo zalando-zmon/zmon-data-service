@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -117,7 +118,11 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
 
     byte[] getSpanContext(String spCtxtFormat){
         LOG.info(tracer.activeSpan().getClass().getName());
-        SpanContext spanContext = tracer.activeSpan().context();
+        Span span = tracer.activeSpan();
+        if (span == null) {
+            span = tracer.buildSpan("compress_dp_for_redis").withTag("parentless", true).start();
+        }
+        SpanContext spanContext = span.context();
 
         if (spCtxtFormat.equals(SpanContextFormat.BINARY.toString())){
             //TODO: Enable the below commented code when the Binary tracer extraction on the Consumer side starts working.
@@ -139,7 +144,9 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
 
         try {
             JsonNode jsonNode = mapper.convertValue(map, JsonNode.class);
-            byte[] context = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode).getBytes();
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+            LOG.info(json);
+            byte[] context = json.getBytes();
             return context;
         } catch (JsonProcessingException e) {
             LOG.error("preparing a trace failed" + e.toString());
