@@ -210,6 +210,7 @@ public class KairosDBStore {
                 // Store datapoints query!
                 int err = dataPointsQueryStore.store(query);
                 if (err > 0) {
+                    LOG.info("KairosDB Error: {}", err);
                     metrics.markKairosHostErrors(err);
                 }
             }

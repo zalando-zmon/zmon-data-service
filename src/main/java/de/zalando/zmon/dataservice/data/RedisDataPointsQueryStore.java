@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import redis.clients.jedis.Jedis;
@@ -49,77 +51,101 @@ public class RedisDataPointsQueryStore implements DataPointsQueryStore {
     }
 
     public int store(String query) {
-        try (final Jedis jedis = pool.getResource()) {
-            jedis.lpush(DATAPOINTS_QUEUE, compress(query));
-            return 0;
-        } catch (IOException ex) {
-            LOG.error("failed to compress data point query", ex);
-        } catch (Exception ex) {
-            LOG.error("failed to push data point query to the redis queue", ex);
+        Span span = tracer.buildSpan("store_to_redis").start();
+        try (Scope scope = tracer.scopeManager().activate(span, false)) {
+            try (final Jedis jedis = pool.getResource()) {
+                jedis.lpush(DATAPOINTS_QUEUE, compress(query));
+                return 0;
+            } catch (IOException ex) {
+                LOG.error("failed to compress data point query", ex);
+            } catch (Exception ex) {
+                LOG.error("failed to push data point query to the redis queue", ex);
+            }
+
+            return 1;
+        } catch(Exception ex) {
+            Tags.ERROR.set(span, true);
+            throw ex;
+        } finally {
+            span.finish();
         }
-        return 1;
     }
 
     @VisibleForTesting
     byte[] compress(String str) throws IOException {
-        final byte[] dataToCompress = str.getBytes();
-        byte[] tracePayload = buildRedisTracePayload();
+        Span span = tracer.buildSpan("compress").start();
+        try (Scope scope = tracer.scopeManager().activate(span, false)) {
+            final byte[] dataToCompress = str.getBytes();
+            byte[] tracePayload = buildRedisTracePayload();
 
-        if (tracePayload == null){
+            if (tracePayload == null){
+                final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
+                try {
+                    try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
+                        zipStream.write(dataToCompress);
+                    }
+                } finally {
+                    byteStream.close();
+                }
+                return byteStream.toByteArray();
+            }
+
             final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
+            ByteArrayOutputStream payLoad = new ByteArrayOutputStream(tracePayload.length + dataToCompress.length);
             try {
                 try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
                     zipStream.write(dataToCompress);
+                    zipStream.close();
+                    payLoad.write(tracePayload);
+                    payLoad.write(byteStream.toByteArray());
                 }
+                return payLoad.toByteArray();
             } finally {
                 byteStream.close();
+                payLoad.close();
             }
-            return byteStream.toByteArray();
-        }
-
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(dataToCompress.length);
-        ByteArrayOutputStream payLoad = new ByteArrayOutputStream(tracePayload.length + dataToCompress.length);
-        try {
-            try (GZIPOutputStream zipStream = new GZIPOutputStream(byteStream, true)) {
-                zipStream.write(dataToCompress);
-                zipStream.close();
-                payLoad.write(tracePayload);
-                payLoad.write(byteStream.toByteArray());
-            }
+        } catch(Exception ex) {
+            Tags.ERROR.set(span, true);
+            throw ex;
         } finally {
-            byteStream.close();
-            payLoad.close();
+            span.finish();
         }
-        return payLoad.toByteArray();
     }
 
     byte[] buildRedisTracePayload(){
+        Span span = tracer.buildSpan("build_redis_trace_payload").start();
+        try (Scope scope = tracer.scopeManager().activate(span, false)) {
+            String sptCtxtFormat = SpanContextFormat.TEXTMAP.toString();
+            byte[] context = getSpanContext(sptCtxtFormat);
+            if (context == null){
+                return null;
+            }
 
-        String sptCtxtFormat = SpanContextFormat.TEXTMAP.toString();
-        byte[] context = getSpanContext(sptCtxtFormat);
-        if (context == null){
-            return null;
+            final byte[] firstByte = sptCtxtFormat.equals(SpanContextFormat.TEXTMAP.toString()) ?
+                    ByteBuffer.allocate(1).put((byte)0).array():
+                    ByteBuffer.allocate(1).put((byte)1).array();
+
+            int context_length = context.length;
+            final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
+            byte[] tracePayload = new byte[firstByte.length + spanContextLength.length + context.length];
+
+            System.arraycopy(firstByte, 0, tracePayload, 0, firstByte.length);
+            System.arraycopy(spanContextLength, 0, tracePayload, firstByte.length, spanContextLength.length);
+            System.arraycopy(context, 0, tracePayload, firstByte.length + spanContextLength.length, context.length);
+
+            return tracePayload;
+        } catch(Exception ex) {
+            Tags.ERROR.set(span, true);
+            throw ex;
+        } finally {
+            span.finish();
         }
-
-        final byte[] firstByte = sptCtxtFormat.equals(SpanContextFormat.TEXTMAP.toString()) ?
-                ByteBuffer.allocate(1).put((byte)0).array():
-                ByteBuffer.allocate(1).put((byte)1).array();
-
-        int context_length = context.length;
-        final byte[] spanContextLength = ByteBuffer.allocate(4).putInt(context_length).array();
-        byte[] tracePayload = new byte[firstByte.length + spanContextLength.length + context.length];
-
-        System.arraycopy(firstByte, 0, tracePayload, 0, firstByte.length);
-        System.arraycopy(spanContextLength, 0, tracePayload, firstByte.length, spanContextLength.length);
-        System.arraycopy(context, 0, tracePayload, firstByte.length + spanContextLength.length, context.length);
-
-        return tracePayload;
     }
 
     byte[] getSpanContext(String spCtxtFormat){
         Span span = tracer.activeSpan();
         if (span == null) {
-            span = tracer.buildSpan("compress_dp_for_redis").withTag("parentless", true).start();
+            return null;
         }
         SpanContext spanContext = span.context();
 
