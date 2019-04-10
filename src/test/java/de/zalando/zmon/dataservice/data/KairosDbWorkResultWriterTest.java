@@ -2,6 +2,9 @@ package de.zalando.zmon.dataservice.data;
 
 import java.util.Optional;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.mock.MockTracer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +20,7 @@ public class KairosDbWorkResultWriterTest {
     private KairosDBStore kairosDbStore;
     private DataServiceMetrics metrics;
     private WorkerResult wrMock;
+    private Tracer tracer;
 
     @Before
     public void setUp() {
@@ -28,6 +32,8 @@ public class KairosDbWorkResultWriterTest {
 
         wrMock = Mockito.mock(WorkerResult.class);
         kairosDbStore = Mockito.mock(KairosDBStore.class);
+
+        tracer = new MockTracer();
     }
 
     @After
@@ -37,7 +43,7 @@ public class KairosDbWorkResultWriterTest {
 
     @Test
     public void onEmptyOptional() {
-        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
+        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics, tracer);
         writer.write(Fixture.writeData(Optional.empty()));
         Mockito.verify(kairosDbStore, Mockito.never()).store(Mockito.any(WorkerResult.class));
         Mockito.verify(metrics, Mockito.never()).markKairosError();
@@ -45,7 +51,7 @@ public class KairosDbWorkResultWriterTest {
 
     @Test
     public void nonEmptyOptional() {
-        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
+        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics, tracer);
         WorkerResult wr = Mockito.mock(WorkerResult.class);
         writer.write(Fixture.writeData(Optional.ofNullable(wr)));
         Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
@@ -55,7 +61,7 @@ public class KairosDbWorkResultWriterTest {
     @Test
     public void nonEmptyOptionalWithStoreException() {
         Mockito.doThrow(new RuntimeException("test")).when(kairosDbStore).store(Mockito.any(WorkerResult.class));
-        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics);
+        KairosDbWorkResultWriter writer = new KairosDbWorkResultWriter(kairosDbStore, metrics, tracer);
         WorkerResult wr = Mockito.mock(WorkerResult.class);
         writer.write(Fixture.writeData(Optional.ofNullable(wr)));
         Mockito.verify(kairosDbStore, Mockito.times(1)).store(Mockito.any(WorkerResult.class));
