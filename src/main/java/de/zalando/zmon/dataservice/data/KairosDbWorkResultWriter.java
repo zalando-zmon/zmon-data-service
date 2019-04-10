@@ -1,5 +1,9 @@
 package de.zalando.zmon.dataservice.data;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,27 +24,38 @@ public class KairosDbWorkResultWriter implements WorkResultWriter {
 
     private final KairosDBStore kairosStore;
 
+    private final Tracer tracer;
+
     @Autowired
-    KairosDbWorkResultWriter(KairosDBStore kairosStore, DataServiceMetrics metrics) {
+    KairosDbWorkResultWriter(KairosDBStore kairosStore, DataServiceMetrics metrics, Tracer tracer) {
         this.kairosStore = kairosStore;
         this.metrics = metrics;
+        this.tracer = tracer;
     }
 
     @Async(KAIROS_WRITER_EXECUTOR)
     @Override
     public void write(WriteData writeData) {
         log.debug("write to KairosDB ...");
-        if (writeData.getWorkerResultOptional().isPresent()) {
-            Timer.Context c = metrics.getKairosDBTimer().time();
-            try {
-                kairosStore.store(writeData.getWorkerResultOptional().get());
-                log.debug("... written to KairosDb");
-            } catch (Exception e) {
-                log.error("failed kairosdb write check={} data={}", writeData.getCheckId(), writeData.getData(), e);
-                metrics.markKairosError();
-            } finally {
-                c.stop();
+        Span span = tracer.buildSpan("write").start();
+        try (Scope scope = tracer.scopeManager().activate(span, false)) {
+            if (writeData.getWorkerResultOptional().isPresent()) {
+                Timer.Context c = metrics.getKairosDBTimer().time();
+                try {
+                    kairosStore.store(writeData.getWorkerResultOptional().get());
+                    log.debug("... written to KairosDb");
+                } catch (Exception e) {
+                    log.error("failed kairosdb write check={} data={}", writeData.getCheckId(), writeData.getData(), e);
+                    metrics.markKairosError();
+                } finally {
+                    c.stop();
+                }
             }
+        } catch(Exception ex) {
+            Tags.ERROR.set(span, true);
+            throw ex;
+        } finally {
+            span.finish();
         }
     }
 
