@@ -80,6 +80,7 @@ public class CachingCheckService implements ChecksService {
 
     @Scheduled(fixedRate = 60000)
     public void refreshData() {
+        log.info("refreshing checks and alerts");
         try {
             String nextCheckLastModified = service.allActiveCheckDefinitionsLastModified(Optional.of(wrapper.get()), "");
 
