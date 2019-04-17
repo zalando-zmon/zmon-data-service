@@ -7,16 +7,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.data.HttpClientFactory;
-import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
@@ -90,15 +87,10 @@ public class KairosdbProxy {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-//        if (!metricName.startsWith("zmon.check.")) {
-//            response.setContentType("application/json");
-//            writer.write("{}");
-//            return;
-//        }
 
         final String checkId = metricName.replace("zmon.check.", "");
-
-        Timer.Context timer = metricRegistry.timer("kairosdb.check.query." + checkId).time();
+        final Timer.Context timer = metricRegistry.timer("kairosdb.check.query." + checkId).time();
+        log.info("datapoints_query checkId=" + checkId);
 
         // align all queries to full minutes
         if (node instanceof ObjectNode) {
@@ -121,7 +113,6 @@ public class KairosdbProxy {
         if (timer != null) {
             timer.stop();
         }
-
     }
 
     @ResponseBody
