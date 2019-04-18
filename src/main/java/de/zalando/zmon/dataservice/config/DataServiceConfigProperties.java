@@ -54,7 +54,7 @@ public class DataServiceConfigProperties {
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
-    private int kairosdbSocketTimeout = 5000;
+    private int kairosdbSocketTimeout = 10000;
     private boolean kairosdbEnabled = true;
 
     private String dataProxyUrl = null;
@@ -73,7 +73,7 @@ public class DataServiceConfigProperties {
 
     private String proxyKairosdbUrl = "";
     private int proxyKairosdbConnections = 25;
-    private int proxyKairosdbSocketTimeout = 5000;
+    private int proxyKairosdbSocketTimeout = 10000;
     private int proxyKairosdbTimeout = 1000;
 
     private List<Integer> whiteListedChecks = new ArrayList<>();
