@@ -47,20 +47,20 @@ public class DataServiceConfigProperties {
     private int restMetricPort = 8088;
     private int restMetricConnections = 50;
     private int restMetricPoolSize = 50;
-    private int restMetricSocketTimeout = 500;
+    private int restMetricSocketTimeout = 5000;
     private int restMetricTimeout = 1000;
 
     private Map<String, String> oauth2Scopes = new HashMap<>(0);
 
     private int kairosdbConnections = 50;
     private int kairosdbTimeout = 1000;
-    private int kairosdbSockettimeout = 500;
+    private int kairosdbSocketTimeout = 10000;
     private boolean kairosdbEnabled = true;
 
     private String dataProxyUrl = null;
     private int dataProxyConnections = 50;
     private int dataProxyPoolSize = 50;
-    private int dataProxySocketTimeout = 500;
+    private int dataProxySocketTimeout = 5000;
     private int dataProxyTimeout = 1000;
 
     private boolean eventlogEnabled = false;
@@ -68,12 +68,12 @@ public class DataServiceConfigProperties {
 
     private int eventlogConnections = 50;
     private int eventlogPoolSize = 50;
-    private int eventlogSocketTimeout = 500;
+    private int eventlogSocketTimeout = 5000;
     private int eventlogTimeout = 1000;
 
     private String proxyKairosdbUrl = "";
     private int proxyKairosdbConnections = 25;
-    private int proxyKairosdbSockettimeout = 500;
+    private int proxyKairosdbSocketTimeout = 10000;
     private int proxyKairosdbTimeout = 1000;
 
     private List<Integer> whiteListedChecks = new ArrayList<>();
@@ -159,12 +159,12 @@ public class DataServiceConfigProperties {
         this.proxyKairosdbConnections = proxyKairosdbConnections;
     }
 
-    public int getProxyKairosdbSockettimeout() {
-        return proxyKairosdbSockettimeout;
+    public int getProxyKairosdbSocketTimeout() {
+        return proxyKairosdbSocketTimeout;
     }
 
-    public void setProxyKairosdbSockettimeout(int proxyKairosdbSockettimeout) {
-        this.proxyKairosdbSockettimeout = proxyKairosdbSockettimeout;
+    public void setProxyKairosdbSocketTimeout(int proxyKairosdbSocketTimeout) {
+        this.proxyKairosdbSocketTimeout = proxyKairosdbSocketTimeout;
     }
 
     public int getProxyKairosdbTimeout() {
@@ -223,12 +223,12 @@ public class DataServiceConfigProperties {
         this.kairosdbTimeout = kairosdbTimeout;
     }
 
-    public int getKairosdbSockettimeout() {
-        return kairosdbSockettimeout;
+    public int getKairosdbSocketTimeout() {
+        return kairosdbSocketTimeout;
     }
 
-    public void setKairosdbSockettimeout(int kairosdbSockettimeout) {
-        this.kairosdbSockettimeout = kairosdbSockettimeout;
+    public void setKairosdbSocketTimeout(int kairosdbSocketTimeout) {
+        this.kairosdbSocketTimeout = kairosdbSocketTimeout;
     }
 
     /**

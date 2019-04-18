@@ -2,7 +2,6 @@ package de.zalando.zmon.dataservice.data;
 
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.entity.ContentType;
 
@@ -30,9 +29,9 @@ public class KairosDataPointsQueryStore implements DataPointsQueryStore {
         this.config = config;
 
         LOG.info("KairosDB settings connections={} socketTimeout={} timeout={}", config.getKairosdbConnections(),
-                config.getKairosdbSockettimeout(), config.getKairosdbTimeout());
+                config.getKairosdbSocketTimeout(), config.getKairosdbTimeout());
         executor = HttpClientFactory.getExecutor(
-                config.getKairosdbSockettimeout(),
+                config.getKairosdbSocketTimeout(),
                 config.getKairosdbTimeout(),
                 config.getKairosdbConnections(),
                 config.getConnectionsTimeToLive()
