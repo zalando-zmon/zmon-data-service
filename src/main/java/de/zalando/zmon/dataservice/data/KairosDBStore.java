@@ -33,7 +33,7 @@ public class KairosDBStore {
     // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
             ImmutableSet.of("application_id", "application_version", "stack_name", "stack_version", "application",
-                    "version", "account_alias", "cluster_alias", "alias", "namespace"));
+                    "version", "account_alias", "cluster_alias", "alias", "namespace", "component"));
 
     private static final String REPLACE_CHAR = "_";
     private static final Pattern KAIROSDB_INVALID_TAG_CHARS = Pattern.compile("[?@:=\\[\\]]");
