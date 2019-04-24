@@ -193,7 +193,7 @@ public class KairosDBStore {
 
                     p.datapoints.add(arrayNode);
                     points.add(p);
-                    cdResultSize += 1
+                    cdResultSize += 1;
                 }
 
                 if (cdResultSize > resultSizeWarning) {
