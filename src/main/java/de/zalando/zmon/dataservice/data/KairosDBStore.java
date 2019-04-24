@@ -151,6 +151,7 @@ public class KairosDBStore {
 
                 fillFlatValueMap(values, "", cd.checkResult.get("value"));
 
+                int cdResultSize = 0;
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
@@ -192,10 +193,11 @@ public class KairosDBStore {
 
                     p.datapoints.add(arrayNode);
                     points.add(p);
+                    cdResultSize += 1
                 }
 
-                if (points.size() > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.checkId, points.size(), cd.entityId);
+                if (cdResultSize > resultSizeWarning) {
+                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.checkId, cdResultSize, cd.entityId);
                 }
             }
 
