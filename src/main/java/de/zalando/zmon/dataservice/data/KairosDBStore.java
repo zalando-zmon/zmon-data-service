@@ -108,6 +108,7 @@ public class KairosDBStore {
                 }
             }
         }
+        return tags;
     }
 
     public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
