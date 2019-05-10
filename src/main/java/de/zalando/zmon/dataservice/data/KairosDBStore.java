@@ -98,6 +98,18 @@ public class KairosDBStore {
         return metricName;
     }
 
+    private Map<String, String> getEntityTags(Map<String, String> entity) {
+        Map<String, String> tags = new HashMap<>();
+        for (String field : entityTagFields) {
+            if (entity.containsKey(field)) {
+                String fieldValue = entity.get(field);
+                if (null != fieldValue && !"".equals(fieldValue)) {
+                    tags.put(field, entity.get(field));
+                }
+            }
+        }
+    }
+
     public Map<String, String> getTags(String key, String entityId, Map<String, String> entity) {
         Map<String, String> tags = new HashMap<>();
         tags.put("entity", KAIROSDB_INVALID_TAG_CHARS.matcher(entityId).replaceAll(REPLACE_CHAR));
@@ -197,7 +209,7 @@ public class KairosDBStore {
                 }
 
                 if (cdResultSize > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={}", cd.checkId, cdResultSize, cd.entityId);
+                    LOG.warn("result size warning: check={} data-points={} entity={} tags={}", cd.checkId, cdResultSize, cd.entityId, getEntityTags(cd.entity));
                 }
             }
 
