@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import org.slf4j.Logger;
@@ -165,6 +166,8 @@ public class KairosDBStore {
                 fillFlatValueMap(values, "", cd.checkResult.get("value"));
 
                 int cdResultSize = 0;
+                final List<String> keys = Lists.newArrayList(values.keySet());
+                keys.sort(Comparator.comparing(String::toString));
                 for (Map.Entry<String, NumericNode> e : values.entrySet()) {
                     DataPoint p = new DataPoint();
                     p.name = timeSeries;
@@ -210,11 +213,11 @@ public class KairosDBStore {
                 }
 
                 if (cdResultSize > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={} tags={}", cd.checkId, cdResultSize, cd.entityId, getEntityTags(cd.entity));
+                    LOG.warn("result size warning: check={} data-points={} entity={} checksum={} tags={}", cd.checkId, cdResultSize, cd.entityId, keys.hashCode(), getEntityTags(cd.entity));
                 }
             }
 
-            if (points.size()>0){
+            if (points.size() > 0) {
                 metrics.incKairosDBDataPoints(points.size());
 
                 String query = mapper.writeValueAsString(points);
