@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.util.Arrays;
 
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
@@ -74,6 +75,7 @@ public class KairosdbProxy {
                     throw new ClientProtocolException("Response contains no content");
                 }
                 response.setStatus(status.getStatusCode());
+                Arrays.stream(res.getAllHeaders()).forEach(h -> response.setHeader(h.getName(), h.getValue()));
                 final InputStreamReader reader = new InputStreamReader(entity.getContent());
                 return CharStreams.toString(reader);
             });
