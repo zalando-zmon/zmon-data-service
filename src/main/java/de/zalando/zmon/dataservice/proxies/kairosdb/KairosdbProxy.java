@@ -4,9 +4,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.io.CharStreams;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.data.HttpClientFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
@@ -22,7 +26,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
+import java.util.Arrays;
 
 @Controller
 @RequestMapping(value = "/kairosdb-proxy/")
@@ -62,12 +68,19 @@ public class KairosdbProxy {
         }
 
         try {
-            String data = executor.execute(request).returnContent().toString();
+            final String data = executor.execute(request).handleResponse(res -> {
+                final StatusLine status = res.getStatusLine();
+                HttpEntity entity = res.getEntity();
+                if (entity == null) {
+                    throw new ClientProtocolException("Response contains no content");
+                }
+                response.setStatus(status.getStatusCode());
+                Arrays.stream(res.getAllHeaders()).forEach(h -> response.setHeader(h.getName(), h.getValue()));
+                final InputStreamReader reader = new InputStreamReader(entity.getContent());
+                return CharStreams.toString(reader);
+            });
             response.setContentType("application/json");
             writer.write(data);
-        } catch (HttpResponseException hre) {
-            log.warn("KairosDB returned non 2xx response: {}", hre.getMessage());
-            response.sendError(hre.getStatusCode());
         } catch (IOException e) {
             log.warn("I/O error while calling KairosDB: {}", e.getMessage());
             response.sendError(HttpServletResponse.SC_BAD_GATEWAY);
