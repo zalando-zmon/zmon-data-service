@@ -191,9 +191,19 @@ public class DataServiceMetrics {
 
     public void markEventLogError() { eventlogErrorMeter.mark(); }
 
+    public void incWorkerResultsCount(long c) {
+        workerResultsCount.mark(c);
+    }
+
+    public void incWorkerResultsBatchedCount(long c) {
+        workerResultsBatchedCount.mark(c);
+    }
+
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);
     }
+
+
 
     public void updateAlertDurations(long duration) {
         alertDurations.update(duration);
