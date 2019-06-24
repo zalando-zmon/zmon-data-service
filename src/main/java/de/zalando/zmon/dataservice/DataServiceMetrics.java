@@ -63,6 +63,9 @@ public class DataServiceMetrics {
     private final Meter proxyErrorMeter;
     private final Meter eventlogErrorMeter;
 
+    private final Meter workerResultsCount;
+    private final Meter workerResultsBatchedCount;
+
     // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
@@ -78,6 +81,8 @@ public class DataServiceMetrics {
         this.eventlogErrorMeter = metrics.meter("data-service.eventlog-errors");
         this.kairosDbDataPointsCount = metrics.meter("data-service.kairosdb-points.written");
         this.alertDurations = metrics.histogram("data-service.alert-durations");
+        this.workerResultsCount = metrics.meter("data-service.worker-results");
+        this.workerResultsBatchedCount = metrics.meter("data-service.worker-results-batched");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -186,9 +191,19 @@ public class DataServiceMetrics {
 
     public void markEventLogError() { eventlogErrorMeter.mark(); }
 
+    public void incWorkerResultsCount(long c) {
+        workerResultsCount.mark(c);
+    }
+
+    public void incWorkerResultsBatchedCount(long c) {
+        workerResultsBatchedCount.mark(c);
+    }
+
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);
     }
+
+
 
     public void updateAlertDurations(long duration) {
         alertDurations.update(duration);

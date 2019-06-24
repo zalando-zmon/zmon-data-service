@@ -147,6 +147,7 @@ public class KairosDBStore {
         }
 
         try {
+            metrics.incWorkerResultsCount(1);
             List<DataPoint> points = new LinkedList<>();
             for (CheckData cd : wr.results) {
 
@@ -154,6 +155,8 @@ public class KairosDBStore {
                     LOG.debug("Dropping non-sampled metrics for checkid={}", cd.checkId);
                     continue;
                 }
+
+                metrics.incWorkerResultsBatchedCount(1);
 
                 final Map<String, NumericNode> values = new HashMap<>();
                 final String timeSeries = "zmon.check." + cd.checkId;
