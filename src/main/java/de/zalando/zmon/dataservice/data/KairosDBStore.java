@@ -166,7 +166,7 @@ public class KairosDBStore {
                 Long tsL = ts.longValue();
 
                 fillFlatValueMap(values, "", cd.checkResult.get("value"));
-                if (values.size()) == 0 {
+                if (values.size() == 0) {
                     metrics.incWorkerResultsEmptyCount(1);
                 }
 
