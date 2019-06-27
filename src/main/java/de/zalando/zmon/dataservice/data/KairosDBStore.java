@@ -217,7 +217,7 @@ public class KairosDBStore {
                     LOG.warn("result size warning: check={} data-points={} entity={} tags={}", cd.checkId, cdResultSize, cd.entityId, getEntityTags(cd.entity));
                 }
                 if (cd.checkId == config.getCheckMetricsWatchId() && Math.random() <= 0.1) {
-                    LOG.info("sample for check={} {}", cd.checkId, values.keys());
+                    LOG.info("sample for check={} {}", cd.checkId, values.keySet());
                 }
             }
 
