@@ -376,7 +376,7 @@ public class DataServiceConfigProperties {
         return checkMetricsWatchId;
     }
 
-    public void setCheckMetricsWatchId(c Integer) {
+    public void setCheckMetricsWatchId(Integer c) {
         this.checkMetricsWatchId = c;
     }
 
