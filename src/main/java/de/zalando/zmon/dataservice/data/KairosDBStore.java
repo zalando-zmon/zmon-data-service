@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.lang.Math;
 
 
 /**
@@ -214,6 +215,9 @@ public class KairosDBStore {
 
                 if (cdResultSize > resultSizeWarning) {
                     LOG.warn("result size warning: check={} data-points={} entity={} tags={}", cd.checkId, cdResultSize, cd.entityId, getEntityTags(cd.entity));
+                }
+                if (cd.checkId == config.getCheckMetricsWatchId() && Math.random() <= 0.1) {
+                    LOG.warn("sample for check={} {}", cd.checkId, values.keys())
                 }
             }
 

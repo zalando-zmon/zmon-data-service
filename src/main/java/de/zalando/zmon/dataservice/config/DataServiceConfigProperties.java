@@ -76,6 +76,8 @@ public class DataServiceConfigProperties {
     private int proxyKairosdbSocketTimeout = 10000;
     private int proxyKairosdbTimeout = 1000;
 
+    private Integer checkMetricsWatchId = 0;
+
     private List<Integer> whiteListedChecks = new ArrayList<>();
 
     public List<Integer> getwhiteListedChecks() {
@@ -368,6 +370,14 @@ public class DataServiceConfigProperties {
 
     public void setActuatorMetricChecks(List<Integer> actuatorMetricChecks) {
         this.actuatorMetricChecks = actuatorMetricChecks;
+    }
+
+    public Integer getCheckMetricsWatchId() {
+        return checkMetricsWatchId;
+    }
+
+    public void setCheckMetricsWatchId(c Integer) {
+        this.checkMetricsWatchId = c;
     }
 
     public List<String> getRestMetricHosts() {
