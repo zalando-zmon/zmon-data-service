@@ -65,6 +65,7 @@ public class DataServiceMetrics {
 
     private final Meter workerResultsCount;
     private final Meter workerResultsBatchedCount;
+    private final Meter workerResultsEmptyCount;
 
     // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
@@ -83,6 +84,7 @@ public class DataServiceMetrics {
         this.alertDurations = metrics.histogram("data-service.alert-durations");
         this.workerResultsCount = metrics.meter("data-service.worker-results");
         this.workerResultsBatchedCount = metrics.meter("data-service.worker-results-batched");
+        this.workerResultsEmptyCount = metrics.meter("data-service.worker-results-empty");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -198,6 +200,11 @@ public class DataServiceMetrics {
     public void incWorkerResultsBatchedCount(long c) {
         workerResultsBatchedCount.mark(c);
     }
+
+    public void incWorkerResultsEmptyCount(long c) {
+        workerResultsEmptyCount.mark(c);
+    }
+
 
     public void incKairosDBDataPoints(long c) {
         kairosDbDataPointsCount.mark(c);
