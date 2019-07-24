@@ -10,7 +10,7 @@ public class NoOpEntitiesService implements EntitiesService {
 	}
 
 	@Override
-	public String getEntities(Optional<String> token, String query) {
+	public String getEntities(Optional<String> token, String query, String exclude) {
 		return "";
 	}
 
