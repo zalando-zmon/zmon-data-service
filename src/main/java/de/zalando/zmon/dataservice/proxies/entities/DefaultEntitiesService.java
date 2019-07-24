@@ -40,8 +40,8 @@ public class DefaultEntitiesService extends ControllerProxy implements EntitiesS
     }
 
     @Override
-    public String getEntities(Optional<String> token, String query) throws URISyntaxException, IOException {
-        URI uri = uri("/entities/").setParameter("query", query).build();
+    public String getEntities(Optional<String> token, String query, String exclude) throws URISyntaxException, IOException {
+        URI uri = uri("/entities/").setParameter("query", query).setParameter("exclude", exclude).build();
         return proxy(Request.Get(uri), token);
     }
 
