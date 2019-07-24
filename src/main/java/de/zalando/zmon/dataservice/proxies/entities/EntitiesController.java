@@ -32,7 +32,7 @@ public class EntitiesController {
     }
 
     @RequestMapping(value = {"/api/v1/entities"})
-    public String getEntities(@RequestParam(value = "query", defaultValue = "{}") final String query, @RequestHeader(AUTHORIZATION) String authHeader, @RequestParam(value="exclude", defaultValue="") final string exclude)
+    public String getEntities(@RequestParam(value = "query", defaultValue = "{}") final String query, @RequestHeader(AUTHORIZATION) String authHeader, @RequestParam(value="exclude", defaultValue="") final String exclude)
             throws IOException, URISyntaxException {
         return entitiesService.getEntities(extractFromHeader(authHeader), query, exclude);
     }
