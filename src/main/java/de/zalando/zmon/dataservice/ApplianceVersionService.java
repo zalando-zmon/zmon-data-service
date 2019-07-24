@@ -34,7 +34,7 @@ public class ApplianceVersionService {
         }
 
         try {
-            String result = entityService.getEntities(token, "[{\"id\":\"zmon-appliance-config\"}]");
+            String result = entityService.getEntities(token, "[{\"id\":\"zmon-appliance-config\"}]", "");
             JsonNode node = mapper.readTree(result);
             if (node.size() != 1) {
                 return null;

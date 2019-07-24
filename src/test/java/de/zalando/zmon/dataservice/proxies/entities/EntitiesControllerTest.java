@@ -69,7 +69,7 @@ public class EntitiesControllerTest extends AbstractControllerTest {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg", "");
     }
 
     @Test
@@ -77,7 +77,7 @@ public class EntitiesControllerTest extends AbstractControllerTest {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/entities?query=htg").header("Authorization", "Bearer 1"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg");
+        Mockito.verify(spy, VerificationModeFactory.times(1)).getEntities(Optional.of("1"), "htg", "");
     }
 
     @Test
