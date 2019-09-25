@@ -30,6 +30,8 @@ public class KairosDBStore {
 
     private final DataPointsQueryStore dataPointsQueryStore;
 
+    private final String jobMetricStoredAnnotation = "zmon.io/job-metric-stored";
+
     private final Set<String> entityTagFields;
     // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
     private final static Set<String> DEFAULT_ENTITY_TAG_FIELDS = new HashSet<>(
@@ -137,6 +139,19 @@ public class KairosDBStore {
         return tags;
     }
 
+    private boolean metricsAreStored(Map<String, String> entity, int checkId) {
+        String entityType = entity.get("type");
+        if (!entityType.equals("kube_pod") && !entityType.equals("kube_pod_container")) {
+            return true;
+        }
+        if (entity.containsKey("job-name") && !entity.containsKey(jobMetricStoredAnnotation)) {
+                LOG.debug("Dropping {} metrics for job {} check_id={}: no annotation found",
+                        entityType, entity.get("job-name"), checkId);
+                return false;
+        }
+        return true;
+    }
+
     void store(WorkerResult wr) {
         if (!config.isKairosdbEnabled()) {
             return;
@@ -154,6 +169,10 @@ public class KairosDBStore {
 
                 if (!cd.isSampled) {
                     LOG.debug("Dropping non-sampled metrics for checkid={}", cd.checkId);
+                    continue;
+                }
+
+                if (!metricsAreStored(cd.entity, cd.checkId)) {
                     continue;
                 }
 
