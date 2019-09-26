@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
@@ -140,7 +141,13 @@ public class KairosDBStore {
     }
 
     private boolean metricsAreStored(Map<String, String> entity, int checkId) {
+        if (entity == null || entity.isEmpty()) {
+            return true;
+        }
         String entityType = entity.get("type");
+        if (entityType == null) {
+            return true;
+        }
         if (!entityType.equals("kube_pod") && !entityType.equals("kube_pod_container")) {
             return true;
         }
@@ -173,7 +180,7 @@ public class KairosDBStore {
                 }
 
                 if (!metricsAreStored(cd.entity, cd.checkId)) {
-                    continue;
+                     continue;
                 }
 
                 metrics.incWorkerResultsBatchedCount(1);
