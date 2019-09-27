@@ -67,6 +67,11 @@ public class DataServiceMetrics {
     private final Meter workerResultsBatchedCount;
     private final Meter workerResultsEmptyCount;
 
+    private final Meter jobMetricsTotal;
+    private final Meter jobMetricsIngestionDropped;
+    private final Meter jobMetricsIngestionTotal;
+    private final Meter nonSampledDropped;
+
     // @Autowired
     public DataServiceMetrics(MetricRegistry metrics) {
         this.metrics = metrics;
@@ -85,6 +90,10 @@ public class DataServiceMetrics {
         this.workerResultsCount = metrics.meter("data-service.worker-results");
         this.workerResultsBatchedCount = metrics.meter("data-service.worker-results-batched");
         this.workerResultsEmptyCount = metrics.meter("data-service.worker-results-empty");
+        this.jobMetricsTotal = metrics.meter("data-service.job-metrics.total");
+        this.jobMetricsIngestionDropped = metrics.meter("data-service.job-metrics-ingestion.dropped");
+        this.jobMetricsIngestionTotal = metrics.meter("data-service.job-metrics-ingestion.total");
+        this.nonSampledDropped = metrics.meter("data-service.non-sampled.dropped");
     }
 
     public MetricRegistry getMetricRegistry() {
@@ -215,4 +224,10 @@ public class DataServiceMetrics {
     public void updateAlertDurations(long duration) {
         alertDurations.update(duration);
     }
+
+    public void incJobMetricsTotal(long c) { jobMetricsTotal.mark(c);}
+    public void incJobMetricsIngestionDropped(long c) { jobMetricsIngestionDropped.mark(c);}
+    public void incJobMetricsIngestionTotal(long c) { jobMetricsIngestionTotal.mark(c);}
+
+    public void incNonSampledDropped(long c) { nonSampledDropped.mark(c);}
 }

@@ -140,21 +140,25 @@ public class KairosDBStore {
         return tags;
     }
 
-    private boolean metricsAreStored(Map<String, String> entity, int checkId) {
+    private boolean isJobRelatedEntity(Map<String, String> entity) {
         if (entity == null || entity.isEmpty()) {
-            return true;
+            return false;
         }
         String entityType = entity.get("type");
         if (entityType == null) {
-            return true;
+            return false;
         }
         if (!entityType.equals("kube_pod") && !entityType.equals("kube_pod_container")) {
-            return true;
+            return false;
         }
-        if (entity.containsKey("job-name") && !entity.containsKey(jobMetricStoredAnnotation)) {
-                LOG.debug("Dropping {} metrics for job {} check_id={}: no annotation found",
-                        entityType, entity.get("job-name"), checkId);
-                return false;
+        return entity.containsKey("job-name");
+    }
+
+    private boolean jobMetricsAreStored(Map<String, String> entity, int checkId) {
+        if (!entity.containsKey(jobMetricStoredAnnotation)) {
+            LOG.debug("Dropping {} metrics for job {} check_id={}: no annotation found",
+                    entity.get("type"), entity.get("job-name"), checkId);
+            return false;
         }
         return true;
     }
@@ -175,12 +179,19 @@ public class KairosDBStore {
             for (CheckData cd : wr.results) {
 
                 if (!cd.isSampled) {
+                    metrics.incNonSampledDropped(1);
                     LOG.debug("Dropping non-sampled metrics for checkid={}", cd.checkId);
                     continue;
                 }
 
-                if (!metricsAreStored(cd.entity, cd.checkId)) {
-                     continue;
+                boolean isJobRelated = false;
+                if (isJobRelatedEntity(cd.entity)) {
+                    metrics.incJobMetricsIngestionTotal(1);
+                    isJobRelated = true;
+                    if (!jobMetricsAreStored(cd.entity, cd.checkId)) {
+                        metrics.incJobMetricsIngestionDropped(1);
+                        continue;
+                    }
                 }
 
                 metrics.incWorkerResultsBatchedCount(1);
@@ -242,9 +253,14 @@ public class KairosDBStore {
                     cdResultSize += 1;
                 }
 
-                if (cdResultSize > resultSizeWarning) {
-                    LOG.warn("result size warning: check={} data-points={} entity={} tags={}", cd.checkId, cdResultSize, cd.entityId, getEntityTags(cd.entity));
+                if (isJobRelated) {
+                    metrics.incJobMetricsTotal(cdResultSize);
                 }
+
+                if (cdResultSize > resultSizeWarning) {
+                    LOG.warn("result size warning: check={} data-points={} job-related={} entity={} tags={}", cd.checkId, cdResultSize, isJobRelated, cd.entityId, getEntityTags(cd.entity));
+                }
+
                 if (cd.checkId == config.getCheckMetricsWatchId() && Math.random() <= 0.1) {
                     LOG.info("sample for check={} {}", cd.checkId, values.keySet());
                 }
