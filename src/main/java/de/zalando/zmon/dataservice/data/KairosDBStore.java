@@ -185,12 +185,14 @@ public class KairosDBStore {
                 }
 
                 boolean isJobRelated = false;
-                if (isJobRelatedEntity(cd.entity)) {
-                    metrics.incJobMetricsIngestionTotal(1);
-                    isJobRelated = true;
-                    if (!jobMetricsAreStored(cd.entity, cd.checkId)) {
-                        metrics.incJobMetricsIngestionDropped(1);
-                        continue;
+                if (!config.isWriteAllJobMetrics()) {
+                    if (isJobRelatedEntity(cd.entity)) {
+                        metrics.incJobMetricsIngestionTotal(1);
+                        isJobRelated = true;
+                        if (!jobMetricsAreStored(cd.entity, cd.checkId)) {
+                            metrics.incJobMetricsIngestionDropped(1);
+                            continue;
+                        }
                     }
                 }
 

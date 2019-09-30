@@ -40,6 +40,7 @@ public class DataServiceConfigProperties {
     private boolean logKairosdbErrors = false;
 
     private boolean trackCheckRate = false;
+    private boolean writeAllJobMetrics = true;
 
     private List<Integer> actuatorMetricChecks = new ArrayList<>();
 
@@ -103,6 +104,14 @@ public class DataServiceConfigProperties {
 
     public void setTrackCheckRate(boolean trackCheckRate) {
         this.trackCheckRate = trackCheckRate;
+    }
+
+    public void setWriteAllJobMetrics(boolean writeAllJobMetrics) {
+        this.writeAllJobMetrics = writeAllJobMetrics;
+    }
+
+    public boolean isWriteAllJobMetrics() {
+        return writeAllJobMetrics;
     }
 
     public Map<String, AsyncExecutorProperties> getAsyncExecutors() {
