@@ -31,7 +31,7 @@ public class KairosDBStore {
 
     private final DataPointsQueryStore dataPointsQueryStore;
 
-    private final String jobMetricStoredAnnotation = "zmon.io/job-metric-stored";
+    private final String jobMetricStoredAnnotation = "zalando.org/zmon-job-metric-stored";
 
     private final Set<String> entityTagFields;
     // adding alias,account_alias,cluster_alias due to legacy, and should be exclusive anyways
