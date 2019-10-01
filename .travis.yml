@@ -9,6 +9,7 @@ before_script:
   - pip install --user codecov
 
 script:
+  - jdk_switcher use oraclejdk8
   - mvn clean verify
 
 after_success:
