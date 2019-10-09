@@ -34,6 +34,9 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     @Autowired
     private DataServiceMetrics metrics;
 
+    @Autowired
+    private MetricTiers metricTiers;
+
 
     @Before
     public void setUp() {
@@ -43,7 +46,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void writeWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, metricTiers);
         kairosDb.store(Fixture.buildWorkerResult());
         verify(dataPointsQueryStore, atMost(1)).store(anyString());
         verify(metrics, never()).markKairosError();
@@ -52,7 +55,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
 
     @Test
     public void testInvalidWorkerResult() {
-        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore);
+        KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, metricTiers);
         for (WorkerResult wr : new WorkerResult[]{null, new WorkerResult()}) {
             kairosDb.store(wr);
             verify(metrics, never()).incKairosDBDataPoints(anyLong());
@@ -80,6 +83,11 @@ public class KairosDbStoreTest extends AbstractControllerTest {
         @Bean
         public DataPointsQueryStore dataPointsStore() {
             return mock(DataPointsQueryStore.class);
+        }
+
+        @Bean
+        public MetricTiers metricTiers() {
+            return mock(MetricTiers.class);
         }
     }
 
