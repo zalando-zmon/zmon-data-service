@@ -68,6 +68,7 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final int resultSizeWarning;
+    private MetricTiers metricTiers;
 
     private static class DataPoint {
         public String name;
@@ -75,12 +76,17 @@ public class KairosDBStore {
         public Map<String, String> tags = new HashMap<>();
     }
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public KairosDBStore(DataServiceConfigProperties config, DataServiceMetrics metrics, DataPointsQueryStore dataPointsQueryStore) {
+    public KairosDBStore(DataServiceConfigProperties config,
+                         DataServiceMetrics metrics,
+                         DataPointsQueryStore dataPointsQueryStore,
+                         MetricTiers metricTiers) {
         this.metrics = metrics;
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
+        this.metricTiers = metricTiers;
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
             this.entityTagFields = DEFAULT_ENTITY_TAG_FIELDS;
@@ -154,6 +160,11 @@ public class KairosDBStore {
 
                 if (!cd.isSampled) {
                     LOG.debug("Dropping non-sampled metrics for checkid={}", cd.checkId);
+                    continue;
+                }
+
+                if (!metricTiers.isMetricEnabled(cd.checkId)) {
+                    LOG.warn("Dropping non critical checkid={} ", cd.checkId);
                     continue;
                 }
 
