@@ -163,7 +163,7 @@ public class KairosDBStore {
                     continue;
                 }
 
-                if (!metricTiers.isMetricEnabled(cd.checkId)) {
+                if (metricTiers.isMetricDisabled(cd.checkId)) {
                     LOG.warn("Dropping non critical checkid={} ", cd.checkId);
                     continue;
                 }

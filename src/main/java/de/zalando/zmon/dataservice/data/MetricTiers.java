@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.*;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 @Component
 public class MetricTiers {
     public static final Logger LOG = LoggerFactory.getLogger(MetricTiers.class);
@@ -42,6 +44,10 @@ public class MetricTiers {
                 config.getRestMetricConnections(),
                 config.getConnectionsTimeToLive()
         );
+
+        ingestMaxCheckTier = 0;
+        criticalChecks = newHashSet();
+        importantChecks = newHashSet();
     }
 
     @Scheduled(fixedRate = 60_000)
@@ -62,6 +68,10 @@ public class MetricTiers {
         if (ingestMaxCheckTier <= 0 || ingestMaxCheckTier >= 3) return true;
         else if (ingestMaxCheckTier == 1) return criticalChecks.contains(checkId);
         else return criticalChecks.contains(checkId) || importantChecks.contains(checkId);
+    }
+
+    public boolean isMetricDisabled(int checkId) {
+        return !isMetricEnabled(checkId);
     }
 
     private Integer getMaxCheckTier() throws IOException {
@@ -95,4 +105,15 @@ public class MetricTiers {
         return checkSet;
     }
 
+    void setIngestMaxCheckTier(Integer ingestMaxCheckTier) {
+        this.ingestMaxCheckTier = ingestMaxCheckTier;
+    }
+
+    void setCriticalChecks(Set<Integer> criticalChecks) {
+        this.criticalChecks = criticalChecks;
+    }
+
+    void setImportantChecks(Set<Integer> importantChecks) {
+        this.importantChecks = importantChecks;
+    }
 }
