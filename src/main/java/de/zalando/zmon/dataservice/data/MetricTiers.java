@@ -90,7 +90,7 @@ public class MetricTiers {
 
     private Optional<JsonNode> getEntityData(final String entityId) throws IOException {
         final String uri = hostname + "/api/v1/entities/" + entityId;
-        final Request request = Request.Get(uri).addHeader("Authorization", "Bearer " + wrapper);
+        final Request request = Request.Get(uri).addHeader("Authorization", "Bearer " + wrapper.get());
         final String response = executor.execute(request).returnContent().toString();
         final JsonNode jsonNode = objectMapper.readTree(response);
         return Optional.ofNullable(jsonNode.get("data"));
