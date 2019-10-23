@@ -17,6 +17,7 @@ dataservice:
   oauth2-token-info-url: ${TOKENINFO_URL:http://localhost:10080/oauth2/tokeninfo}
   kairosdb-write-urls:
     - ["http://localhost:8083"]
+  write-all-job-metrics: true
   oauth2-scopes:
     getApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
     putApi: "#oauth2.hasScope('zmon_data.read_all') || (#oauth2.hasScope('uid') && #oauth2.hasRealm('/employees'))"
