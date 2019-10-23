@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static de.zalando.zmon.dataservice.data.Fixture.buildWorkerResult;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -47,7 +48,7 @@ public class KairosDbStoreTest extends AbstractControllerTest {
     @Test
     public void writeWorkerResult() {
         KairosDBStore kairosDb = new KairosDBStore(config, metrics, dataPointsQueryStore, metricTiers);
-        kairosDb.store(Fixture.buildWorkerResult());
+        kairosDb.store(buildWorkerResult());
         verify(dataPointsQueryStore, atMost(1)).store(anyString());
         verify(metrics, never()).markKairosError();
         verify(metrics, never()).markKairosHostErrors(anyLong());
