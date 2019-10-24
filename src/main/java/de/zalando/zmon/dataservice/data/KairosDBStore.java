@@ -140,29 +140,6 @@ public class KairosDBStore {
         return tags;
     }
 
-    private boolean isJobRelatedEntity(Map<String, String> entity) {
-        if (entity == null || entity.isEmpty()) {
-            return false;
-        }
-        String entityType = entity.get("type");
-        if (entityType == null) {
-            return false;
-        }
-        if (!entityType.equals("kube_pod") && !entityType.equals("kube_pod_container")) {
-            return false;
-        }
-        return entity.containsKey("job-name");
-    }
-
-    private boolean jobMetricsAreStored(Map<String, String> entity, int checkId) {
-        if (!entity.containsKey(jobMetricStoredAnnotation)) {
-            LOG.debug("Dropping {} metrics for job {} check_id={}: no annotation found",
-                    entity.get("type"), entity.get("job-name"), checkId);
-            return false;
-        }
-        return true;
-    }
-
     void store(WorkerResult wr) {
         if (!config.isKairosdbEnabled()) {
             return;
@@ -186,10 +163,10 @@ public class KairosDBStore {
 
                 boolean isJobRelated = false;
                 if (!config.isWriteAllJobMetrics()) {
-                    if (isJobRelatedEntity(cd.entity)) {
+                    if (cd.isJobMetric) {
                         metrics.incJobMetricsIngestionTotal(1);
                         isJobRelated = true;
-                        if (!jobMetricsAreStored(cd.entity, cd.checkId)) {
+                        if (!cd.isStoreJobMetric) {
                             metrics.incJobMetricsIngestionDropped(1);
                             continue;
                         }
