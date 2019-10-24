@@ -25,4 +25,8 @@ public class CheckData {
     public Map<String, AlertData> alerts = new HashMap<>(0);
     @JsonProperty("is_sampled")
     public boolean isSampled = true;
+    @JsonProperty("job_metric")
+    public boolean isJobMetric = false;
+    @JsonProperty("store_job_metric")
+    public boolean isStoreJobMetric = false;
 }
