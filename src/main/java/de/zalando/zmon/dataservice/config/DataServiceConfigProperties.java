@@ -94,6 +94,7 @@ public class DataServiceConfigProperties {
     private Map<String, AsyncExecutorProperties> asyncExecutors = new HashMap<>();
 
     private int resultSizeWarning = 2000;
+    private int resultSizeMetricThreshold = 2000;
     private long connectionsTimeToLive = 2 * 60 * 1000;
 
     private Map<String, Object> versionConfig = null;
@@ -128,6 +129,14 @@ public class DataServiceConfigProperties {
 
     public void setResultSizeWarning(int resultSizeWarning) {
         this.resultSizeWarning = resultSizeWarning;
+    }
+
+    public int getResultSizeMetricThreshold() {
+        return resultSizeMetricThreshold;
+    }
+
+    public void setResultSizeMetricThreshold(int resultSizeMetricThreshold) {
+        this.resultSizeMetricThreshold = resultSizeMetricThreshold;
     }
 
     public boolean isProxyControllerOauth2() {

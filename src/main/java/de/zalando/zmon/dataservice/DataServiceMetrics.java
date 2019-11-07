@@ -36,6 +36,7 @@ public class DataServiceMetrics {
 
     private final Map<String, Meter> checkMeters = new HashMap<>();
     private final Map<String, Counter> checkCounter = new HashMap<>();
+    private final Map<String, Histogram> checkHistograms = new HashMap<>();
 
     private final Map<String, Meter> entityMeters = new HashMap<>();
 
@@ -128,6 +129,20 @@ public class DataServiceMetrics {
         }
     }
 
+    public Histogram getOrCreateHistogram(Map<String, Histogram> histograms, String name) {
+        Histogram m = histograms.get(name);
+        if (null != m)
+            return m;
+        synchronized (this) {
+            m = histograms.get(name);
+            if (null != m)
+                return m;
+            m = metrics.histogram(name);
+            histograms.put(name, m);
+            return m;
+        }
+    }
+
     public void markTrialRunError() {
         trialRunDataError.mark();
     }
@@ -170,6 +185,13 @@ public class DataServiceMetrics {
     public void markCheck(int checkId, int size) {
         getOrCreateMeter(checkMeters, "ds.check." + checkId + ".rate").mark(size);
         getOrCreateCounter(checkCounter, "ds.check." + checkId + ".counter").inc();
+    }
+
+    public void markCriticalCheck(int checkId, String account, int resultSize) {
+        final String baseName = "ds.critical.check." + checkId + ".acc." + account;
+
+        getOrCreateMeter(checkMeters, baseName + ".data-rate").mark(resultSize);
+        getOrCreateHistogram(checkHistograms, baseName + ".result-size").update(resultSize);
     }
 
     private void markEntityLastUpdate(String account) {
