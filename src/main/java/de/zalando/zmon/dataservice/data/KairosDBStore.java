@@ -71,6 +71,7 @@ public class KairosDBStore {
 
     private final DataServiceMetrics metrics;
     private final int resultSizeWarning;
+    private final int resultSizeMetricThreshold;
     private MetricTiers metricTiers;
 
     private static class DataPoint {
@@ -89,6 +90,7 @@ public class KairosDBStore {
         this.config = config;
         this.dataPointsQueryStore = dataPointsQueryStore;
         this.resultSizeWarning = config.getResultSizeWarning();
+        this.resultSizeMetricThreshold = config.getResultSizeMetricThreshold();
         this.metricTiers = metricTiers;
 
         if (null == config.getKairosdbTagFields() || config.getKairosdbTagFields().size() == 0) {
@@ -249,6 +251,10 @@ public class KairosDBStore {
 
                 if (cdResultSize > resultSizeWarning) {
                     LOG.warn("result size warning: check={} data-points={} job-related={} entity={} tags={}", cd.checkId, cdResultSize, isJobRelated, cd.entityId, getEntityTags(cd.entity));
+                }
+
+                if (cdResultSize > resultSizeMetricThreshold) {
+                    metrics.markCriticalCheck(cd.checkId, wr.account, cdResultSize);
                 }
 
                 if (cd.checkId == config.getCheckMetricsWatchId() && Math.random() <= 0.1) {
