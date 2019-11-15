@@ -71,9 +71,9 @@ public class MetricTiers {
         LOG.debug("Updating metric tiers configuration");
         try {
             getEntityData("zmon-service-level-config").ifPresent(d -> {
-                this.ingestMaxCheckTier = d.get("ingest_max_check_tier").asInt();
-                this.sampledCheckTier = d.get("sampled_check_tier").asInt();
-                this.sampledCheckRate = d.get("sampled_check_rate").asDouble();
+                this.ingestMaxCheckTier = d.path("ingest_max_check_tier").asInt();
+                this.sampledCheckTier = d.path("sampled_check_tier").asInt();
+                this.sampledCheckRate = d.path("sampled_check_rate").asDouble();
             });
 
             final Map<String, Set<Integer>> checkTiers = getCheckTiers();
