@@ -10,6 +10,7 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,14 +28,25 @@ public class MetricTiers {
     private final Executor executor;
     private final TokenWrapper wrapper;
     private final String hostname;
+    private final Random random;
 
     private Integer ingestMaxCheckTier;
+    private Integer sampledCheckTier;
+    private Double sampledCheckRate;
     private Set<Integer> criticalChecks;
     private Set<Integer> importantChecks;
 
+    @Autowired
     public MetricTiers(@DefaultObjectMapper ObjectMapper objectMapper,
                        @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataServiceConfigProperties config,
                        @Qualifier("accessTokens") TokenWrapper wrapper) {
+        this(objectMapper, config, wrapper, new Random());
+    }
+
+   MetricTiers(ObjectMapper objectMapper,
+               DataServiceConfigProperties config,
+               TokenWrapper wrapper,
+               Random random) {
         this.objectMapper = objectMapper;
         this.hostname = config.getProxyControllerBaseUrl();
         this.wrapper = wrapper;
@@ -44,17 +56,25 @@ public class MetricTiers {
                 config.getRestMetricConnections(),
                 config.getConnectionsTimeToLive()
         );
+        this.random = random;
 
         ingestMaxCheckTier = 0;
+        sampledCheckTier = 0;
+        sampledCheckRate = 0d;
         criticalChecks = newHashSet();
         importantChecks = newHashSet();
+
     }
 
     @Scheduled(fixedRate = 60_000)
     public void updateTiers() {
         LOG.debug("Updating metric tiers configuration");
         try {
-            this.ingestMaxCheckTier = getMaxCheckTier();
+            getEntityData("zmon-service-level-config").ifPresent(d -> {
+                this.ingestMaxCheckTier = d.get("ingest_max_check_tier").asInt();
+                this.sampledCheckTier = d.get("sampled_check_tier").asInt();
+                this.sampledCheckRate = d.get("sampled_check_rate").asDouble();
+            });
 
             final Map<String, Set<Integer>> checkTiers = getCheckTiers();
             this.criticalChecks = checkTiers.get("critical");
@@ -65,18 +85,20 @@ public class MetricTiers {
     }
 
     public boolean isMetricEnabled(int checkId) {
-        if (ingestMaxCheckTier <= 0 || ingestMaxCheckTier >= 3) return true;
-        else if (ingestMaxCheckTier == 1) return criticalChecks.contains(checkId);
-        else return criticalChecks.contains(checkId) || importantChecks.contains(checkId);
+        if (ingestMaxCheckTier == 1) {
+            return criticalChecks.contains(checkId);
+        } else if (ingestMaxCheckTier == 2) {
+            boolean isWhitelisted = criticalChecks.contains(checkId) || importantChecks.contains(checkId);
+            boolean isSampled = sampledCheckTier != 2 || random.nextDouble() > sampledCheckRate;
+            return isWhitelisted && isSampled;
+        } else {
+            return sampledCheckTier != 3 || random.nextDouble() > sampledCheckRate;
+        }
+
     }
 
     public boolean isMetricDisabled(int checkId) {
         return !isMetricEnabled(checkId);
-    }
-
-    private Integer getMaxCheckTier() throws IOException {
-        final Optional<JsonNode> data = getEntityData("zmon-service-level-config");
-        return data.map(d -> d.get("ingest_max_check_tier")).map(JsonNode::asInt).orElse(0);
     }
 
     private Map<String, Set<Integer>> getCheckTiers() throws IOException {
@@ -115,5 +137,13 @@ public class MetricTiers {
 
     void setImportantChecks(Set<Integer> importantChecks) {
         this.importantChecks = importantChecks;
+    }
+
+    void setSampledCheckTier(Integer sampledCheckTier) {
+        this.sampledCheckTier = sampledCheckTier;
+    }
+
+    void setSampledCheckRate(Double sampledCheckRate) {
+        this.sampledCheckRate = sampledCheckRate;
     }
 }
