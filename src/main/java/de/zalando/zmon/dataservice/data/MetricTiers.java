@@ -89,10 +89,10 @@ public class MetricTiers {
             return criticalChecks.contains(checkId);
         } else if (ingestMaxCheckTier == 2) {
             return (criticalChecks.contains(checkId) || importantChecks.contains(checkId)) // is whitelisted
-                    && (sampledCheckTier > 2 || random.nextDouble() > sampledCheckRate); // AND is sampled
+                    && (sampledCheckTier == 0 || sampledCheckTier == 3 || random.nextDouble() > sampledCheckRate); // AND is sampled
         } else {
             return criticalChecks.contains(checkId) || importantChecks.contains(checkId) // is whitelisted
-                    || sampledCheckTier != 3 || random.nextDouble() > sampledCheckRate; // OR is sampled
+                    || sampledCheckTier == 0 || random.nextDouble() > sampledCheckRate; // OR is sampled
         }
     }
 

@@ -70,8 +70,10 @@ public class MetricTiersTest {
 
         metricTiers.setIngestMaxCheckTier(2);
         metricTiers.setImportantChecks(ImmutableSet.of(1));
+        assertTrue(metricTiers.isMetricEnabled(1));
+        verify(mockedRandom, never()).nextDouble();
+
         when(mockedRandom.nextDouble()).thenReturn(0.3);
-        assertTrue(metricTiers.isMetricEnabled(1)); // random not called here
         assertFalse(metricTiers.isMetricEnabled(2));
     }
 
