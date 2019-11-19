@@ -11,8 +11,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class MetricTiersTest {
     private MetricTiers metricTiers;
@@ -71,17 +70,24 @@ public class MetricTiersTest {
 
         metricTiers.setIngestMaxCheckTier(2);
         metricTiers.setImportantChecks(ImmutableSet.of(1));
+        assertTrue(metricTiers.isMetricEnabled(1));
+        verify(mockedRandom, never()).nextDouble();
+
         when(mockedRandom.nextDouble()).thenReturn(0.3);
-        assertTrue(metricTiers.isMetricEnabled(1)); // random not called here
         assertFalse(metricTiers.isMetricEnabled(2));
     }
 
     @Test
     public void criticalChecksAreNotSampled() {
         metricTiers.setSampledCheckRate(0.5);
+        metricTiers.setCriticalChecks(ImmutableSet.of(1));
 
         metricTiers.setSampledCheckTier(1);
-        metricTiers.setCriticalChecks(ImmutableSet.of(1));
         assertTrue(metricTiers.isMetricEnabled(1));
+        verify(mockedRandom, never()).nextDouble();
+
+        metricTiers.setSampledCheckTier(3);
+        assertTrue(metricTiers.isMetricEnabled(1));
+        verify(mockedRandom, atMost(1)).nextDouble();
     }
 }

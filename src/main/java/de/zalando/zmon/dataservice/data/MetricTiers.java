@@ -88,13 +88,12 @@ public class MetricTiers {
         if (ingestMaxCheckTier == 1) {
             return criticalChecks.contains(checkId);
         } else if (ingestMaxCheckTier == 2) {
-            boolean isWhitelisted = criticalChecks.contains(checkId) || importantChecks.contains(checkId);
-            boolean isSampled = sampledCheckTier != 2 || random.nextDouble() > sampledCheckRate;
-            return isWhitelisted && isSampled;
+            return (criticalChecks.contains(checkId) || importantChecks.contains(checkId)) // is whitelisted
+                    && (sampledCheckTier == 0 || sampledCheckTier == 3 || random.nextDouble() > sampledCheckRate); // AND is sampled
         } else {
-            return sampledCheckTier != 3 || random.nextDouble() > sampledCheckRate;
+            return criticalChecks.contains(checkId) || importantChecks.contains(checkId) // is whitelisted
+                    || sampledCheckTier == 0 || random.nextDouble() > sampledCheckRate; // OR is sampled
         }
-
     }
 
     public boolean isMetricDisabled(int checkId) {
