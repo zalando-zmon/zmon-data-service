@@ -2,12 +2,14 @@ package de.zalando.zmon.dataservice.proxies.checks;
 
 import de.zalando.zmon.dataservice.TokenWrapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
-import org.springframework.beans.factory.annotation.Autowired;
+import de.zalando.zmon.dataservice.proxies.ProxyConfig;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
+@Import({ProxyConfig.class})
 public class ChecksConfig {
 
 	private final DataServiceConfigProperties config;

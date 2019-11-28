@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.components.CustomObjectMapper;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
+import de.zalando.zmon.dataservice.proxies.ProxyConfig;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
+@Import({ProxyConfig.class})
 public class EntitiesConfig {
 
 	private final DataServiceConfigProperties config;
