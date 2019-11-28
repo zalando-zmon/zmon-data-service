@@ -10,6 +10,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,21 +27,24 @@ public class DefaultEntitiesService extends ControllerProxy implements EntitiesS
     private final ObjectMapper customObjectMapper;
     private final DataServiceMetrics metrics;
 
-    public DefaultEntitiesService(@CustomObjectMapper ObjectMapper customObjectMapper, DataServiceConfigProperties config, DataServiceMetrics metrics) {
-        super(config);
+    DefaultEntitiesService(@CustomObjectMapper ObjectMapper customObjectMapper,
+                           DataServiceConfigProperties config,
+                           DataServiceMetrics metrics,
+                           CircuitBreakerFactory cbFactory) {
+        super(cbFactory, config);
         this.customObjectMapper = customObjectMapper;
         this.metrics = metrics;
         log.info("Entity service proxy: {}", config.getProxyControllerBaseUrl());
     }
 
     @Override
-    public String deleteEntity(Optional<String> token, String id) throws URISyntaxException, IOException {
+    public String deleteEntity(Optional<String> token, String id) throws URISyntaxException {
         URI uri = uri("/entities/" + id + "/").build();
         return proxy(Request.Delete(uri), token);
     }
 
     @Override
-    public String getEntities(Optional<String> token, String query, String exclude) throws URISyntaxException, IOException {
+    public String getEntities(Optional<String> token, String query, String exclude) throws URISyntaxException {
         URI uri = uri("/entities/").setParameter("query", query).setParameter("exclude", exclude).build();
         return proxy(Request.Get(uri), token);
     }

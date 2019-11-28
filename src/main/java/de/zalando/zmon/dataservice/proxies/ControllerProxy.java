@@ -3,23 +3,22 @@ package de.zalando.zmon.dataservice.proxies;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
 import de.zalando.zmon.dataservice.data.HttpClientFactory;
 import de.zalando.zmon.dataservice.oauth2.BearerToken;
-import io.opentracing.contrib.apache.http.client.TracingHttpClientBuilder;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 
 public class ControllerProxy {
+    private final CircuitBreakerFactory cbFactory;
     protected final DataServiceConfigProperties config;
     protected final Executor executor;
 
-    public ControllerProxy(DataServiceConfigProperties config) {
+    public ControllerProxy(CircuitBreakerFactory cbFactory, DataServiceConfigProperties config) {
+        this.cbFactory = cbFactory;
         this.config = config;
         executor = getExecutor(config);
     }
@@ -41,18 +40,34 @@ public class ControllerProxy {
         return new URIBuilder().setPath(config.getProxyControllerUrl() + path);
     }
 
-    protected String proxy(Request request, Optional<String> token) throws IOException {
+    protected String proxy(Request request, Optional<String> token) {
         if (config.isProxyControllerOauth2()) {
             BearerToken.inject(request, token);
         }
-        return executor.execute(request).returnContent().asString();
+        return cbFactory.create("proxy").run(
+                () -> {
+                    try {
+                        return executor.execute(request).returnContent().asString();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
     }
 
-    protected String proxyForLastModifiedHeader(Request request, Optional<String> token) throws IOException {
+    protected String proxyForLastModifiedHeader(Request request, Optional<String> token) {
         if (config.isProxyControllerOauth2()) {
             BearerToken.inject(request, token);
         }
 
-        return executor.execute(request).returnResponse().getHeaders("Last-Modified")[0].getValue();
+        return cbFactory.create("proxy").run(
+                () -> {
+                    try {
+                        return executor.execute(request).returnResponse().getHeaders("Last-Modified")[0].getValue();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
     }
 }
