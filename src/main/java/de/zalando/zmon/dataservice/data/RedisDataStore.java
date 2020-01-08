@@ -68,9 +68,9 @@ public class RedisDataStore {
         }
 
         if (ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity, ad.captures);
         } else if (!ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity, ad.captures);
         }
     }
 

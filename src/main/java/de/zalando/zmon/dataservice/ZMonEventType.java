@@ -9,8 +9,8 @@ public enum ZMonEventType implements EventType {
     // worker events
     ALERT_STARTED(0x34001, "checkId", "alertId", "value"),
     ALERT_ENDED(0x34002, "checkId", "alertId", "value"),
-    ALERT_ENTITY_STARTED(0x34003, "checkId", "alertId", "value", "entity"),
-    ALERT_ENTITY_ENDED(0x34004, "checkId", "alertId", "value", "entity"),
+    ALERT_ENTITY_STARTED(0x34003, "checkId", "alertId", "value", "entity", "captures"),
+    ALERT_ENTITY_ENDED(0x34004, "checkId", "alertId", "value", "entity", "captures"),
     DOWNTIME_STARTED(0x34005, "alertId", "entity", "startTime", "endTime", "userName", "comment"),
     DOWNTIME_ENDED(0x34006, "alertId", "entity", "startTime", "endTime", "userName", "comment"),
 
