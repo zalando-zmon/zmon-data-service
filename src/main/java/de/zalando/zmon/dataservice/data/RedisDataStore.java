@@ -67,10 +67,11 @@ public class RedisDataStore {
             return;
         }
 
+        String captures = writeValueAsString(ad.captures).orElse(EMPTY_CHECK);
         if (ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity, ad.captures);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity, captures);
         } else if (!ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity, ad.captures);
+            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity, captures);
         }
     }
 
