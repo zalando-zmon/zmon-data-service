@@ -1,5 +1,10 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.EventType;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
@@ -9,7 +14,6 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,21 +44,21 @@ public class HttpEventLogger {
     private final Logger log = LoggerFactory.getLogger(HttpEventLogger.class);
 
     private static class HttpEvent {
-        public Map<String, Object> attributes;
+        public ObjectNode attributes;
 
         public Date time;
         public int typeId;
 
-        public HttpEvent(Date time, EventType type, Object[] values) {
+        public HttpEvent(Date time, EventType type, JsonNode[] values) {
             this.time = time;
             this.typeId = type.getId();
-            this.attributes = new TreeMap<>();
+            this.attributes = new ObjectMapper().getNodeFactory().objectNode();
 
             for (int i = 0; i < type.getFieldNames().size(); ++i) {
                 if (i < values.length) {
-                    attributes.put(type.getFieldNames().get(i), values[i]);
+                    attributes.set(type.getFieldNames().get(i), values[i]);
                 } else {
-                    attributes.put(type.getFieldNames().get(i), null);
+                    attributes.set(type.getFieldNames().get(i), NullNode.getInstance());
                 }
             }
         }
@@ -64,7 +68,7 @@ public class HttpEventLogger {
     public HttpEventLogger(DataServiceMetrics metrics, DataServiceConfigProperties config) {
         this.metrics = metrics;
         enabled = config.isEventlogEnabled();
-        mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         if (enabled) {
             forwardUrl = config.getEventlogUrl() + "/api/v1";
@@ -85,7 +89,7 @@ public class HttpEventLogger {
         }
     }
 
-    public void log(EventType type, Object... values) {
+    public void log(EventType type, JsonNode... values) {
         if (!enabled) {
             return;
         }
@@ -97,6 +101,7 @@ public class HttpEventLogger {
             async.execute(request, new FutureCallback<Content>() {
 
                 public void failed(final Exception ex) {
+                    log.error("EventLog write async failed: {}", ex.getMessage());
                     metrics.markEventLogError();
                 }
 

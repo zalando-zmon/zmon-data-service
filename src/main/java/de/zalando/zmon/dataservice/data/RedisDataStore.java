@@ -3,6 +3,7 @@ package de.zalando.zmon.dataservice.data;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.ZMonEventType;
@@ -62,16 +63,30 @@ public class RedisDataStore {
         }
     }
 
-    public void createEvents(String entity, int checkId, String checkValue, AlertData ad) {
+    public void createEvents(String entity, int checkId, JsonNode checkValue, AlertData ad) {
         if (eventLogger == null) {
             return;
         }
 
-        String captures = writeValueAsString(ad.captures).orElse(EMPTY_CHECK);
+        final JsonNodeFactory nodeFactory = mapper.getNodeFactory();
         if (ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_STARTED, checkId, ad.alert_id, checkValue, entity, captures);
+            eventLogger.log(
+                    ZMonEventType.ALERT_ENTITY_STARTED,
+                    nodeFactory.numberNode(checkId),
+                    nodeFactory.numberNode(ad.alert_id),
+                    checkValue,
+                    nodeFactory.textNode(entity),
+                    ad.captures
+            );
         } else if (!ad.active && ad.changed) {
-            eventLogger.log(ZMonEventType.ALERT_ENTITY_ENDED, checkId, ad.alert_id, checkValue, entity, captures);
+            eventLogger.log(
+                    ZMonEventType.ALERT_ENTITY_ENDED,
+                    nodeFactory.numberNode(checkId),
+                    nodeFactory.numberNode(ad.alert_id),
+                    checkValue,
+                    nodeFactory.textNode(entity),
+                    ad.captures
+            );
         }
     }
 
@@ -92,7 +107,7 @@ public class RedisDataStore {
                 if (null != cd.alerts) {
                     for (AlertData alert : cd.alerts.values()) {
 
-                        createEvents(cd.entityId, cd.checkId, checkValue, alert);
+                        createEvents(cd.entityId, cd.checkId, cd.checkResult, alert);
 
                         if (alert.active && alert.in_period) {
                             p.sadd("zmon:alerts:" + alert.alert_id, cd.entityId);
