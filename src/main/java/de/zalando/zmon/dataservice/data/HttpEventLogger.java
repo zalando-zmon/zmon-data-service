@@ -1,5 +1,6 @@
 package de.zalando.zmon.dataservice.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.EventType;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
@@ -40,12 +41,12 @@ public class HttpEventLogger {
     private final Logger log = LoggerFactory.getLogger(HttpEventLogger.class);
 
     private static class HttpEvent {
-        public Map<String, Object> attributes;
+        public Map<String, JsonNode> attributes;
 
         public Date time;
         public int typeId;
 
-        public HttpEvent(Date time, EventType type, Object[] values) {
+        public HttpEvent(Date time, EventType type, JsonNode[] values) {
             this.time = time;
             this.typeId = type.getId();
             this.attributes = new TreeMap<>();
@@ -85,7 +86,7 @@ public class HttpEventLogger {
         }
     }
 
-    public void log(EventType type, Object... values) {
+    public void log(EventType type, JsonNode... values) {
         if (!enabled) {
             return;
         }
