@@ -50,7 +50,7 @@ public class HttpEventLogger {
         public HttpEvent(Date time, EventType type, JsonNode[] values) {
             this.time = time;
             this.typeId = type.getId();
-            this.attributes = (new ObjectMapper()).readTree("{}");
+            this.attributes = (new com.fasterxml.jackson.databind.ObjectMapper()).readTree("{}");
 
             for (int i = 0; i < type.getFieldNames().size(); ++i) {
                 if (i < values.length) {
