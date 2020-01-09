@@ -1,6 +1,7 @@
 package de.zalando.zmon.dataservice.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.zalando.zmon.dataservice.DataServiceMetrics;
 import de.zalando.zmon.dataservice.EventType;
 import de.zalando.zmon.dataservice.config.DataServiceConfigProperties;
@@ -49,7 +50,7 @@ public class HttpEventLogger {
         public HttpEvent(Date time, EventType type, JsonNode[] values) {
             this.time = time;
             this.typeId = type.getId();
-            this.attributes = new TreeMap<>();
+            this.attributes = (new ObjectMapper()).readTree("{}");
 
             for (int i = 0; i < type.getFieldNames().size(); ++i) {
                 if (i < values.length) {
@@ -98,6 +99,7 @@ public class HttpEventLogger {
             async.execute(request, new FutureCallback<Content>() {
 
                 public void failed(final Exception ex) {
+                    log.error("EventLog write async failed: {}", ex.getMessage());
                     metrics.markEventLogError();
                 }
 
